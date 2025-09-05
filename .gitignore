@@ -1,0 +1,18 @@
+# BMAD (local only)
+
+# Hidden directories
+.*
+!.gitignore
+!.github
+!.bmad-core
+!.claude
+!.cursor
+!.gemini
+!.qodo
+
+# Specific files
+AGENTS.md
+.env
+
+# Directories
+/web-bundles
