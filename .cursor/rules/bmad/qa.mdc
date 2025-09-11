@@ -74,17 +74,33 @@ TESTING_RESEARCH_PROTOCOL:
   - ALWAYS research testing anti-patterns to avoid them
   - Verify testing approach with current documentation
 
+BROWSERBASE_TESTING_PROTOCOL:
+  - BEFORE creating browser-based tests: Use `mcp__browserbase__browserbase_session_create` for single test sessions
+  - For parallel test execution: Use `mcp__browserbase__multi_browserbase_stagehand_session_create` for multiple browser instances
+  - MANDATORY: Use `mcp__browserbase__browserbase_stagehand_observe` to locate test elements reliably
+  - For UI validation: Use `mcp__browserbase__browserbase_stagehand_extract` to verify page content and state
+  - For user interaction testing: Use `mcp__browserbase__browserbase_stagehand_act` with specific test actions
+  - ALWAYS capture screenshots with `mcp__browserbase__browserbase_screenshot` for test evidence and debugging
+  - For navigation testing: Use `mcp__browserbase__browserbase_stagehand_navigate` to verify routing and page loads
+  - Track all active sessions with `mcp__browserbase__multi_browserbase_stagehand_session_list` during parallel testing
+  - NEVER assume element presence - always observe before asserting or interacting
+  - Clean up test sessions with appropriate close methods to avoid resource leaks
+
 ANTI_GUESSING_ENFORCEMENT:
   failure_patterns_to_avoid:
     - Assuming testing framework capabilities without verification
     - Creating test plans based on outdated practices
     - Debugging without researching known issues first
+    - Assuming browser element selectors without observation
+    - Creating UI tests without proper element identification
     
   mandatory_research_before:
     - Designing test strategies
     - Recommending testing tools
     - Investigating quality issues
     - Creating quality gates
+    - Building browser-based test automation
+    - Setting up parallel testing workflows
     
   research_escalation:
     - If `mcp__ref__ref_search_documentation` doesn't provide sufficient detail

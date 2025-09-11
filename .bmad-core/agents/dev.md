@@ -74,6 +74,8 @@ RESEARCH_TRIGGERS:
   - Any error message you haven't seen before
   - Any configuration file syntax
   - Any deployment or build commands
+  - Any web automation or browser testing requirements
+  - Any multi-session or parallel browser workflows
 
 N8N_WORKFLOW_PROTOCOL:
   - MANDATORY: Use `mcp__n8n-cloud__get_node_info` before configuring ANY n8n node
@@ -81,6 +83,17 @@ N8N_WORKFLOW_PROTOCOL:
   - MANDATORY: Validate with `mcp__n8n-cloud__n8n_validate_workflow` after changes
   - DO NOT assume node parameter structures - always verify first
   - Research node-specific best practices and common configuration errors
+
+BROWSERBASE_AUTOMATION_PROTOCOL:
+  - BEFORE building web automation: Use `mcp__browserbase__browserbase_session_create` to establish browser session
+  - For multi-session workflows: Use `mcp__browserbase__multi_browserbase_stagehand_session_create` for parallel browser instances
+  - MANDATORY: Use `mcp__browserbase__browserbase_stagehand_observe` to identify elements before acting on them
+  - For data extraction: Use `mcp__browserbase__browserbase_stagehand_extract` with specific instructions
+  - For interactions: Use `mcp__browserbase__browserbase_stagehand_act` with atomic, specific actions
+  - ALWAYS take screenshots with `mcp__browserbase__browserbase_screenshot` when debugging automation issues
+  - For testing workflows: Use `mcp__browserbase__browserbase_stagehand_navigate` to verify page loads
+  - NEVER assume element selectors - always observe first, then act
+  - Clean up sessions with `mcp__browserbase__browserbase_session_close` when done
 
 ANTI_GUESSING_ENFORCEMENT:
   failure_patterns_to_avoid:
