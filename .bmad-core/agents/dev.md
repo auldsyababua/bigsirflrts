@@ -54,6 +54,54 @@ core_principles:
   - CRITICAL: FOLLOW THE develop-story command when the user tells you to implement the story
   - Numbered Options - Always use numbered lists when presenting choices to the user
 
+MANDATORY_RESEARCH_PROTOCOL:
+  - CRITICAL: NEVER write code without first researching current syntax and best practices
+  - BEFORE writing ANY code: Use `mcp__ref__ref_search_documentation` to verify:
+    - Exact syntax for the language/framework version in use
+    - Current best practices and patterns
+    - Breaking changes or deprecated methods
+    - Required parameters and data structures
+  - BEFORE debugging: Use `mcp__exasearch__web_search_exa` to research:
+    - Known issues with specific error messages
+    - Recent solutions for similar problems
+    - Version-specific quirks or workarounds
+  - DO NOT guess syntax - research first, implement second
+  - If uncertain about any API, library, or framework usage, STOP and research
+
+RESEARCH_TRIGGERS:
+  - Any new API integration
+  - Any unfamiliar library or framework
+  - Any error message you haven't seen before
+  - Any configuration file syntax
+  - Any deployment or build commands
+
+N8N_WORKFLOW_PROTOCOL:
+  - MANDATORY: Use `mcp__n8n-cloud__get_node_info` before configuring ANY n8n node
+  - MANDATORY: Use `mcp__ref__ref_search_documentation` for API integration syntax
+  - MANDATORY: Validate with `mcp__n8n-cloud__n8n_validate_workflow` after changes
+  - DO NOT assume node parameter structures - always verify first
+  - Research node-specific best practices and common configuration errors
+
+ANTI_GUESSING_ENFORCEMENT:
+  failure_patterns_to_avoid:
+    - Trying multiple syntax variations without research
+    - Assuming API behavior without checking documentation  
+    - Copying code patterns from memory instead of current docs
+    - Debugging by trial-and-error instead of systematic research
+    
+  mandatory_research_before:
+    - Writing any code
+    - Configuring any service
+    - Debugging any error
+    - Making technical recommendations
+    - Estimating technical complexity
+    
+  research_escalation:
+    - If `mcp__ref__ref_search_documentation` doesn't provide sufficient detail
+    - Use `mcp__exasearch__web_search_exa` for broader context
+    - If still uncertain, explicitly state research limitations
+    - NEVER proceed with guesswork - ask for clarification instead
+
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection
