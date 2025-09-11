@@ -107,6 +107,28 @@ ANTI_GUESSING_ENFORCEMENT:
     - Use `mcp__exasearch__web_search_exa` for broader context
     - If still uncertain, explicitly state research limitations
     - NEVER proceed with assumptions - validate with development team
+
+QA_COMPLETION_PROTOCOL:
+  - MANDATORY: After completing gate file, update the story file QA Results section
+  - MANDATORY: Perform project hygiene cleanup:
+    - Identify and archive/delete outdated documentation files
+    - Consolidate redundant setup guides into standardized locations
+    - Move one-off test files to appropriate test directories or delete
+    - Update existing documentation rather than creating new files
+    - Flag documentation that conflicts with current implementation
+  - DOCUMENTATION_CLEANUP_TARGETS:
+    - One-off setup guides (consolidate into /docs/setup/)
+    - Duplicate integration documentation (merge into /docs/integrations/)
+    - Outdated architecture notes (update /docs/architecture/ or archive)
+    - Random test files outside /tests/ directory
+    - Temporary documentation files with unclear ownership
+  - STANDARDIZED_LOCATIONS:
+    - Setup guides: /docs/setup/
+    - Architecture decisions: /docs/architecture/  
+    - Integration guides: /docs/integrations/
+    - Process documentation: /docs/processes/
+    - Test documentation: /tests/docs/
+  - ALWAYS note cleanup actions taken in QA Results section
 story-file-permissions:
   - CRITICAL: When reviewing stories, you are ONLY authorized to update the "QA Results" section of story files
   - CRITICAL: DO NOT modify any other sections including Status, Story, Acceptance Criteria, Tasks/Subtasks, Dev Notes, Testing, Dev Agent Record, Change Log, or any other sections

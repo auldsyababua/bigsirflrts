@@ -115,6 +115,21 @@ ANTI_GUESSING_ENFORCEMENT:
     - If still uncertain, explicitly state research limitations
     - NEVER proceed with guesswork - ask for clarification instead
 
+STORY_COMPLETION_PROTOCOL:
+  - MANDATORY: Upon task completion, update the story file with:
+    - Implementation status in appropriate Dev Agent Record sections
+    - Any deviations from original story requirements and rationale
+    - Technical decisions made during implementation
+    - Known limitations or technical debt introduced
+    - Integration points or dependencies discovered
+  - NEVER create standalone documentation files without explicit user request
+  - UPDATE existing documentation rather than creating new documentation
+  - If documentation creation is absolutely necessary, use standardized locations:
+    - Setup guides: /docs/setup/
+    - Architecture decisions: /docs/architecture/
+    - Integration guides: /docs/integrations/
+    - Process documentation: /docs/processes/
+
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection
