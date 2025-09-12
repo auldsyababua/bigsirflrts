@@ -1,0 +1,103 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - '*'
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up Go
+              uses: actions/setup-go@v3
+              with:
+                  go-version: '1.24.0'
+
+            - name: Set version
+              run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
+
+            - name: Build linux/amd64
+              run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -extldflags "-static" -X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op-linux_amd64
+
+            - name: Build linux/arm64
+              run: GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -extldflags "-static" -X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op-linux_arm64
+
+            - name: Build darwin/amd64
+              run: GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -extldflags "-static" -X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op-darwin_amd64
+
+            - name: Build darwin/arm64
+              run: GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w -extldflags "-static" -X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op-darwin_arm64
+
+            - name: Build windows/amd64
+              run: GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w -extldflags "-static" -X main.version=${{ env.version }} -X main.commit=$GITHUB_SHA -X main.date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -o op-windows_amd64
+
+            - name: Upload build artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: openproject-cli
+                  path: op-*
+
+    release:
+        needs: [ build ]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Download artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: openproject-cli
+
+            - name: Set version
+              run: echo "version=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
+
+            - name: Package executable linux/amd64
+              run: |
+                  ln op-linux_amd64 op
+                  chmod +x op
+                  zip -r openproject-cli_linux_amd64_${{ env.version }}.zip op
+                  rm op
+
+            - name: Package executable linux/arm64
+              run: |
+                  ln op-linux_arm64 op
+                  chmod +x op
+                  zip -r openproject-cli_linux_arm64_${{ env.version }}.zip op
+                  rm op
+
+            - name: Package executable darwin/amd64
+              run: |
+                  ln op-darwin_amd64 op
+                  chmod +x op
+                  zip -r openproject-cli_darwin_amd64_${{ env.version }}.zip op
+                  rm op
+
+            - name: Package executable darwin/arm64
+              run: |
+                  ln op-darwin_arm64 op
+                  chmod +x op
+                  zip -r openproject-cli_darwin_arm64_${{ env.version }}.zip op
+                  rm op
+
+            - name: Package executable windows/amd64
+              run: |
+                  ln op-windows_amd64 op
+                  chmod +x op
+                  zip -r openproject-cli_windows_amd64_${{ env.version }}.zip op
+                  rm op
+
+            - name: Create release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: |
+                      openproject-cli_linux_amd64_${{ env.version }}.zip
+                      openproject-cli_linux_arm64_${{ env.version }}.zip
+                      openproject-cli_darwin_amd64_${{ env.version }}.zip
+                      openproject-cli_darwin_arm64_${{ env.version }}.zip
+                      openproject-cli_windows_amd64_${{ env.version }}.zip

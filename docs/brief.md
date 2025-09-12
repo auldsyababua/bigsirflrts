@@ -2,13 +2,13 @@
 
 ## Executive Summary
 
-The NLP Task Management Service is an internal, low-friction natural language processing system that converts conversational task commands into structured JSON for integration with the tududi task management backend. The service addresses the critical need for rapid, timezone-aware task creation across a distributed team operating in PST, CST, and EST zones at an off-grid bitcoin mining company. By parsing natural language inputs like "Hey Taylor, Colin needs the server logs by 1pm his time" into properly formatted, timezone-converted JSON structures, the system eliminates the friction of traditional form-based task entry. The key value proposition is enabling team members to create tasks using natural conversation patterns while ensuring accurate timezone conversion and structured data output for backend processing.
+The NLP Task Management Service is an internal, low-friction natural language processing system that converts conversational task commands into structured JSON for integration with the Open Project task management backend. The service addresses the critical need for rapid, timezone-aware task creation across a distributed team operating in PST, CST, and EST zones at an off-grid bitcoin mining company. By parsing natural language inputs like "Hey Taylor, Colin needs the server logs by 1pm his time" into properly formatted, timezone-converted JSON structures, the system eliminates the friction of traditional form-based task entry. The key value proposition is enabling team members to create tasks using natural conversation patterns while ensuring accurate timezone conversion and structured data output for backend processing.
 
 ## Problem Statement
 
-The current task management workflow requires users to manually enter structured data through forms, selecting specific fields for assignees, due dates, and converting times across multiple timezones. This creates significant friction for a distributed team where Joel (CEO) and Bryan (CFO) operate in EST, Taylor (Operator) works in CST, Colin (CTO) and investors Bernie & Ari are in PST, with the company officially operating on CST. 
+The current task management workflow requires users to manually enter structured data through forms, selecting specific fields for assignees, due dates, and converting times across multiple timezones. This creates significant friction for a distributed team where Joel (CEO) and Bryan (CFO) Taylor (Operator) works in CST and Colin (CTO) and investors Bernie & Ari are in PST, with the company officially operating on CST. 
 
-The impact is measurable in lost productivity - each task creation requires mental timezone math, form navigation, and structured data entry that interrupts workflow. Team members avoid creating tasks for quick requests, leading to dropped balls and miscommunication. Existing solutions like Slack reminders lack integration with the company's tududi project management system, while traditional NLP solutions fail to handle the complex timezone conversion requirements and informal communication patterns of a small, fast-moving team.
+The impact is measurable in lost productivity - each task creation requires mental timezone math, form navigation, and structured data entry that interrupts workflow. Team members avoid creating tasks for quick requests, leading to dropped balls and miscommunication. Existing solutions like Slack reminders lack integration with the company's Open Project project management system, while traditional NLP solutions fail to handle the complex timezone conversion requirements and informal communication patterns of a small, fast-moving team.
 
 The urgency stems from the company's rapid growth phase where operational efficiency directly impacts bitcoin mining uptime and profitability. Every miscommunicated task or missed deadline due to timezone confusion can result in hours of mining downtime.
 
@@ -37,7 +37,7 @@ This solution prioritizes shipping speed over optimization. All logic lives in t
 
 **Current Behaviors:**
 - Using Slack/Discord for most communication
-- Manually creating tasks in tududi when remembered
+- Manually creating tasks in Open Project when remembered
 - Often missing tasks communicated informally
 - Struggling with timezone conversions for distributed team
 
@@ -64,7 +64,7 @@ This solution prioritizes shipping speed over optimization. All logic lives in t
 **Current Behaviors:**
 - Delegating tasks verbally or via message
 - Expecting tasks to be tracked without direct entry
-- Reviewing task completion in tududi dashboard
+- Reviewing task completion in Open Project dashboard
 
 **Needs:**
 - Confidence that delegated tasks are captured
@@ -80,8 +80,6 @@ This solution prioritizes shipping speed over optimization. All logic lives in t
 - Reduce missed deadlines due to timezone confusion by 90%
 
 ### User Success Metrics
-- User adoption rate of 100% within 2 weeks of launch
-- Average of 20+ tasks created per day via NLP interface
 - Less than 5% of tasks require manual correction after parsing
 - User satisfaction score of 4.5/5 or higher
 
@@ -106,7 +104,7 @@ This solution prioritizes shipping speed over optimization. All logic lives in t
 - **Error Handling:** If OpenAI fails, show error and suggest manual entry
 
 ### Out of Scope for MVP
-- Recurring task parsing (use tududi's existing recurring task UI)
+- Recurring task parsing (use Open Project's existing recurring task UI)
 - Sentiment analysis or priority inference
 - Voice input or audio transcription
 - Multi-language support
@@ -147,15 +145,17 @@ Within 12-24 months, evolve the service into a comprehensive conversational task
 
 ### Technology Preferences
 - **Frontend:** TypeScript, Zod for schema validation, ui2 component for input, Telegram Mini App
-- **Backend:** Node.js/TypeScript API service, OpenAI GPT-4o API integration
-- **Database:** SQLite (matching tududi)
-- **Hosting/Infrastructure:** Docker containers, deployable to any Linux host
+- **Backend:** Node.js/TypeScript NLP service, OpenAI GPT-4o API integration
+- **Database:** Single Supabase PostgreSQL database (directly used by OpenProject, no sync needed)
+- **Hosting/Infrastructure:** Digital Ocean VM with Docker Compose orchestration, Cloudflare Tunnel security
 
 ### Architecture Considerations
-- **Repository Structure:** Simple single service architecture for MVP
-- **Service Architecture:** Single API service handling OpenAI integration and tududi communication
-- **Integration Requirements:** REST API integration with tududi backend, OpenAI API for parsing
-- **Security/Compliance:** API key management for OpenAI, rate limiting, audit logging of all task creation
+- **Repository Structure:** Containerized microservices architecture with Docker Compose
+- **Service Architecture:** VM-based deployment with OpenProject (direct Supabase connection), FLRTS NLP service, n8n workflows
+- **Integration Pattern:** FLRTS → OpenProject API (not database), OpenProject → Supabase DB (direct connection)
+- **Database Architecture:** Single Supabase PostgreSQL instance with logical schema separation (openproject, business, flrts)
+- **NLP Layer:** FLRTS provides natural language interface to OpenProject API, not a replacement for OpenProject UI
+- **Security/Compliance:** SSL/TLS database connections, Cloudflare Tunnel zero-trust networking, container isolation
 
 ## Constraints & Assumptions
 
@@ -163,15 +163,20 @@ Within 12-24 months, evolve the service into a comprehensive conversational task
 - **Budget:** Internal project with minimal budget for OpenAI API costs
 - **Timeline:** MVP must be operational within 3-5 days
 - **Resources:** Single developer (LLM-assisted), 10-15 hours allocated for initial development
-- **Technical:** Must integrate with existing tududi backend without modifications
+- **Technical:** Must integrate with containerized Open Project deployment and Supabase PostgreSQL backend
 
 ### Key Assumptions
-- tududi backend stores all datetime values in UTC format
+- OpenProject connects directly to Supabase PostgreSQL via DATABASE_URL (verified in architecture report)
+- Supabase PostgreSQL provides reliable managed database service with SSL/TLS support
+- Single database architecture completely eliminates synchronization complexity
+- OpenProject UI remains fully available alongside FLRTS NLP interface
+- FLRTS enhances but does not replace OpenProject's native functionality
 - All team members are in US timezones (PST, CST, EST)
 - Company operates officially on CST for business purposes
 - Users will accept structured confirmation before task creation
 - OpenAI GPT-4o API will reliably parse natural language with proper prompting
 - API response times from OpenAI are acceptable for user experience (1-3 seconds)
+- Digital Ocean VM provides sufficient resources for services (no local PostgreSQL needed)
 
 ## Risks & Open Questions
 
@@ -191,8 +196,10 @@ Within 12-24 months, evolve the service into a comprehensive conversational task
 ### Areas Needing Further Research
 - Optimal prompt engineering for consistent OpenAI structured output
 - Best practices for handling partial parsing failures with iterative correction
-- Integration patterns with tududi's authentication system
-- Telegram Mini App framework and deployment
+- Integration patterns with containerized Open Project's authentication system
+- Telegram Mini App framework and VM-based deployment
+- Docker Compose service orchestration and resource management
+- Cloudflare Tunnel configuration for secure external access
 
 ## Appendices
 
@@ -215,11 +222,11 @@ Based on handoff documentation from Mary (Business Analyst):
 - Critical requirement: Timezone conversion to assignee's local time
 - Must handle informal communication patterns
 - 100 test examples provided as acceptance criteria
-- Integration with existing tududi system is non-negotiable
+- Integration with existing Open Project system is non-negotiable
 
 ### C. References
 - Handoff Documentation: NLP Task App - Synthetic Data & Parsing Logic
-- tududi Documentation: https://tududi.com/
+- Open Project Documentation: https://github.com/opf/openproject/tree/dev/docs/development
 - SpaCy Documentation: https://spacy.io/
 - dateparser Documentation: https://dateparser.readthedocs.io/
 - Zod Schema Validation: https://zod.dev/
@@ -233,7 +240,7 @@ Based on handoff documentation from Mary (Business Analyst):
 4. Update synthetic examples to new schema (CRUD operations)
 5. Test all 100 examples against the prompt
 6. Build minimal confirmation UI
-7. Connect to tududi API endpoints
+7. Connect to Open Project API endpoints
 8. Deploy and test with real users
 
 ### PM Handoff

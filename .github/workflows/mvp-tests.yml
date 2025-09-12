@@ -1,0 +1,56 @@
+name: MVP P0 Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm ci || npm i
+          npx playwright install --with-deps chromium
+
+      - name: Smoke test
+        run: |
+          chmod +x tests/mvp-smoke-test.sh
+          npm run test:smoke
+
+      - name: Run P0 unit + integration (Vitest)
+        run: |
+          npm run test:unit
+          npm run test:integration
+
+      - name: Mock Cloudflare deploy validation
+        run: |
+          node -e "console.log('Simulating wrangler publish: success')"
+
+      - name: Run P0 E2E (Playwright)
+        env:
+          # Keep CI runs stable and fast
+          CI: true
+        run: |
+          npm run test:e2e
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {"text": "MVP P0 tests failed on ${{ github.ref }} in ${{ github.workflow }}: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

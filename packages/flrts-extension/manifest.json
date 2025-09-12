@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "FLRTS for OpenProject",
+  "version": "1.0.0",
+  "description": "Natural language task creation for OpenProject",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8080/*",
+    "https://*.openproject.com/*",
+    "https://*.openproject.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:8080/*",
+        "https://*.openproject.com/*",
+        "https://*.openproject.org/*"
+      ],
+      "js": ["content.js"],
+      "css": ["flrts-inject.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

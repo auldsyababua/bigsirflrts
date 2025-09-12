@@ -1,0 +1,22 @@
+{
+  "name": "bigsirflrts-tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MVP test suite for Story 1.1 (Deploy OpenProject to Cloudflare)",
+  "scripts": {
+    "test:mvp": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "vitest run tests/unit --reporter=dot --grep @P0",
+    "test:integration": "vitest run tests/integration --reporter=dot --grep @P0",
+    "test:e2e": "playwright test tests/e2e --grep @P0",
+    "test:smoke": "bash tests/mvp-smoke-test.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.46.0",
+    "playwright": "^1.46.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

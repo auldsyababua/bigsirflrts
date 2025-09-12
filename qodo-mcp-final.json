@@ -1,0 +1,50 @@
+{
+  "github": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@modelcontextprotocol/server-github"
+    ],
+    "env": {
+      "GITHUB_PERSONAL_ACCESS_TOKEN": "op://MCP Secrets/GITHUB MCP/GITHUB_PERSONAL_ACCESS_TOKEN"
+    }
+  }
+}
+
+{
+  "ref": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "ref-tools-mcp@latest"
+    ],
+    "env": {
+      "REF_API_KEY": "op://MCP Secrets/REF MCP/REF_API_KEY"
+    }
+  }
+}
+
+{
+  "exasearch": {
+    "command": "node",
+    "args": [
+      "/Users/colinaulds/.npm-global/lib/node_modules/exa-mcp-server/.smithery/index.cjs"
+    ],
+    "env": {
+      "EXA_API_KEY": "op://MCP Secrets/EXASEARCH MCP/EXA_API_KEY"
+    }
+  }
+}
+
+{
+  "supabase": {
+    "command": "npx",
+    "args": [
+      "-y",
+      "@supabase/mcp-server-supabase@latest"
+    ],
+    "env": {
+      "SUPABASE_ACCESS_TOKEN": "op://MCP Secrets/SUPABASE MCP 10NETZERO/SUPABASE_ACCESS_TOKEN"
+    }
+  }
+}

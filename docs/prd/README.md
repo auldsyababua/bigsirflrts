@@ -1,0 +1,66 @@
+# FLRTS Product Requirements Document (PRD)
+
+## Document Structure
+
+This PRD is organized into modular sections for better maintainability and review:
+
+### 📋 [PRD Overview](./prd-overview.md)
+- Goals and Background Context
+- Functional Requirements (FR1-FR15)
+- Non-Functional Requirements (NFR1-NFR10)
+- Change Log
+
+### 🎨 [UI & Technical Design](./prd-ui-technical.md)
+- User Interface Design Goals
+- Core Screens and Interaction Paradigms
+- Technical Architecture Assumptions
+- Repository and Service Structure
+
+### 📚 [Epics and User Stories](./prd-epics.md)
+- Epic List (4 major deliverables)
+- Detailed User Stories with Acceptance Criteria
+- Story Sequencing and Dependencies
+- AI Agent-Sized Work Units
+
+### ✅ [Completion and Next Steps](./prd-completion.md)
+- PRD Checklist Results
+- Risk Assessment
+- Next Steps for UX and Architecture
+- Success Metrics and Timeline
+
+## Quick Summary
+
+**Product**: FLRTS (Fast Low-friction Repeatable Task System)  
+**Purpose**: Natural language task management layer for OpenProject  
+**Key Innovation**: Conversational task creation with automatic timezone handling  
+**Target Users**: Distributed bitcoin mining operations team  
+**Timeline**: 12-week MVP across 4 epics  
+**Tech Stack**: TypeScript, OpenAI GPT-4o, OpenProject API v3  
+
+## Key Decision: OpenProject Integration
+
+This PRD reflects the strategic decision to build on **OpenProject** rather than tududi, providing:
+- Enterprise-grade work package management
+- Custom fields for mining-specific metadata  
+- Team collaboration features
+- Mature REST API v3
+- Self-hosted data sovereignty
+
+## Reading Order for Stakeholders
+
+1. **Executives**: Start with [PRD Overview](./prd-overview.md) Goals section
+2. **Technical Team**: Review [UI & Technical Design](./prd-ui-technical.md) Technical Assumptions
+3. **Project Managers**: Focus on [Epics and User Stories](./prd-epics.md)
+4. **QA Team**: Reference acceptance criteria in [Epics and User Stories](./prd-epics.md)
+5. **UX Designers**: Begin with [UI & Technical Design](./prd-ui-technical.md) UI Goals
+
+## Version Control
+
+| Version | Date | Changes | Author |
+|---------|------|---------|--------|
+| 1.0 | 2025-01-05 | Initial PRD creation | Product Owner |
+| 1.1 | 2025-01-05 | Updated to OpenProject from tududi | Product Owner |
+
+## Contact
+
+For questions or clarifications about this PRD, please reference the [Next Steps](./prd-completion.md) section for stakeholder actions.

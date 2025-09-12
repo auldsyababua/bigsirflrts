@@ -1,0 +1,15 @@
+
+📝 Manual Steps to Create OpenProject API Token:
+
+1. Open browser: http://localhost:8080
+2. Login with: admin / admin
+3. Go to: My Account (top right menu)
+4. Click: Access tokens (left sidebar)
+5. Click: + Create new token
+6. Give it a name: 'FLRTS API Token'
+7. Copy the generated token
+
+Once you have the token, run:
+echo 'YOUR_TOKEN_HERE' > openproject-token.txt
+
+Then I can continue with the API integration.
