@@ -1,0 +1,33 @@
+# Wrangler Configuration for ops.10nz.tools
+# This configuration is for managing the Cloudflare settings for the OpenProject deployment
+
+name = "ops-10nz-tools"
+compatibility_date = "2024-01-01"
+
+# Account and Zone IDs will be retrieved from environment or CLI
+# account_id is required for most operations
+# zone_id is required for DNS and domain operations
+
+[env.production]
+name = "ops-10nz-tools-prod"
+
+# Routes for the OpenProject application
+[[env.production.routes]]
+pattern = "ops.10nz.tools/*"
+zone_name = "10nz.tools"
+
+# Define environment variables that Workers can access
+[env.production.vars]
+OPENPROJECT_URL = "https://ops.10nz.tools"
+ENVIRONMENT = "production"
+
+# Note: Redirect rules should be configured in Cloudflare Dashboard
+# or via Page Rules API, not in wrangler.toml
+
+# Configuration for development/testing
+[env.development]
+name = "ops-10nz-tools-dev"
+
+[env.development.vars]
+OPENPROJECT_URL = "http://localhost:8080"
+ENVIRONMENT = "development"

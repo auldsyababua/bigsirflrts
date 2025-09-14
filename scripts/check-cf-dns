@@ -1,0 +1,24 @@
+#!/bin/bash
+# Check Cloudflare DNS and redirect settings for ops.10nz.tools
+
+PROJECT_DIR="/Users/colinaulds/Desktop/projects/bigsirflrts"
+source "$PROJECT_DIR/.env" 2>/dev/null
+
+echo "Checking Cloudflare DNS and settings for ops.10nz.tools..."
+
+# Check DNS records
+curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records?name=ops.10nz.tools" \
+    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+    -H "Content-Type: application/json" | jq '.result[] | {type, name, content, proxied}'
+
+# Check page rules
+echo -e "\nChecking page rules..."
+curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/pagerules" \
+    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+    -H "Content-Type: application/json" | jq '.result[] | select(.targets[].constraint.value | contains("ops.10nz.tools"))'
+
+# Check SSL settings
+echo -e "\nChecking SSL settings..."
+curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/settings/ssl" \
+    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+    -H "Content-Type: application/json" | jq '.result.value'

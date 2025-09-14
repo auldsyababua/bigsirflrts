@@ -1,0 +1,17 @@
+#!/bin/bash
+# Wrapper script for Wrangler with automatic authentication
+
+PROJECT_DIR="/Users/colinaulds/Desktop/projects/bigsirflrts"
+source "$PROJECT_DIR/.env" 2>/dev/null
+
+if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+    echo "Error: Cloudflare API token not found. Run wrangler-setup.sh first"
+    exit 1
+fi
+
+export CLOUDFLARE_API_TOKEN
+export CLOUDFLARE_ACCOUNT_ID
+export CLOUDFLARE_ZONE_ID
+
+cd "$PROJECT_DIR"
+wrangler "$@"
