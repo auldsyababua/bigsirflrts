@@ -43,7 +43,9 @@ docs/
 ## Document Types
 
 ### Epics (`/docs/prd/epic-*.md`)
+
 High-level business features that span multiple sprints. Each epic contains:
+
 - Business value statement
 - Success criteria
 - Technical overview
@@ -52,7 +54,9 @@ High-level business features that span multiple sprints. Each epic contains:
 - Timeline estimates
 
 ### User Stories (`/docs/stories/*.md`)
+
 Sprint-ready development tasks following BMAD template:
+
 - User story format (As a... I want... So that...)
 - Detailed acceptance criteria
 - Tasks and subtasks
@@ -61,11 +65,13 @@ Sprint-ready development tasks following BMAD template:
 - Change tracking
 
 ### Sprint Planning (`/docs/sprint-planning.md`)
+
 Current sprint goals, committed stories, and roadmap for upcoming sprints.
 
 ## Current Project Status
 
 ### Active Sprint: Sprint 1 - Critical Foundation Fixes
+
 - **Duration**: 2 weeks
 - **Stories**: 5 critical fixes
 - **Focus**: Authentication, error handling, webhooks
@@ -104,18 +110,21 @@ Current sprint goals, committed stories, and roadmap for upcoming sprints.
 ## Working with BMAD Agents
 
 ### Scrum Master (Bob)
+
 - Creates and manages epics and stories
 - Maintains sprint planning
 - Ensures stories follow BMAD template
 - Command: `/BMad:agents:sm`
 
 ### Developer Agent
+
 - Implements user stories
 - Updates story status and dev notes
 - Follows coding standards
 - Command: `/BMad:agents:dev`
 
 ### QA Agent
+
 - Reviews completed stories
 - Runs test suites
 - Updates QA results section

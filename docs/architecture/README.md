@@ -5,6 +5,7 @@
 This architecture documentation provides comprehensive technical guidance for building and maintaining the FLRTS system integrated with OpenProject.
 
 ### 📐 [Architecture Overview](./architecture-overview.md)
+
 - Executive summary and principles
 - High-level system architecture diagram
 - Service descriptions and responsibilities
@@ -13,6 +14,7 @@ This architecture documentation provides comprehensive technical guidance for bu
 - Monitoring and observability strategy
 
 ### 🛠️ [Implementation Guide](./implementation-guide.md)
+
 - Detailed repository structure
 - Service implementation patterns
 - Code examples for core functionality
@@ -23,6 +25,7 @@ This architecture documentation provides comprehensive technical guidance for bu
 - Performance optimizations
 
 ### 💻 [Technology Stack](./tech-stack.md)
+
 - Core technology choices and rationale
 - Framework and library selections
 - Version management strategy
@@ -32,6 +35,7 @@ This architecture documentation provides comprehensive technical guidance for bu
 - Future technology roadmap
 
 ### 📁 [Source Tree Documentation](./source-tree.md)
+
 - Complete directory structure
 - Package organization
 - File naming conventions
@@ -40,6 +44,7 @@ This architecture documentation provides comprehensive technical guidance for bu
 - Development workflow files
 
 ### 📝 [Coding Standards](./coding-standards.md)
+
 - TypeScript best practices
 - API design patterns
 - Testing standards
@@ -108,21 +113,25 @@ npm run deploy:prod
 ### For Different Roles
 
 **Backend Developers**
+
 1. Start with [Implementation Guide](./implementation-guide.md) for service patterns
 2. Review [Coding Standards](./coding-standards.md) for best practices
 3. Reference [Source Tree](./source-tree.md) for file organization
 
 **Frontend Developers**
+
 1. Review [Source Tree](./source-tree.md) Web UI section
 2. Study [Coding Standards](./coding-standards.md) React/Next.js section
 3. Check [Tech Stack](./tech-stack.md) for UI libraries
 
 **DevOps Engineers**
+
 1. Focus on [Architecture Overview](./architecture-overview.md) Deployment section
 2. Review [Implementation Guide](./implementation-guide.md) CI/CD pipeline
 3. Study monitoring setup in [Architecture Overview](./architecture-overview.md)
 
 **Architects & Tech Leads**
+
 1. Start with [Architecture Overview](./architecture-overview.md)
 2. Review [Tech Stack](./tech-stack.md) for technology decisions
 3. Evaluate future roadmap in [Tech Stack](./tech-stack.md)
@@ -130,12 +139,14 @@ npm run deploy:prod
 ## Integration Points
 
 ### OpenProject API
+
 - REST API v3 for work package management
 - Custom fields for mining-specific metadata
 - OAuth 2.0 for authentication
 - Webhook support for real-time updates
 
 ### External Services
+
 - **OpenAI GPT-4o**: Natural language parsing
 - **Google Cloud Speech**: Voice recognition
 - **Redis**: Caching and session management
@@ -162,12 +173,14 @@ npm run deploy:prod
 ## Maintenance and Updates
 
 ### Version Strategy
+
 - Semantic versioning for all packages
 - API versioning via URL path (/v1, /v2)
 - Database migrations with version control
 - Blue-green deployments for zero downtime
 
 ### Monitoring
+
 - Prometheus for metrics collection
 - Grafana for visualization
 - OpenTelemetry for distributed tracing
@@ -176,6 +189,7 @@ npm run deploy:prod
 ## Contact and Support
 
 For architecture questions or decisions requiring review:
+
 - Create an issue in the GitHub repository
 - Tag with `architecture` label
 - Include context and proposed changes

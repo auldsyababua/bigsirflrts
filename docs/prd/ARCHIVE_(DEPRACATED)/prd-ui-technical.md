@@ -54,6 +54,7 @@ All FLRTS components (API service, web UI, Telegram bot, CLI) maintained in sing
 ### Service Architecture
 
 **Docker Compose Multi-Service Architecture** - Services deployed on Digital Ocean VM:
+
 - **NLP Service**: Handles OpenAI integration and parsing logic (Node.js/TypeScript)
 - **API Service**: Manages OpenProject API and Supabase communication (Node.js/TypeScript)  
 - **OpenProject Community Edition**: Full project management platform (Docker container)
@@ -65,6 +66,7 @@ All FLRTS components (API service, web UI, Telegram bot, CLI) maintained in sing
 ### Testing Requirements
 
 **Full Testing Pyramid**:
+
 - **Unit Tests**: Core parsing logic, timezone conversions, API transformations (Jest, 80% coverage)
 - **Integration Tests**: OpenProject API interactions, end-to-end parsing flows (Supertest)
 - **E2E Tests**: Critical user journeys in each interface (Playwright for web, custom for Telegram)
@@ -75,7 +77,7 @@ All FLRTS components (API service, web UI, Telegram bot, CLI) maintained in sing
 - **OpenAI Integration**: Single GPT-4o API call for all parsing using comprehensive prompt engineering
 - **Schema Validation**: Zod for TypeScript runtime validation across all service boundaries
 - **OpenProject API**: Target v3 REST API with pagination support for large result sets
-- **Database**: 
+- **Database**:
   - **OpenProject Database**: PostgreSQL 15 (dedicated container)
   - **Application Database**: Supabase PostgreSQL with Row Level Security
 - **Authentication**: OpenProject API tokens for service-to-service, OAuth for end users

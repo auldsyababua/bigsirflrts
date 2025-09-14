@@ -1,11 +1,13 @@
 # FLRTS-OpenProject API Contract Specification
 
 ## Overview
+
 This document defines the API contract between FLRTS NLP Service and OpenProject REST API v3, implementing Story 3.1 (OpenProject API Workflows). **CRITICAL**: FLRTS never writes directly to the database. All operations MUST go through the OpenProject REST API.
 
 ## Authentication
 
 ### OpenProject API Key Authentication
+
 ```http
 Authorization: Basic <base64(apikey:api_key_value)>
 Content-Type: application/json
@@ -18,12 +20,14 @@ Content-Type: application/json
 **Endpoint**: `POST /api/v3/work_packages`
 
 **FLRTS Request Flow**:
+
 1. Parse natural language with OpenAI
 2. Convert timezone to assignee's local time
 3. Map entities to OpenProject IDs
 4. Call OpenProject API
 
 **Request Body**:
+
 ```json
 {
   "subject": "Server logs review",
@@ -58,6 +62,7 @@ Content-Type: application/json
 ```
 
 **Response**: `201 Created`
+
 ```json
 {
   "id": 1234,
@@ -80,9 +85,11 @@ Content-Type: application/json
 ### 2. READ Work Packages
 
 #### List Work Packages with Filters
+
 **Endpoint**: `GET /api/v3/work_packages`
 
 **Query Parameters**:
+
 ```
 filters=[
   {"assignee":{"operator":"=","values":["taylor"]}},
@@ -95,6 +102,7 @@ filters=[
 ```
 
 **Response**: `200 OK`
+
 ```json
 {
   "_embedded": {
@@ -113,6 +121,7 @@ filters=[
 ```
 
 #### Get Single Work Package
+
 **Endpoint**: `GET /api/v3/work_packages/:id`
 
 **Response**: Complete work package resource with all properties and embedded resources.
@@ -122,6 +131,7 @@ filters=[
 **Endpoint**: `PATCH /api/v3/work_packages/:id`
 
 **Request Body** (partial update):
+
 ```json
 {
   "lockVersion": 1,
@@ -147,6 +157,7 @@ filters=[
 **Endpoint**: `PATCH /api/v3/work_packages/:id`
 
 **Request Body**:
+
 ```json
 {
   "lockVersion": 2,
@@ -161,26 +172,31 @@ filters=[
 ## Supporting Endpoints
 
 ### Get Available Projects
+
 ```http
 GET /api/v3/projects
 ```
 
 ### Get Available Types
+
 ```http
 GET /api/v3/types
 ```
 
 ### Get Available Statuses
+
 ```http
 GET /api/v3/statuses
 ```
 
 ### Get Users
+
 ```http
 GET /api/v3/users
 ```
 
 ### Get Work Package Form (for validation)
+
 ```http
 POST /api/v3/projects/:id/work_packages/form
 ```
@@ -190,6 +206,7 @@ POST /api/v3/projects/:id/work_packages/form
 ### Common Error Responses
 
 **400 Bad Request** - Invalid request format
+
 ```json
 {
   "errorIdentifier": "urn:openproject-org:api:v3:errors:InvalidRequestBody",
@@ -198,6 +215,7 @@ POST /api/v3/projects/:id/work_packages/form
 ```
 
 **403 Forbidden** - Insufficient permissions
+
 ```json
 {
   "errorIdentifier": "urn:openproject-org:api:v3:errors:MissingPermission",
@@ -206,6 +224,7 @@ POST /api/v3/projects/:id/work_packages/form
 ```
 
 **422 Unprocessable Entity** - Validation errors
+
 ```json
 {
   "_embedded": {

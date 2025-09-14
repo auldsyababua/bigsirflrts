@@ -1,9 +1,11 @@
 # Telegram Bot UX Flows & Message Templates
 
 ## Overview
+
 This document defines the conversational flows and message templates for the FLRTS Telegram Bot interface. The design prioritizes clarity and simplicity for 5-10 internal users, focusing on mobile-first interaction patterns within Telegram's text-only constraints.
 
 ## Design Principles
+
 - **Mobile-First Format**: Short lines, clear sections, emoji landmarks for scanning
 - **Progressive Disclosure**: Start simple, add detail as needed  
 - **Error Prevention**: Show parsed understanding before action
@@ -16,6 +18,7 @@ This document defines the conversational flows and message templates for the FLR
 ## 1. ONBOARDING & COMMAND DISCOVERY
 
 ### /start Command
+
 ```
 🤖 Welcome to FLRTS Bot!
 
@@ -30,6 +33,7 @@ Commands: /help for all options
 ```
 
 ### /help Command
+
 ```
 📋 FLRTS Commands
 
@@ -68,6 +72,7 @@ LISTS:
 ### Create Task Flow
 
 #### /createtask or /newtask Command
+
 ```
 📝 Creating New Task
 
@@ -78,6 +83,7 @@ Example: "Taylor needs to review server logs by tomorrow 2pm"
 ```
 
 #### Task Creation Confirmation
+
 ```
 ✅ Ready to create:
 
@@ -100,6 +106,7 @@ Reply:
 ### Update Task Flow
 
 #### /updatetask Command
+
 ```
 📝 Update Task
 
@@ -114,6 +121,7 @@ Reply with number or task ID.
 ```
 
 #### Update Confirmation
+
 ```
 ✅ Ready to update:
 
@@ -137,6 +145,7 @@ Reply:
 ### Delete Task Flow
 
 #### /deletetask Command
+
 ```
 🗑 Delete Task
 
@@ -151,6 +160,7 @@ Reply with number or #ID.
 ```
 
 #### Delete Confirmation
+
 ```
 🗑 Confirm Delete
 
@@ -167,6 +177,7 @@ Reply "delete" to confirm or "cancel" to keep.
 ### View Tasks
 
 #### /viewtasks Response
+
 ```
 👁 Your Tasks
 
@@ -196,6 +207,7 @@ Reply with task # for details.
 ### Create List Flow
 
 #### /createlist or /newlist Command
+
 ```
 📋 Creating New List
 
@@ -205,6 +217,7 @@ Example: "Q1 Infrastructure Tasks for server migration project"
 ```
 
 #### List Creation Confirmation
+
 ```
 ✅ Ready to create:
 
@@ -225,6 +238,7 @@ Reply:
 ### Update List Flow
 
 #### /updatelist Command
+
 ```
 📋 Update List
 
@@ -239,6 +253,7 @@ Which list to update? Reply with number.
 ### View Lists
 
 #### /viewlists Response
+
 ```
 📊 Your Lists
 
@@ -261,6 +276,7 @@ Reply with list name to see tasks.
 ## 5. NATURAL LANGUAGE PARSING
 
 ### Multi-Entity Detection
+
 ```
 📊 I found multiple items:
 
@@ -278,6 +294,7 @@ Reply:
 ```
 
 ### Complex Query Handling
+
 ```
 📊 Processing Complex Request
 
@@ -307,6 +324,7 @@ Reply "confirm" to execute all changes.
 ## 6. CORRECTION LOOP UX
 
 ### First Correction Request
+
 ```
 🤔 Let me adjust that:
 
@@ -325,6 +343,7 @@ Reply "confirm" or make more changes.
 ```
 
 ### Multi-Field Correction
+
 ```
 User: "Change assignee to Colin and due date to tomorrow 5pm"
 
@@ -347,6 +366,7 @@ Reply "confirm" or continue adjusting.
 ```
 
 ### Progressive Refinement
+
 ```
 User: "Server migration task"
 
@@ -380,6 +400,7 @@ Reply "confirm" to create.
 ## 7. ERROR STATES & RECOVERY
 
 ### Parse Failure - Need More Info
+
 ```
 ❓ I need more details:
 
@@ -394,6 +415,7 @@ Example: "Colin needs to update the API docs by Friday"
 ```
 
 ### Parse Failure - Unknown Entity
+
 ```
 ⚠️ Can't find that item
 
@@ -406,6 +428,7 @@ Try:
 ```
 
 ### Parse Failure - Ambiguous Input
+
 ```
 ❓ I need clarification:
 
@@ -420,6 +443,7 @@ Please try again with more details.
 ```
 
 ### Network/API Error
+
 ```
 ❌ Connection Error
 
@@ -438,6 +462,7 @@ Options:
 ## 8. BATCH OPERATIONS
 
 ### Fast Entry Mode
+
 ```
 ⚡ Fast Entry Mode
 
@@ -449,6 +474,7 @@ I'll parse and confirm all at once.
 ```
 
 ### Bulk Task Creation
+
 ```
 ⚡ Batch Mode Detected
 
@@ -466,6 +492,7 @@ Fix #3 or reply:
 ```
 
 ### Bulk Updates
+
 ```
 📊 Bulk Update
 
@@ -486,6 +513,7 @@ Reply "confirm" to update all.
 ## 9. QUICK ACTION BUTTONS
 
 ### Contextual Actions
+
 Every response includes relevant quick action buttons:
 
 ```
@@ -505,6 +533,7 @@ List Updated: Bug Fixes
 ## 10. COMPLETION CONFIRMATIONS
 
 ### Task Created
+
 ```
 ✅ Task Created!
 
@@ -517,6 +546,7 @@ What's next?
 ```
 
 ### Task Updated
+
 ```
 ✅ Task #1234 Updated!
 
@@ -528,6 +558,7 @@ Taylor has been notified.
 ```
 
 ### Task Deleted
+
 ```
 ✅ Task #1234 Deleted
 
@@ -535,6 +566,7 @@ The task has been archived and removed from active lists.
 ```
 
 ### List Created
+
 ```
 ✅ List Created!
 

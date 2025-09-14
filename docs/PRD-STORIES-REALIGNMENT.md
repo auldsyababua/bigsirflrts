@@ -1,4 +1,5 @@
 # PRD & Stories Realignment Plan
+
 **Date:** December 13, 2024
 **Status:** IN PROGRESS
 **Context Loss Protection:** This document enables any PM to continue realignment work
@@ -27,6 +28,7 @@
    - FLRTS is worthless without OpenProject
 
 4. **MVP Data Flow (No Preprocessing)**
+
    ```
    Telegram Message → Edge Function (<500ms ack) → n8n Workflow
                                                     ↓
@@ -68,6 +70,7 @@
 ## 🎯 THE CORRECT STORY STRUCTURE (What PRD Should Say)
 
 ### Epic 1: Infrastructure Foundation (7 stories)
+
 1. **1.1: Deploy OpenProject via Docker on DigitalOcean** ✅ EXISTS
 2. **1.2: PostgreSQL 15.8 Validation** ✅ EXISTS
 3. **1.3: n8n Queue Mode Configuration** ✅ EXISTS
@@ -77,6 +80,7 @@
 7. **1.7: Monitoring and Observability** ✅ CREATED
 
 ### Epic 2: Telegram Interface (6 stories)
+
 1. **2.1: Telegram Task Creation Workflow** ✅ EXISTS
 2. **2.2: Telegram Reminder System** ✅ EXISTS
 3. **2.3: Telegram Inline Keyboards** ✅ EXISTS
@@ -85,6 +89,7 @@
 6. **2.6: Telegram User Context** ✅ CREATED
 
 ### Epic 3: Integration Layer (5 stories)
+
 1. **3.1: OpenProject API Workflows** ✅ CREATED
 2. **3.2: OpenProject Webhook Sync** ✅ EXISTS
 3. **3.3: Batch Sync Workflows** ✅ CREATED
@@ -92,6 +97,7 @@
 5. **3.5: Timezone Conversion Logic** ✅ CREATED
 
 ### Epic 4: Lists Management (5 stories)
+
 1. **4.1: Lists Interface** ✅ EXISTS
 2. **4.2: List Management Commands** ✅ EXISTS
 3. **4.3: List Templates System** ✅ CREATED
@@ -105,22 +111,27 @@
 ## 📋 REALIGNMENT TASKS
 
 ### Phase 1: Documentation Cleanup ✅ COMPLETED
+
 - [x] Remove all PostgreSQL 16+ references from stories
 - [x] Update architecture section to reflect single Supabase DB with schemas
 - [x] Add OpenAI integration explanation to PRD
 
 ### Phase 2: Story File Reorganization ✅ COMPLETED
+
 - [x] Create backup directory: `ARCHIVE_REALIGNMENT_2024-12-13/`
 - [x] Copy all current stories to backup
 - [x] Rename existing stories to match new structure
 
 ### Phase 3: PRD Update ⏳ IN PROGRESS
+
 - [x] Update PRD with the story structure shown above
 - [x] Remove old epic structure
 - [x] Add all missing stories to PRD
 
 ### Phase 4: Create Missing Stories ✅ ALL STORIES COMPLETED
+
 Priority stories completed (most critical first):
+
 1. [x] 3.1: OpenProject API Workflows (critical for task creation)
 2. [x] 1.6: Redis Queue Configuration (needed for scaling)
 3. [x] 2.5: Telegram Command Parser (improves UX)
@@ -130,6 +141,7 @@ Priority stories completed (most critical first):
 7. [x] 3.5: Timezone Conversion Logic (accurate scheduling)
 
 List management features completed (Jan 13, 2025):
+
 1. [x] 4.3: List Templates System
 2. [x] 4.4: List Sharing & Permissions
 3. [x] 4.5: List Notifications
@@ -205,6 +217,7 @@ All 10 missing stories were created with:
 - Research-based implementations using current APIs
 
 **List Management Stories (4.3-4.5) Features:**
+
 - **4.3 List Templates System**: Industry-specific templates, smart suggestions, template generation from lists
 - **4.4 List Sharing & Permissions**: Granular RBAC, delegation chains, shareable links, audit trails
 - **4.5 List Notifications**: Multi-channel delivery, quiet hours, smart batching, effectiveness tracking

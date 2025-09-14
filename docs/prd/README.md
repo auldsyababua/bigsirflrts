@@ -5,24 +5,28 @@
 This PRD is organized into modular sections for better maintainability and review:
 
 ### 📋 [PRD Overview](./prd-overview.md)
+
 - Goals and Background Context
 - Functional Requirements (FR1-FR15)
 - Non-Functional Requirements (NFR1-NFR10)
 - Change Log
 
 ### 🎨 [UI & Technical Design](./prd-ui-technical.md)
+
 - User Interface Design Goals
 - Core Screens and Interaction Paradigms
 - Technical Architecture Assumptions
 - Repository and Service Structure
 
 ### 📚 [Epics and User Stories](./prd-epics.md)
+
 - Epic List (4 major deliverables)
 - Detailed User Stories with Acceptance Criteria
 - Story Sequencing and Dependencies
 - AI Agent-Sized Work Units
 
 ### ✅ [Completion and Next Steps](./prd-completion.md)
+
 - PRD Checklist Results
 - Risk Assessment
 - Next Steps for UX and Architecture
@@ -40,6 +44,7 @@ This PRD is organized into modular sections for better maintainability and revie
 ## Key Decision: OpenProject Integration
 
 This PRD reflects the strategic decision to build on **OpenProject** rather than tududi, providing:
+
 - Enterprise-grade work package management
 - Custom fields for mining-specific metadata  
 - Team collaboration features

@@ -3,6 +3,7 @@
 This is a pragmatic test suite for Story 1.1 (Deploy OpenProject to Cloudflare) targeting 5–10 C‑suite users. It focuses on P0 paths only and runs in <5 minutes.
 
 What’s covered (P0):
+
 - Wrangler deploy success (mocked)
 - Homepage loads < 3 seconds (E2E)
 - API key format validation (unit)
@@ -13,6 +14,7 @@ What’s covered (P0):
 - Health check returns 200 (unit)
 
 Tools:
+
 - Vitest for unit/integration
 - Playwright for E2E (Chromium only)
 - Simple bash smoke test
@@ -32,26 +34,31 @@ npx playwright install chromium
 ## Run tests
 
 - Full MVP suite (P0):
+
 ```
 npm run test:mvp
 ```
 
 - Unit only:
+
 ```
 npm run test:unit
 ```
 
 - Integration only:
+
 ```
 npm run test:integration
 ```
 
 - E2E only (Chromium, @P0-tagged):
+
 ```
 npm run test:e2e
 ```
 
 - Smoke test:
+
 ```
 npm run test:smoke
 ```

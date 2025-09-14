@@ -13,6 +13,7 @@ Natural Language Processing service that parses task requests into structured Op
 ## Setup
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
@@ -22,6 +23,7 @@ Natural Language Processing service that parses task requests into structured Op
    - OpenAI key is pulled from 1Password automatically
 
 3. **Start the service:**
+
    ```bash
    # Development mode with hot reload
    npm run dev
@@ -34,9 +36,11 @@ Natural Language Processing service that parses task requests into structured Op
 ## API Endpoints
 
 ### POST /parse
+
 Parse natural language input into structured task.
 
 **Request:**
+
 ```json
 {
   "input": "Task for @Taylor to inspect pump 3 by tomorrow 3pm",
@@ -49,6 +53,7 @@ Parse natural language input into structured task.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -70,25 +75,31 @@ Parse natural language input into structured task.
 ```
 
 ### GET /examples
+
 Get example inputs for testing.
 
 ### GET /history
+
 View recent parsing logs (last 20).
 
 ### GET /analytics
+
 Get parsing success statistics.
 
 ### GET /health
+
 Health check endpoint.
 
 ## Testing
 
 Run the test suite with PRD examples:
+
 ```bash
 npm test
 ```
 
 This will:
+
 1. Test all PRD example inputs
 2. Show parsed outputs with reasoning
 3. Display success statistics
@@ -96,6 +107,7 @@ This will:
 ## Schema
 
 The service uses a fixed schema with:
+
 - **Team Members:** Taylor, Colin, Bryan, Austin
 - **Sites:** Site A, Site B, Site C  
 - **Partners:** Partner 1, Partner 2
@@ -105,6 +117,7 @@ The service uses a fixed schema with:
 ## Reasoning Field
 
 Every parse includes a `reasoning` field explaining:
+
 1. How assignees were identified
 2. Date/time parsing logic and timezone conversions
 3. Priority level decisions
@@ -115,6 +128,7 @@ This helps debug parsing errors and improve prompts over time.
 ## Supabase Logging
 
 All parses are logged to `parsing_logs` table with:
+
 - Input text
 - Parsed JSON output
 - Reasoning explanation

@@ -11,7 +11,7 @@ export class TaskParser {
   }
 
   async parseInput(
-    input: string, 
+    input: string,
     options?: {
       timezone?: string;
       currentTime?: string;
@@ -22,17 +22,17 @@ export class TaskParser {
 
     try {
       const completion = await this.openai.chat.completions.parse({
-        model: 'gpt-4o-2024-08-06',  // Use specific version that supports structured outputs
+        model: 'gpt-4o-2024-08-06', // Use specific version that supports structured outputs
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: input }
+          { role: 'user', content: input },
         ],
         response_format: zodResponseFormat(ParsedTaskSchema, 'parsed_task'),
         temperature: 0.1, // Low temperature for consistent parsing
       });
 
       const parsed = completion.choices[0].message.parsed;
-      
+
       if (!parsed) {
         throw new Error('Failed to parse input - no structured output received');
       }
@@ -40,12 +40,12 @@ export class TaskParser {
       return parsed;
     } catch (error) {
       console.error('OpenAI parsing error:', error);
-      
+
       // If it's a refusal or parsing error, try to extract useful info
       if (error instanceof OpenAI.APIError) {
         throw new Error(`OpenAI API Error: ${error.message}`);
       }
-      
+
       throw error;
     }
   }
@@ -76,7 +76,7 @@ export class TaskParser {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }

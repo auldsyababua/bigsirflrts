@@ -56,11 +56,13 @@ graph TB
 ## Schema Details
 
 ### openproject Schema
+
 **Owner**: `openproject_user` role  
 **Purpose**: OpenProject application tables managed by Rails migrations  
 **Access**: Direct database connection via DATABASE_URL
 
 Key tables:
+
 - **work_packages**: Tasks, issues, features (core work items)
 - **projects**: Project hierarchy and organization
 - **users**: User accounts and authentication
@@ -71,11 +73,13 @@ Key tables:
 - **relations**: Work package relationships
 
 ### business Schema
+
 **Owner**: `business_user` role  
 **Purpose**: 10NetZero operational data  
 **Access**: Supabase API with Row Level Security
 
 Key tables:
+
 - **clients**: Customer information
 - **projects**: Business projects (distinct from OpenProject projects)
 - **sites**: Physical locations/mining sites
@@ -86,11 +90,13 @@ Key tables:
 - **energy_production**: Energy generation metrics
 
 ### flrts Schema
+
 **Owner**: `flrts_user` role  
 **Purpose**: FLRTS metadata and user preferences  
 **Access**: Supabase API with Row Level Security
 
 Key tables:
+
 - **nlp_conversations**: NLP processing history
 - **user_preferences**: User settings and preferences
 - **telegram_mappings**: Telegram user to system user mapping
@@ -99,16 +105,19 @@ Key tables:
 - **webhook_logs**: Webhook processing history
 
 ### public Schema
+
 **Purpose**: Shared system tables  
 **Access**: Read-only for all roles
 
 Key tables:
+
 - **migrations**: Database migration history
 - **schema_version**: Current schema version
 
 ## Connection Configuration
 
 ### OpenProject Connection
+
 ```sql
 -- Connection string (MUST use Session Mode)
 DATABASE_URL=postgres://openproject_user:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres?sslmode=require
@@ -118,6 +127,7 @@ SET search_path TO openproject, public;
 ```
 
 ### FLRTS Service Connection
+
 ```javascript
 // Supabase client for FLRTS metadata
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -132,6 +142,7 @@ const openprojectApi = new OpenProjectAPI({
 ```
 
 ### Business Applications
+
 ```javascript
 // Supabase client for business data
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -142,6 +153,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 ## Security Model
 
 ### Role-Based Access Control
+
 ```sql
 -- OpenProject role (restricted to openproject schema)
 GRANT ALL ON SCHEMA openproject TO openproject_user;
@@ -160,6 +172,7 @@ REVOKE ALL ON SCHEMA openproject, business FROM flrts_user;
 ```
 
 ### Row Level Security (RLS)
+
 ```sql
 -- Enable RLS on business tables
 ALTER TABLE business.clients ENABLE ROW LEVEL SECURITY;
@@ -176,6 +189,7 @@ ALTER TABLE flrts.user_preferences ENABLE ROW LEVEL SECURITY;
 ## Data Flow
 
 ### Task Creation via FLRTS
+
 1. User sends natural language input to FLRTS
 2. FLRTS processes with OpenAI → generates JSON
 3. FLRTS calls OpenProject API to create work_package
@@ -183,12 +197,14 @@ ALTER TABLE flrts.user_preferences ENABLE ROW LEVEL SECURITY;
 5. FLRTS stores metadata in `flrts.task_metadata`
 
 ### Direct OpenProject Usage
+
 1. User accesses OpenProject UI
 2. Creates/updates work packages directly
 3. Data written to `openproject` schema
 4. Webhooks notify external systems (optional)
 
 ### Business Operations
+
 1. Business apps use Supabase API
 2. Data operations on `business` schema
 3. Complete isolation from OpenProject data
@@ -197,6 +213,7 @@ ALTER TABLE flrts.user_preferences ENABLE ROW LEVEL SECURITY;
 ## Migration Path
 
 ### From Separate Databases
+
 ```sql
 -- 1. Create schemas
 CREATE SCHEMA IF NOT EXISTS openproject;
@@ -235,6 +252,7 @@ pg_restore --schema=openproject --role=openproject_user \
 ## Monitoring Queries
 
 ### Check schema sizes
+
 ```sql
 SELECT 
   schema_name,
@@ -245,6 +263,7 @@ GROUP BY schema_name;
 ```
 
 ### Active connections by schema
+
 ```sql
 SELECT 
   schemaname,
@@ -256,6 +275,7 @@ GROUP BY schemaname;
 ```
 
 ### Table row counts
+
 ```sql
 SELECT 
   schemaname,
@@ -269,11 +289,13 @@ ORDER BY schemaname, tablename;
 ## Backup Strategy
 
 ### Automated Backups
+
 - Supabase provides automated daily backups
 - 7-day retention for Pro tier
 - Point-in-time recovery available
 
 ### Manual Backup Commands
+
 ```bash
 # Full database backup
 pg_dump -Fc -h aws-0-region.pooler.supabase.com -p 5432 \

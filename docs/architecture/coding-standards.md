@@ -386,6 +386,7 @@ const openaiKey = 'sk-1234567890abcdef';
 ```
 
 ### Types
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation

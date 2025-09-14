@@ -79,21 +79,21 @@ Output: {
 Remember: Always provide detailed reasoning for every parsing decision!`;
 
 export const getTimeZoneInfo = () => ({
-  'PST': -8,  // Pacific Standard Time
-  'CST': -6,  // Central Standard Time  
-  'EST': -5,  // Eastern Standard Time
-  'UTC': 0
+  PST: -8, // Pacific Standard Time
+  CST: -6, // Central Standard Time
+  EST: -5, // Eastern Standard Time
+  UTC: 0,
 });
 
 export const parseExamples = [
-  "Task for @Taylor to inspect pump 3 by tomorrow 3pm",
-  "Emergency: Conveyor belt down in sector 7, assign to @Bryan",
-  "Schedule preventive maintenance for loader next Tuesday morning",
-  "What tasks does @Colin have this week?",
-  "Create high priority task for @Austin to move equipment from Site B to Site C by Friday",
-  "Partner 1 delivering parts tomorrow at 10am, need someone to receive",
-  "Update the pump inspection task to high priority",
-  "List all maintenance tasks for this month",
-  "Delete the old equipment review task",
-  "Urgent: Site C excavator needs immediate repair"
+  'Task for @Taylor to inspect pump 3 by tomorrow 3pm',
+  'Emergency: Conveyor belt down in sector 7, assign to @Bryan',
+  'Schedule preventive maintenance for loader next Tuesday morning',
+  'What tasks does @Colin have this week?',
+  'Create high priority task for @Austin to move equipment from Site B to Site C by Friday',
+  'Partner 1 delivering parts tomorrow at 10am, need someone to receive',
+  'Update the pump inspection task to high priority',
+  'List all maintenance tasks for this month',
+  'Delete the old equipment review task',
+  'Urgent: Site C excavator needs immediate repair',
 ];

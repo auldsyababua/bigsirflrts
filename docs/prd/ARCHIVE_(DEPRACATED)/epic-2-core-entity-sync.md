@@ -13,6 +13,7 @@ This epic delivers the core business value of the integration by making tasks vi
 ## Success Criteria
 
 ### Primary Success Metrics
+
 - [ ] All FLRTS tasks automatically appear as OpenProject work packages with correct status, priority, and assignments
 - [ ] Users can update task status and assignments in OpenProject, with changes reflected in FLRTS
 - [ ] Site-based project organization enables clear project visibility in OpenProject
@@ -20,6 +21,7 @@ This epic delivers the core business value of the integration by making tasks vi
 - [ ] Project managers gain access to Gantt charts and resource planning views
 
 ### Acceptance Criteria
+
 - 100% of FLRTS tasks sync to OpenProject within 30 seconds
 - Status updates in OpenProject propagate to FLRTS bidirectionally
 - User assignments work correctly in both directions
@@ -30,11 +32,13 @@ This epic delivers the core business value of the integration by making tasks vi
 ## Dependencies
 
 ### Prerequisites
+
 - Epic 1 (Foundation & Authentication) must be completed
 - Webhook infrastructure operational
 - Authentication and error handling working
 
 ### External Dependencies
+
 - FLRTS user base defined and stable
 - OpenProject user accounts created and managed
 - Site taxonomy decisions made (projects vs categories)
@@ -53,12 +57,14 @@ This epic delivers the core business value of the integration by making tasks vi
 | task priority | work_package priority | Fixed mapping (High → 1, Medium → 2, Low → 3) |
 
 ### Sync Patterns
+
 1. **Create Operations**: FLRTS → OpenProject (one-way for new entities)
 2. **Update Operations**: Bidirectional with FLRTS precedence
 3. **Delete Operations**: Soft delete in OpenProject, hard delete respects FLRTS
 4. **Assignment Operations**: Bidirectional with user validation
 
 ### Data Consistency Model
+
 - **Single Source of Truth**: FLRTS Supabase database
 - **Conflict Resolution**: FLRTS data wins in all conflicts
 - **Eventual Consistency**: Brief sync delays acceptable
@@ -67,6 +73,7 @@ This epic delivers the core business value of the integration by making tasks vi
 ## User Stories
 
 ### Task Synchronization Stories
+
 1. **Task Creation Sync**: New FLRTS tasks automatically create OpenProject work packages
 2. **Task Update Sync**: Changes to task details propagate bidirectionally
 3. **Task Status Sync**: Status changes in either system sync to the other
@@ -74,6 +81,7 @@ This epic delivers the core business value of the integration by making tasks vi
 5. **Task Deletion Sync**: Handle task deletion appropriately in both systems
 
 ### User Management Stories
+
 6. **User Mapping Creation**: Create and maintain flrts_users ↔ OpenProject users mapping
 7. **User Assignment Sync**: Task assignments sync bidirectionally
 8. **User Validation**: Ensure assigned users exist in both systems
@@ -81,18 +89,21 @@ This epic delivers the core business value of the integration by making tasks vi
 10. **User Permission Sync**: Respect user roles and permissions across systems
 
 ### Site Organization Stories
+
 11. **Site-Project Mapping**: Implement chosen approach (sites as projects OR categories)
 12. **Site-Based Task Grouping**: Group tasks by site in OpenProject views
 13. **Site Hierarchy Sync**: Maintain site relationships and hierarchies
 14. **Site Access Control**: Respect site-based access permissions
 
 ### Advanced Synchronization Stories
+
 15. **Bulk Sync Operations**: Handle large batches of changes efficiently
 16. **Historical Data Migration**: Sync existing tasks and relationships
 17. **Custom Field Mapping**: Map FLRTS custom fields to OpenProject custom fields
 18. **Attachment Handling**: Plan for future file/attachment synchronization
 
 ### Data Quality & Validation Stories
+
 19. **Data Validation**: Ensure data meets both systems' validation rules
 20. **Orphaned Record Handling**: Clean up orphaned records from failed syncs
 21. **Duplicate Prevention**: Prevent duplicate entries in either system
@@ -101,6 +112,7 @@ This epic delivers the core business value of the integration by making tasks vi
 ## Technical Implementation Details
 
 ### Priority Mapping Fix
+
 ```typescript
 // Current incorrect mapping
 function mapPriority(flrtsPriority: string | null): number {
@@ -125,6 +137,7 @@ function mapPriority(flrtsPriority: string | null): number {
 ```
 
 ### User Mapping Table Schema
+
 ```sql
 CREATE TABLE user_mappings (
   id SERIAL PRIMARY KEY,
@@ -139,6 +152,7 @@ CREATE TABLE user_mappings (
 ```
 
 ### Site Organization Decision Matrix
+
 | Approach | Pros | Cons | Best For |
 |----------|------|------|----------|
 | Sites as Projects | Clear hierarchy, better reporting | More complex, potential project bloat | < 50 sites |
@@ -147,11 +161,13 @@ CREATE TABLE user_mappings (
 ## Technical Debt & Known Issues
 
 ### Issues from Epic 1 to Address
+
 1. **Priority Mapping Bug**: Fix the priority mapping as detailed above
 2. **User Mapping Missing**: Implement user_mappings table and logic
 3. **Authentication Issues**: Ensure service can authenticate properly
 
 ### New Technical Debt Items
+
 - Implement proper database indexing for sync performance
 - Add comprehensive logging for sync operations
 - Create automated testing for all sync scenarios
@@ -160,15 +176,18 @@ CREATE TABLE user_mappings (
 ## Risk Assessment
 
 ### High Risks
+
 - **User Mapping Complexity**: Users may exist in one system but not the other
 - **Data Volume**: Large task volumes may impact sync performance
 - **Site Taxonomy Decision**: Wrong choice impacts entire integration
 
 ### Medium Risks
+
 - **Bidirectional Sync Conflicts**: Race conditions during simultaneous updates
 - **OpenProject Schema Constraints**: Work package validation may reject FLRTS data
 
 ### Low Risks
+
 - **Priority Mapping**: Clear fix identified and straightforward to implement
 - **Status Mapping**: Both systems have compatible status concepts
 
@@ -177,6 +196,7 @@ CREATE TABLE user_mappings (
 **Duration**: 4-5 sprints (8-10 weeks)
 
 ### Sprint Breakdown
+
 - **Sprint 1**: Task sync (FLRTS → OpenProject), priority mapping fix
 - **Sprint 2**: User mapping table, user assignment sync
 - **Sprint 3**: Bidirectional task updates, status sync
@@ -197,12 +217,14 @@ CREATE TABLE user_mappings (
 ## Success Metrics
 
 ### Quantitative Metrics
+
 - Sync latency: < 30 seconds for 95% of operations
 - Sync accuracy: > 99.9% of operations complete successfully
 - System uptime: > 99.5% availability
 - Data consistency: Zero data loss events
 
 ### Qualitative Metrics
+
 - Field teams report no workflow disruption
 - Project managers successfully use OpenProject views
 - Support requests related to sync issues < 5% of total tickets

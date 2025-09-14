@@ -75,9 +75,11 @@ graph TB
 ## Service Architecture
 
 ### 1. NLP Service (Node.js/TypeScript)
+
 **Container**: `flrts/nlp-service:latest`
 **Resource Allocation**: 1GB RAM, 0.5 vCPU
 **Key Components**:
+
 - OpenAI GPT-4o structured output client
 - Single-prompt CRUD operation parsing
 - Team member entity recognition and timezone conversion
@@ -85,14 +87,17 @@ graph TB
 - Request rate limiting (5 concurrent parse requests per user)
 
 **API Endpoints**:
+
 - `POST /parse` - Parse natural language to OpenProject work package structure
 - `POST /validate` - Validate parsed structure against OpenProject API schema
 - `GET /health` - Container health check
 
 ### 2. API Service (Node.js/TypeScript)
+
 **Container**: `flrts/api-service:latest`
 **Resource Allocation**: 512MB RAM, 0.25 vCPU
 **Key Components**:
+
 - OpenProject API v3 client with authentication
 - Supabase client with Row Level Security integration
 - User preferences and team member management
@@ -100,6 +105,7 @@ graph TB
 - Error handling with fallback mechanisms
 
 **API Endpoints**:
+
 - `POST /workpackages` - Create OpenProject work package
 - `GET /workpackages` - List work packages with filters
 - `GET /projects` - Fetch available OpenProject projects
@@ -108,9 +114,11 @@ graph TB
 - `PUT /preferences/:userId` - Update user preferences
 
 ### 3. Nginx Gateway
+
 **Container**: `nginx:alpine`
 **Resource Allocation**: 256MB RAM, 0.125 vCPU
 **Key Components**:
+
 - Reverse proxy for all internal services
 - SSL termination (managed by Cloudflare)
 - Request routing and load balancing
@@ -118,9 +126,11 @@ graph TB
 - Health check aggregation endpoint
 
 ### 4. OpenProject Community Edition
+
 **Container**: `openproject/community:14`
 **Resource Allocation**: 4GB RAM, 2 vCPU
 **Key Components**:
+
 - Work package and project management
 - User authentication and RBAC
 - REST API v3 for external integrations
@@ -128,6 +138,7 @@ graph TB
 - PostgreSQL 15 database
 
 **Performance Configuration**:
+
 ```yaml
 OPENPROJECT_WEB_WORKERS: "2"         # 2 workers for 4 vCPU VM
 OPENPROJECT_WEB_MIN_THREADS: "4"     # 4 threads per worker
@@ -136,9 +147,11 @@ OPENPROJECT_WEB_TIMEOUT: "30"        # 30 second timeout
 ```
 
 ### 5. Redis Cache
+
 **Container**: `redis:7-alpine`
 **Resource Allocation**: 256MB RAM, 0.125 vCPU
 **Key Components**:
+
 - OpenAI response caching (TTL: 5 minutes)
 - Session storage for web UI
 - LRU eviction policy for memory management
@@ -216,6 +229,7 @@ const MiningContextSchema = z.object({
 ### Digital Ocean VM Configuration
 
 **Production Specification** (Based on Research):
+
 - **Droplet**: s-4vcpu-8gb (NYC3 region for optimal Supabase latency)
 - **CPU**: 4 vCPU cores
 - **Memory**: 8GB RAM
@@ -224,6 +238,7 @@ const MiningContextSchema = z.object({
 - **Cost**: $48/month
 
 **Performance Justification**:
+
 - NYC3 to Supabase us-east-2: 2-5ms latency
 - OpenProject minimum requirements: 2 vCPU, 4GB RAM
 - Additional headroom for NLP service and caching
@@ -377,12 +392,14 @@ networks:
 ### Cloudflare Tunnel Configuration
 
 **Zero-Trust Access Pattern**:
+
 - No open ports on Digital Ocean VM
 - All traffic routed through Cloudflare's global network
 - DDoS protection and WAF at edge
 - Automatic SSL certificate management
 
 **Tunnel Setup**:
+
 ```yaml
 # cloudflared configuration
 tunnel: <tunnel-uuid>
@@ -397,6 +414,7 @@ ingress:
 ```
 
 **Docker Integration**:
+
 ```yaml
 # Add to docker-compose.yml
 cloudflared:
@@ -461,18 +479,21 @@ sequenceDiagram
 ### Database Strategy
 
 **OpenProject Database** (Container):
+
 - PostgreSQL 15 dedicated to OpenProject
 - Contains projects, work packages, users, permissions
 - Managed entirely by OpenProject (no direct access)
 - Daily automated backups via Digital Ocean
 
 **Application Database** (Supabase):
+
 - Team member preferences and timezone data
 - Usage analytics and audit logs  
 - n8n workflow configurations
 - Parsed task cache and user sessions
 
 **Row Level Security Policies** (Supabase):
+
 ```sql
 -- Team members can only see their own preferences
 CREATE POLICY "Users can view own preferences" ON team_members
@@ -490,6 +511,7 @@ CREATE POLICY "Users can insert own audit logs" ON audit_logs
 **Workflow Trigger Patterns**:
 
 1. **Telegram Bot Integration**:
+
    ```javascript
    // n8n Webhook Node → NLP Service
    {
@@ -504,6 +526,7 @@ CREATE POLICY "Users can insert own audit logs" ON audit_logs
    ```
 
 2. **Email Integration**:
+
    ```javascript
    // Email Parser → n8n → FLRTS
    {
@@ -518,6 +541,7 @@ CREATE POLICY "Users can insert own audit logs" ON audit_logs
    ```
 
 3. **Slack/Discord Integration**:
+
    ```javascript
    // Webhook → n8n → FLRTS
    {
@@ -534,12 +558,14 @@ CREATE POLICY "Users can insert own audit logs" ON audit_logs
 ### API Rate Limiting & Throttling
 
 **Per-Service Limits**:
+
 - OpenAI API: 500 tokens/minute per user
 - OpenProject API: 60 requests/minute per user (aligned with OP limits)
 - FLRTS Parse Endpoint: 5 concurrent requests per user
 - Supabase: Connection pooling with 10 max connections per service
 
 **Circuit Breaker Pattern**:
+
 ```typescript
 // Implemented in NLP Service
 const circuitBreaker = new CircuitBreaker(openaiClient.parse, {
@@ -554,6 +580,7 @@ const circuitBreaker = new CircuitBreaker(openaiClient.parse, {
 ### Health Monitoring Strategy
 
 **Container Health Checks**:
+
 ```yaml
 # Comprehensive health check matrix
 Services:
@@ -566,6 +593,7 @@ Services:
 ```
 
 **Health Check Aggregation**:
+
 ```nginx
 # Nginx health endpoint
 location /health {
@@ -578,6 +606,7 @@ location /health {
 ### Application Metrics
 
 **Key Performance Indicators**:
+
 - **Parse Accuracy**: % of successful OpenAI→OpenProject conversions
 - **Response Time**: 95th percentile end-to-end latency
 - **Error Rate**: % of requests resulting in 5xx errors  
@@ -585,6 +614,7 @@ location /health {
 - **Work Package Creation**: Success rate and volume
 
 **Docker Logging Configuration**:
+
 ```yaml
 logging:
   driver: "json-file" 
@@ -595,6 +625,7 @@ logging:
 ```
 
 **Structured Log Format**:
+
 ```json
 {
   "timestamp": "2024-01-01T00:00:00Z",
@@ -618,6 +649,7 @@ logging:
 ### Alerting Strategy
 
 **Critical Alerts** (Immediate Response):
+
 - Any service container stops or becomes unhealthy
 - OpenProject API authentication failures
 - Supabase connection errors
@@ -625,12 +657,14 @@ logging:
 - Memory usage >95%
 
 **Warning Alerts** (24-hour Response):
+
 - High OpenAI response times (>3s average)
 - Parse accuracy <90% over 1-hour window
 - Error rate >5% for any service
 - Unusual traffic patterns or potential abuse
 
 **Monitoring Integration**:
+
 - **Docker Stats**: Built-in container resource monitoring
 - **Uptime Robot**: External service availability monitoring  
 - **Supabase Dashboard**: Database performance and query analytics
@@ -666,16 +700,19 @@ logging:
 ### Scaling Cost Projections
 
 **At 100 Daily Tasks** (Current):
+
 - OpenAI: ~$5/month (current estimate)
 - Infrastructure: $75/month
 - **Total: $80/month**
 
 **At 500 Daily Tasks** (5x Growth):
+
 - OpenAI: ~$25/month
 - Infrastructure: $75/month (same VM handles this easily)
 - **Total: $100/month**
 
 **At 2000 Daily Tasks** (20x Growth):
+
 - OpenAI: ~$100/month
 - Infrastructure: $90/month (upgrade to s-8vcpu-16gb)
 - **Total: $190/month**
@@ -705,12 +742,14 @@ logging:
 ### Backup Strategy
 
 **Automated Daily Backups**:
+
 1. **OpenProject Database**: Digital Ocean automated snapshots + pg_dump
 2. **Supabase**: Automatic point-in-time recovery (managed)
 3. **Configuration**: Git repository with all Docker configs
 4. **File Storage**: Cloudflare R2 built-in durability (99.999999999%)
 
 **Recovery Time Objectives**:
+
 - **RTO** (Recovery Time): 30 minutes for full system restoration
 - **RPO** (Recovery Point): Maximum 24 hours of data loss
 - **Service Restoration**: New VM deployment from backup in <1 hour
@@ -718,6 +757,7 @@ logging:
 ### Operational Runbooks
 
 **System Recovery Process**:
+
 1. Deploy new Digital Ocean VM from snapshot
 2. Install Docker and restore configuration from Git
 3. Run `docker-compose up -d` with restored environment variables  
@@ -725,6 +765,7 @@ logging:
 5. Update Cloudflare Tunnel configuration if needed
 
 **Zero-Downtime Deployment Strategy**:
+
 - Use Docker image tags for versioning
 - Rolling updates with health check validation
 - Immediate rollback capability via previous image tags

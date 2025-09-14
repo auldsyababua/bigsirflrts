@@ -21,6 +21,7 @@ infrastructure/
 ## Current Deployment Status
 
 ### ✅ Completed
+
 - [x] Digital Ocean Droplet provisioned (165.227.216.172)
 - [x] Docker Compose configuration created
 - [x] Environment template prepared
@@ -28,6 +29,7 @@ infrastructure/
 - [x] Documentation complete
 
 ### ⏳ Pending
+
 - [ ] Environment variables configuration
 - [ ] Cloudflare R2 bucket setup
 - [ ] Cloudflare Tunnel configuration
@@ -82,7 +84,9 @@ ssh root@165.227.216.172 "cd /opt/flrts-openproject && docker compose up -d"
 ## Key Files
 
 ### docker-compose.prod.yml
+
 Production-ready Docker Compose configuration with:
+
 - OpenProject Community Edition 14
 - PostgreSQL 16 (dedicated container)
 - Memcached for caching
@@ -91,7 +95,9 @@ Production-ready Docker Compose configuration with:
 - Resource limits optimized for 8GB RAM
 
 ### .env.production
+
 Template for all required environment variables:
+
 - Database credentials
 - OpenProject configuration
 - Cloudflare R2 storage
@@ -99,7 +105,9 @@ Template for all required environment variables:
 - Email settings (optional)
 
 ### setup-server.sh
+
 Automated server setup that:
+
 - Installs Docker and Docker Compose
 - Configures firewall (UFW)
 - Sets up fail2ban
@@ -108,7 +116,9 @@ Automated server setup that:
 - Installs monitoring tools
 
 ### deploy.sh
+
 Automated deployment that:
+
 - Runs server setup
 - Copies all configuration files
 - Creates necessary directories
@@ -124,14 +134,17 @@ Automated deployment that:
    - Add to .env file
 
 2. **Setup Cloudflare Tunnel**:
+
    ```bash
    cloudflared tunnel create openproject-tunnel
    cloudflared tunnel token openproject-tunnel
    ```
+
    - Add token to .env file
    - Configure ingress rules in Cloudflare Dashboard
 
 3. **Deploy OpenProject**:
+
    ```bash
    ./infrastructure/scripts/deploy.sh 165.227.216.172
    ```
@@ -149,16 +162,19 @@ Automated deployment that:
 ## Monitoring
 
 ### Check Service Status
+
 ```bash
 ssh root@165.227.216.172 "docker ps"
 ```
 
 ### View Logs
+
 ```bash
 ssh root@165.227.216.172 "cd /opt/flrts-openproject && docker compose logs -f"
 ```
 
 ### Health Check
+
 ```bash
 ssh root@165.227.216.172 "/opt/flrts-openproject/scripts/health-check.sh"
 ```
@@ -166,12 +182,14 @@ ssh root@165.227.216.172 "/opt/flrts-openproject/scripts/health-check.sh"
 ## Troubleshooting
 
 ### Cannot Connect to Server
+
 ```bash
 # Check droplet status
 doctl compute droplet get 518515575
 ```
 
 ### Services Won't Start
+
 ```bash
 # Check logs
 ssh root@165.227.216.172 "docker compose logs openproject"
@@ -181,6 +199,7 @@ ssh root@165.227.216.172 "cat /opt/flrts-openproject/.env"
 ```
 
 ### High Resource Usage
+
 ```bash
 # Check resource usage
 ssh root@165.227.216.172 "docker stats --no-stream"
@@ -199,6 +218,7 @@ ssh root@165.227.216.172 "docker compose restart"
 ## Support
 
 For issues or questions:
+
 1. Check DEPLOYMENT_GUIDE.md for detailed instructions
 2. Review Docker logs for error messages
 3. Consult OpenProject documentation

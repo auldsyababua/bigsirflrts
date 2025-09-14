@@ -5,6 +5,7 @@ This document tracks features and enhancements that are planned for future devel
 ## Security & Authentication
 
 ### Advanced Prompt Injection Protection with User Scoping
+
 **Priority:** High (Post-MVP)
 **Description:** Implement comprehensive prompt injection protection for the Telegram task creation workflow using LLMGuard or similar security framework, combined with a user scoping system that limits the blast radius of malicious content based on user privilege levels and data isolation boundaries.
 
@@ -13,18 +14,21 @@ This document tracks features and enhancements that are planned for future devel
 **Requirements:**
 
 **Security Framework:**
+
 - Integrate LLMGuard or equivalent prompt injection detection
 - Implement content filtering for malicious patterns
 - Add monitoring and alerting for detected injection attempts
 - Create fallback workflows for blocked inputs
 
 **User Scoping & Privilege System:**
+
 - **User Risk Levels**: Define user categories (Guest, Employee, Supervisor, Admin) with different UGC risk tolerances
 - **Data Isolation Boundaries**: Implement scoped access where certain user levels can only affect their own data or team-specific elements
 - **Privilege-Based Processing**: Different prompt processing strictness based on user level (e.g., Guests get maximum filtering, Admins get minimal filtering)
 - **Blast Radius Limitation**: Ensure malicious prompts can only affect the user's own tasks/data, not system-wide or other users' data
 
 **Scoping Schema Design (Future Planning):**
+
 - User-specific task namespaces
 - Team-based data segregation
 - Role-based prompt processing policies
@@ -32,6 +36,7 @@ This document tracks features and enhancements that are planned for future devel
 - Cross-user impact prevention mechanisms
 
 **Security Isolation Examples:**
+
 - Guest users: Can only create/modify their own tasks, heavy prompt filtering
 - Field employees: Can affect team tasks but not other teams, moderate filtering  
 - Supervisors: Can affect department-wide tasks, light filtering
@@ -47,12 +52,14 @@ This document tracks features and enhancements that are planned for future devel
 ## Notifications & Integrations
 
 ### Telegram Bot Integration
+
 **Priority:** Medium (Post-MVP)
 **Description:** Implement native Telegram bot integration for task creation, updates, and notifications without requiring the Mini App interface.
 
 **Current State:** Telegram Mini App integration planned for MVP (web-based interface)
 
 **Requirements:**
+
 - Native Telegram Bot API integration using polling or webhooks
 - Slash commands for task operations (/create, /list, /update, /complete)
 - Inline keyboards for quick task actions (assign, prioritize, complete)
@@ -71,12 +78,14 @@ This document tracks features and enhancements that are planned for future devel
 **Dependencies:** Telegram Bot API, webhook infrastructure, notification queue system
 
 ### Slack App Integration
+
 **Priority:** Medium (Post-MVP)
 **Description:** Create a comprehensive Slack app for task management within Slack workspaces, enabling natural language task creation and team collaboration.
 
 **Current State:** No Slack integration currently planned
 
 **Requirements:**
+
 - Slack App with OAuth 2.0 authentication
 - Slash commands (/flrts-create, /flrts-list, /flrts-assign)
 - Interactive messages with buttons and select menus
@@ -98,12 +107,14 @@ This document tracks features and enhancements that are planned for future devel
 **Dependencies:** Slack API, OAuth infrastructure, event subscription handling, Block Kit UI components
 
 ### Multi-Channel Notification System
+
 **Priority:** High (Post-MVP Phase 2)
 **Description:** Unified notification framework supporting multiple channels with user preferences and intelligent routing.
 
 **Current State:** Basic email notifications planned for MVP
 
 **Requirements:**
+
 - Centralized notification service with channel abstraction
 - Supported channels:
   - Email (enhanced with templates and tracking)
@@ -134,12 +145,14 @@ This document tracks features and enhancements that are planned for future devel
 ---
 
 ## Enhanced API Memory and Learning
+
 **Priority:** High (Post-MVP)
 **Description:** Implement an advanced memory architecture for the FLRTS API to enable continuous learning and improve output quality. This system will use a combination of in-memory databases, a vector database, and a dedicated memory store to retain context, learn from interactions, and correct mistakes over time.
 
 **Current State:** The API is stateless, processing each call independently without long-term memory of past interactions or feedback.
 
 **Requirements:**
+
 - **Redis Integration:** Use Redis for fast caching of frequently accessed data and session information.
 - **Mem0 Implementation:** Integrate Mem0 as a specialized, intelligent memory layer to store and retrieve conversational context and user preferences.
 - **VectorDB for Semantic Memory:** Implement a vector database (e.g., Pinecone, Weaviate) to store embeddings of past interactions, enabling semantic search and retrieval of relevant historical context to inform new outputs.
@@ -158,12 +171,14 @@ This document tracks features and enhancements that are planned for future devel
 When adding new future features, use this template:
 
 ### [Feature Name]
+
 **Priority:** [High/Medium/Low] ([Timeline])
 **Description:** [Brief description of the feature]
 
 **Current State:** [What exists now, if anything]
 
 **Requirements:**
+
 - [Key requirement 1]
 - [Key requirement 2]
 - [etc.]

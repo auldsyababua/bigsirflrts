@@ -1,6 +1,6 @@
 # OpenProject Setup Guide for FLRTS
 
-## ✅ Status: OpenProject is Running!
+## ✅ Status: OpenProject is Running
 
 Your OpenProject instance is now successfully running at: **http://localhost:8080**
 
@@ -14,9 +14,11 @@ Your OpenProject instance is now successfully running at: **http://localhost:808
 ## 🚀 Quick Start Steps
 
 ### 1. Access OpenProject
+
 Open your browser and go to: http://localhost:8080
 
 ### 2. Initial Setup
+
 1. Login with the admin credentials above
 2. Create your first project (e.g., "FLRTS Development")
 3. Go to **My Account** → **Access Tokens**
@@ -24,6 +26,7 @@ Open your browser and go to: http://localhost:8080
 5. Save the token - you'll need it for API calls
 
 ### 3. Install Browser Extension (Optional)
+
 To add the FLRTS input box and logo customization:
 
 ```bash
@@ -43,23 +46,27 @@ To add the FLRTS input box and logo customization:
 ## 🛠️ Docker Management
 
 ### View Logs
+
 ```bash
 docker logs -f flrts-openproject
 ```
 
 ### Stop OpenProject
+
 ```bash
 cd docker/openproject
 docker-compose down
 ```
 
 ### Start OpenProject
+
 ```bash
 cd docker/openproject
 docker-compose up -d
 ```
 
 ### Reset Everything (Warning: Deletes all data)
+
 ```bash
 cd docker/openproject
 docker-compose down -v
@@ -85,6 +92,7 @@ export OPENPROJECT_APIKEY=<your-api-key-from-step-2>
 ## 📝 Integration Points for FLRTS
 
 ### API Endpoints
+
 - Base URL: `http://localhost:8080/api/v3`
 - Authentication: Bearer token or Basic auth with API key
 - Main endpoints:
@@ -93,13 +101,16 @@ export OPENPROJECT_APIKEY=<your-api-key-from-step-2>
   - `/users` - Get user information
 
 ### Custom Fields
+
 OpenProject supports custom fields which we'll use for:
+
 - `facility_id` - Mining facility identifier
 - `equipment_type` - Type of mining equipment
 - `maintenance_type` - Preventive/Corrective/Emergency
 - `downtime_impact` - None/Partial/Full
 
 ### Example API Call
+
 ```bash
 # Create a work package
 curl -X POST http://localhost:8080/api/v3/work_packages \
@@ -117,29 +128,35 @@ curl -X POST http://localhost:8080/api/v3/work_packages \
 ## 🎨 UI Customization (Without Forking)
 
 ### Option 1: Browser Extension (Recommended)
+
 The browser extension in `packages/flrts-extension/` will:
+
 - Replace OpenProject logo with FLRTS branding
 - Add floating NLP input box
 - Enable keyboard shortcut (Cmd+K)
 - Support voice input
 
 ### Option 2: Admin Panel CSS
+
 1. Login as admin
 2. Go to **Administration** → **Settings** → **Design**
 3. Add custom CSS from `docker/openproject/custom-css/flrts-custom.css`
 
 ### Option 3: Reverse Proxy
+
 Use Nginx to inject custom headers and CSS (advanced)
 
 ## 🔍 Troubleshooting
 
 ### Can't connect to http://localhost:8080
+
 1. Check containers are running: `docker ps`
 2. Check logs: `docker logs flrts-openproject`
 3. Wait 2-3 minutes for initialization
 4. Try: http://127.0.0.1:8080
 
 ### Port 8080 already in use
+
 ```bash
 # Change port in docker-compose.yml
 ports:
@@ -147,6 +164,7 @@ ports:
 ```
 
 ### Reset admin password
+
 ```bash
 docker exec -it flrts-openproject bundle exec rails c
 # In Rails console:

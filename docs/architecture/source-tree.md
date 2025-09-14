@@ -34,6 +34,7 @@ bigsirflrts/                           # Root project directory
 ## Detailed Package Structure
 
 ### packages/shared/
+
 ```
 shared/
 ├── src/
@@ -65,6 +66,7 @@ shared/
 ```
 
 ### packages/flrts-nlp/
+
 ```
 flrts-nlp/
 ├── src/
@@ -110,6 +112,7 @@ flrts-nlp/
 ```
 
 ### packages/openproject-config/
+
 ```
 openproject-config/
 ├── src/
@@ -133,6 +136,7 @@ openproject-config/
 ```
 
 ### packages/web-ui/ (Next.js 14 App Router)
+
 ```
 web-ui/
 ├── app/                              # App Router structure
@@ -177,6 +181,7 @@ web-ui/
 ```
 
 ### packages/cli/
+
 ```
 cli/
 ├── src/
@@ -200,6 +205,7 @@ cli/
 ```
 
 ### packages/telegram-bot/
+
 ```
 telegram-bot/
 ├── src/
@@ -225,6 +231,7 @@ telegram-bot/
 ## Infrastructure Files
 
 ### infrastructure/docker/
+
 ```
 docker/
 ├── docker-compose.yml              # Development environment
@@ -240,6 +247,7 @@ docker/
 ```
 
 ### infrastructure/cloudflare/
+
 ```
 cloudflare/
 ├── tunnel-config.yml               # Cloudflare Tunnel configuration
@@ -248,6 +256,7 @@ cloudflare/
 ```
 
 ### infrastructure/scripts/
+
 ```
 scripts/
 ├── deploy.sh                       # VM deployment script
@@ -274,6 +283,7 @@ bigsirflrts/
 ## File Naming Conventions
 
 ### TypeScript/JavaScript Files
+
 - **Components**: PascalCase (e.g., `CommandBar.tsx`)
 - **Utilities**: camelCase (e.g., `parseInput.ts`)
 - **Services**: camelCase with .service suffix (e.g., `parsing.service.ts`)
@@ -282,6 +292,7 @@ bigsirflrts/
 - **Tests**: Same as source with .test or .spec suffix
 
 ### Configuration Files
+
 - **Environment**: `.env`, `.env.local`, `.env.production`
 - **Docker**: `Dockerfile`, `docker-compose.yml`
 - **Config**: `{service}.config.ts` or `config/{service}.ts`
@@ -289,6 +300,7 @@ bigsirflrts/
 ## Import Path Aliases
 
 ### TypeScript Path Mappings
+
 ```json
 {
   "compilerOptions": {
@@ -304,6 +316,7 @@ bigsirflrts/
 ```
 
 ### Usage Examples
+
 ```typescript
 // Instead of: import { ParsedTask } from '../../../shared/src/schemas';
 import { ParsedTask } from '@flrts/shared/schemas';
@@ -344,6 +357,7 @@ bigsirflrts/
 ## Critical Files
 
 ### Must Not Modify Without Review
+
 - `packages/shared/src/schemas/*` - Data contracts
 - `packages/openproject-config/src/env/database.config.ts` - Database connection (Session Mode port 5432 required!)
 - `.github/workflows/deploy.yml` - Deployment pipeline
@@ -351,11 +365,13 @@ bigsirflrts/
 - `infrastructure/n8n/queue.config.json` - n8n queue mode configuration
 
 ### Frequently Modified
+
 - `packages/flrts-nlp/src/prompts/*` - Prompt tuning
 - `packages/web-ui/components/*` - UI updates
 - `tests/fixtures/*` - Test data
 
 ### Auto-Generated (Do Not Edit)
+
 - `*.d.ts` - TypeScript declarations
 - `package-lock.json` - npm lock file
 - `.next/` - Next.js build

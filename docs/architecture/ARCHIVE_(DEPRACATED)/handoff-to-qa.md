@@ -1,6 +1,7 @@
 # Architecture Handoff to QA/Testing Agent
 
 ## Executive Summary
+
 Architecture phase complete. Critical testing requirements and documentation needs identified for QA validation before MVP launch.
 
 ## 🧪 Critical Testing Requirements
@@ -8,6 +9,7 @@ Architecture phase complete. Critical testing requirements and documentation nee
 ### 1. Database Connection Testing
 
 **PostgreSQL Version Validation**
+
 ```sql
 -- Test Case: Verify PostgreSQL version
 -- Expected: Version >= 16.0
@@ -16,6 +18,7 @@ SELECT version();
 ```
 
 **Session Mode Connection Test**
+
 ```javascript
 // Test Case: Verify Session Mode (port 5432) works correctly
 const testConnection = {
@@ -35,6 +38,7 @@ const failureTest = {
 ### 2. Timezone Conversion Test Suite
 
 **Required Test Coverage (Story 2.1)**
+
 ```typescript
 interface TimezoneTestCases {
   // Edge Cases that MUST be tested:
@@ -78,6 +82,7 @@ interface TimezoneTestCases {
 ### 3. OpenAI Integration Testing
 
 **Parse Accuracy Test Dataset Requirements**
+
 - **Current Gap**: Only 100 CREATE examples exist
 - **Required**: 100 examples total covering:
   - 25 CREATE with timezone variations
@@ -86,6 +91,7 @@ interface TimezoneTestCases {
   - 25 ARCHIVE operations (soft delete only)
 
 **Critical Validation Points**
+
 ```json
 {
   "test_requirements": {
@@ -136,6 +142,7 @@ Validate: Status changed to "Archived", record NOT deleted
 ### 5. End-to-End Flow Testing
 
 **Critical User Journey**
+
 ```
 1. User sends Telegram message: "Hey @Taylor, review server logs by 1pm my time tomorrow"
 2. FLRTS parses with OpenAI → Verify parse_rationale field present
@@ -148,18 +155,21 @@ Validate: Status changed to "Archived", record NOT deleted
 ## 📋 Documentation Gaps for QA to Create
 
 ### 1. Test Plan Documentation
+
 - [ ] Comprehensive test plan covering all architectural components
 - [ ] Regression test suite for timezone conversions
 - [ ] Performance benchmarks (< 5 second task creation)
 - [ ] Load testing scenarios (5-10 concurrent users)
 
 ### 2. Testing Runbooks
+
 - [ ] Database migration testing procedure
 - [ ] Rollback testing procedures
 - [ ] Health check validation runbook
 - [ ] Error recovery testing guide
 
 ### 3. Validation Checklists
+
 - [ ] Pre-deployment validation checklist
 - [ ] Post-deployment smoke tests
 - [ ] User acceptance test scenarios
@@ -168,18 +178,21 @@ Validate: Status changed to "Archived", record NOT deleted
 ## 🔴 Blocking Issues for Testing
 
 ### Issue #1: PostgreSQL Version
+
 - **Current**: v15.8.1
 - **Required**: v16+
 - **Impact**: Cannot proceed with OpenProject testing until resolved
 - **Test Blocker**: YES
 
 ### Issue #2: Test Dataset Incomplete
+
 - **Current**: Only CREATE examples
 - **Required**: Full CRUD examples with timezone contexts
 - **Impact**: Cannot validate 95% accuracy target
 - **Test Blocker**: YES
 
 ### Issue #3: parse_rationale Field Missing
+
 - **Current**: Not in PRD schema
 - **Required**: For debugging and transparency
 - **Impact**: Cannot validate parsing logic
@@ -188,18 +201,21 @@ Validate: Status changed to "Archived", record NOT deleted
 ## 🎯 Testing Success Criteria
 
 ### Performance Metrics
+
 - Task creation time: < 5 seconds (p95)
 - API response time: < 500ms (p95)
 - Timezone conversion: < 100ms
 - OpenAI parsing: < 2 seconds
 
 ### Accuracy Metrics
+
 - NLP parse accuracy: >= 95%
 - Timezone conversion accuracy: 100%
 - Entity recognition accuracy: >= 98%
 - Operation type detection: 100%
 
 ### Reliability Metrics
+
 - Health check uptime: > 99.9%
 - Error recovery rate: > 95%
 - Database connection stability: 0 connection drops
@@ -208,6 +224,7 @@ Validate: Status changed to "Archived", record NOT deleted
 ## 🧪 Test Environment Requirements
 
 ### Infrastructure Setup
+
 ```yaml
 test_environment:
   database:
@@ -228,6 +245,7 @@ test_environment:
 ```
 
 ### Test Data Requirements
+
 ```sql
 -- Test Users (must exist in OpenProject)
 INSERT INTO users (name, timezone) VALUES
@@ -246,18 +264,21 @@ INSERT INTO projects (name, identifier) VALUES
 ## 🔄 Regression Test Priority
 
 ### P0 - Critical (Test First)
+
 1. PostgreSQL Session Mode connectivity
 2. Timezone conversion accuracy
 3. OpenProject API CRUD operations
 4. Soft delete (ARCHIVE) functionality
 
 ### P1 - High Priority
+
 1. OpenAI parsing accuracy
 2. Error recovery flows
 3. Telegram bot message handling
 4. Confirmation flow
 
 ### P2 - Medium Priority
+
 1. Rate limiting
 2. Health checks
 3. Logging functionality
@@ -284,6 +305,7 @@ INSERT INTO projects (name, identifier) VALUES
 ## 🚀 Ready for Testing Checklist
 
 Before QA can begin:
+
 - [ ] PostgreSQL upgraded to v16+
 - [ ] Test environment provisioned
 - [ ] 100 test examples created (all CRUD types)

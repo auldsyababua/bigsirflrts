@@ -11,6 +11,7 @@ FLRTS requires integration with OpenProject for task management, with specific U
 **Approach**: Build FLRTS as a separate application that communicates with OpenProject via REST API v3
 
 **Pros**:
+
 - No need to fork or maintain OpenProject source code
 - Clean separation of concerns
 - Easier upgrades of OpenProject
@@ -18,10 +19,12 @@ FLRTS requires integration with OpenProject for task management, with specific U
 - FLRTS remains lightweight and focused
 
 **Cons**:
+
 - Cannot directly modify OpenProject UI
 - Need to build separate UI for FLRTS features
 
 **Implementation**:
+
 ```javascript
 // FLRTS embeds in OpenProject via:
 1. Browser extension that injects FLRTS UI
@@ -34,18 +37,21 @@ FLRTS requires integration with OpenProject for task management, with specific U
 **Approach**: Develop an OpenProject plugin using their plugin API
 
 **Pros**:
+
 - Native integration with OpenProject UI
 - Access to internal hooks and events
 - Can modify UI elements directly
 - Single deployment unit
 
 **Cons**:
+
 - Must learn Ruby on Rails (OpenProject is Rails-based)
 - Plugin API may have limitations
 - Tied to OpenProject release cycles
 - More complex development environment
 
 **Implementation**:
+
 ```ruby
 # Create plugin at: openproject-flrts/
 module OpenProject::FLRTS
@@ -61,10 +67,12 @@ end
 **Approach**: Fork entire OpenProject repository and modify source directly
 
 **Pros**:
+
 - Complete control over all features
 - Can make any UI changes needed
 
 **Cons**:
+
 - Massive maintenance burden (OpenProject is 500k+ lines of code)
 - Difficult to merge upstream updates
 - Need to understand entire Rails application
@@ -224,23 +232,27 @@ export class OpenProjectIntegration {
 ## Implementation Phases
 
 ### Phase 1: API Integration (Week 1-2)
+
 - Set up OpenProject Docker instance
 - Install and configure CLI
 - Build basic API client
 - Test CRUD operations
 
 ### Phase 2: Browser Extension (Week 3-4)
+
 - Create Chrome/Firefox extension
 - Inject FLRTS input box
 - Replace logo via CSS
 - Handle authentication
 
 ### Phase 3: Standalone UI (Week 5-6)
+
 - Build React app with FLRTS UI
 - Embed via iframe or popup
 - Deep linking to OpenProject
 
 ### Phase 4: Plugin Exploration (Future)
+
 - If deeper integration needed
 - Develop Ruby plugin
 - Native UI modifications
@@ -256,6 +268,7 @@ export class OpenProjectIntegration {
 5. **Upgrade Path**: Easy to upgrade OpenProject independently
 
 **Instead, we will:**
+
 1. Use OpenProject's Docker image for development
 2. Integrate via REST API v3
 3. Build browser extension for UI injection
@@ -264,7 +277,7 @@ export class OpenProjectIntegration {
 
 ## Custom Branding Implementation
 
-### Without Forking OpenProject:
+### Without Forking OpenProject
 
 1. **Admin Panel Customization**
    - Upload custom logo via Admin > Settings
@@ -281,7 +294,7 @@ export class OpenProjectIntegration {
    - Serve custom assets
    - Rewrite certain URLs
 
-### Example Nginx Configuration:
+### Example Nginx Configuration
 
 ```nginx
 server {
@@ -310,6 +323,7 @@ server {
 ## Conclusion
 
 The recommended approach is to:
+
 1. **Keep FLRTS separate** from OpenProject source
 2. **Use API integration** for backend functionality
 3. **Build browser extension** for UI enhancements

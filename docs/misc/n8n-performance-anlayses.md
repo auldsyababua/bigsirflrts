@@ -1,7 +1,6 @@
 
 n8n Performance Analysis and Architectural Guidance for the FLRTS Platform
 
-
 Executive Summary
 
 This report provides a comprehensive performance analysis of the n8n workflow automation platform to guide its integration into the FLRTS task management system. The central finding is that n8n is an exceptionally powerful tool for orchestrating complex, asynchronous, and scheduled business logic. However, it introduces a non-trivial performance overhead, with a baseline latency of at least 20-50ms for any operation, which renders it unsuitable for real-time, user-facing interactions requiring sub-200ms responses.
@@ -139,7 +138,6 @@ Lack of transactionality
 NO-GO
 Encapsulate logic in a stored procedure and call it from n8n.
 
-
 Section 3: Comparative Analysis: n8n vs. Direct Implementation for FLRTS
 
 This section provides a direct, head-to-head comparison of implementing specific FLRTS operations using n8n versus a direct API approach, such as a Supabase Edge Function.
@@ -157,7 +155,6 @@ The "Direct API Approach" is defined as a lightweight, serverless function (e.g.
 The following table analyzes the performance trade-offs for the specific operations required by the FLRTS system.
 
 Table 3.1: FLRTS Operations Performance Trade-Off Analysis
-
 
 Operation
 n8n Approach
@@ -187,6 +184,7 @@ Use Code Node in n8n. A benchmark of the Code node versus the native Set node sh
 Batch sync (100 items)
 Loop / SplitInBatches nodes
 Direct batch API call
+
 + seconds to minutes
 Use n8n with caution. n8n's overhead is multiplied by each iteration. If the target API has a true bulk/batch endpoint, a direct script will be substantially faster. However, for reliability, per-item error handling, and respecting rate limits, n8n's SplitInBatches node is often a more robust and maintainable solution.30
 Send notifications
@@ -194,7 +192,6 @@ Telegram node
 Direct Bot API call
 +10ms to +20ms
 Use n8n. The benefits of a managed node (which handles API changes, authentication, and formatting) far outweigh the minuscule performance penalty. This is a clear case where maintainability trumps raw speed.
-
 
 3.3. The Core Trade-Off: Maintenance Benefit vs. Performance Penalty
 
@@ -229,7 +226,6 @@ Respond Immediately: For any webhook that triggers a process not required for th
 Webhook vs. Polling: Whenever possible, use event-driven webhooks instead of scheduled polling triggers. Webhooks create a more efficient architecture that only consumes resources when an event actually occurs, whereas polling consumes resources on a fixed schedule, leading to many unnecessary executions.35
 
 Table 4.1: Key Performance-Related Environment Variables
-
 
 Variable
 Description
@@ -271,7 +267,6 @@ Maximum payload size (in bytes) for partial executions in the editor.
 16777216 (16MB)
 67108864 (64MB) or higher, based on available RAM
 26
-
 
 4.4. A Practical Guide to Performance Monitoring and Load Testing
 

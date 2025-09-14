@@ -13,6 +13,7 @@ Follow these guides in sequence for initial system setup:
 ## 🔧 Component Setup Guides
 
 ### Core Systems
+
 - **[OpenProject](./openproject.md)** - Task management backend
   - Docker setup
   - Admin configuration
@@ -20,12 +21,14 @@ Follow these guides in sequence for initial system setup:
   - Browser extension (optional)
 
 ### Integration Layer
+
 - **[Webhook Integration](./webhook-integration.md)** - Event-driven sync
   - n8n workflow configuration
   - Supabase database webhooks
   - OpenProject API integration
 
 ### Communication Interfaces
+
 - **[Telegram Bot](./telegram-bot.md)** - Field communication interface
   - Bot credentials
   - Command configuration
@@ -35,6 +38,7 @@ Follow these guides in sequence for initial system setup:
 ## 🚀 Quick Start
 
 For a minimal working system:
+
 1. Set up OpenProject (locally or cloud)
 2. Configure webhooks for task synchronization
 3. Deploy Telegram bot for field access
@@ -42,6 +46,7 @@ For a minimal working system:
 ## 📝 Environment Variables
 
 Each component requires specific environment variables. See individual setup guides for details:
+
 - OpenProject: API tokens, base URLs
 - n8n: Workflow IDs, webhook URLs
 - Telegram: Bot tokens, webhook secrets

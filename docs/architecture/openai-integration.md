@@ -1,6 +1,7 @@
 # OpenAI Integration Architecture
 
 ## Overview
+
 This document defines the OpenAI GPT-4o integration architecture for the FLRTS NLP service, focusing on Story 2.2 requirements for timezone-aware natural language parsing of task management commands.
 
 ## Architecture Flow
@@ -18,6 +19,7 @@ User → Telegram → FLRTS NLP → OpenAI GPT-4o → FLRTS NLP → OpenProject 
 ## OpenAI API Integration
 
 ### API Configuration
+
 ```typescript
 interface OpenAIConfig {
   apiKey: string;                    // From environment variable

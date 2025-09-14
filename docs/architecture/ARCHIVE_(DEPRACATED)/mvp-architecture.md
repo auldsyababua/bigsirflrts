@@ -7,16 +7,19 @@ This document defines the cloud-first, tool-native architecture for the Telegram
 ## Core Principles
 
 ### 1. Tool-First Approach
+
 - **Default**: Use n8n workflows for integrations
 - **Exception**: Custom code only if ≤10 lines AND significantly more performant
 - **Preference**: Native webhooks over polling, MCP tools over custom APIs
 
 ### 2. Cloud-Native Deployment
+
 - **Everything hosted**: No local dependencies or infrastructure
 - **Production-ready**: VM with Docker, Cloudflare Tunnel for secure access
 - **Managed services**: n8n-cloud, Supabase PostgreSQL, OpenAI API
 
 ### 3. Reliability Over Performance
+
 - **MVP focus**: Working system over optimized system
 - **Error handling**: Built-in retry logic and monitoring
 - **Data integrity**: Supabase as single source of truth
@@ -42,16 +45,18 @@ graph TB
 ### Component Details
 
 #### Telegram Mini App (Standard Hosting)
+
 - **Purpose**: User interface for natural language task input
 - **Technology**: Telegram Bot API + Mini App framework
 - **Hosting**: VM with Docker (same as OpenProject)
-- **Features**: 
+- **Features**:
   - Natural language text input
   - Task creation confirmations
   - Reminder notifications
   - List management commands
 
 #### n8n-cloud (Hosted Automation)
+
 - **Purpose**: All integration logic and workflows
 - **Technology**: n8n-cloud instance (MCP available)
 - **Key Workflows**:
@@ -66,6 +71,7 @@ graph TB
   - Monitoring and logging
 
 #### OpenAI Integration (API + MCP)
+
 - **Purpose**: Natural language parsing and task assignment
 - **Technology**: OpenAI API via MCP tools
 - **Features**:
@@ -75,6 +81,7 @@ graph TB
   - Task classification and prioritization
 
 #### Supabase (Existing)
+
 - **Purpose**: Single source of truth for task data
 - **Technology**: Supabase with native webhooks
 - **Schema**: Focus on `tasks` table only for MVP
@@ -85,6 +92,7 @@ graph TB
   - User assignment tracking
 
 #### OpenProject (Production VM Deployment)
+
 - **Purpose**: Project management visualization and mature task backend
 - **Technology**: OpenProject deployed via Docker on VM with Cloudflare Tunnel
 - **Features**:
@@ -95,6 +103,7 @@ graph TB
   - API for bidirectional sync
 
 #### Storage Systems
+
 - **Primary DB**: Supabase PostgreSQL (managed, production-ready)
 - **File Storage**: Cloudflare R2 (S3-compatible for OpenProject attachments)
 - **Features**:
@@ -106,6 +115,7 @@ graph TB
 ## Data Flow Architecture
 
 ### Task Creation Flow
+
 ```
 1. User types in Telegram: "Remind Colin to review the budget by Friday 3pm"
 2. Telegram Mini App → n8n webhook
@@ -118,6 +128,7 @@ graph TB
 ```
 
 ### Reminder Flow
+
 ```
 1. n8n scheduled trigger (every 15 minutes)
 2. n8n → OpenProject API (query due/overdue tasks)
@@ -127,6 +138,7 @@ graph TB
 ```
 
 ### Bidirectional Sync Flow
+
 ```
 OpenProject Status Change:
 1. User marks task complete in OpenProject
@@ -143,6 +155,7 @@ Supabase Task Update:
 ## Technology Stack
 
 ### Primary Services
+
 | Component | Service | Hosting | MCP Available |
 |-----------|---------|---------|---------------|
 | Workflows | n8n-cloud | Cloud | ✅ Yes |
@@ -154,6 +167,7 @@ Supabase Task Update:
 | Files | Cloudflare R2 | Cloud | 🔲 S3 API |
 
 ### MCP Tools Used
+
 - `mcp__n8n-cloud__*` - n8n workflow management
 - `mcp__supabase__*` - Database operations and webhook setup
 - `mcp__openai__*` - Natural language processing
@@ -162,6 +176,7 @@ Supabase Task Update:
 ## MVP Limitations & Constraints
 
 ### Intentional Limitations
+
 - **Single entity sync**: Only `tasks` table, no users/sites/reports
 - **Hardcoded employees**: No user management system
 - **Basic lists**: Simple filtering and bullet lists only
@@ -169,12 +184,14 @@ Supabase Task Update:
 - **Limited customization**: Focus on working system over features
 
 ### Technical Constraints
+
 - **n8n-cloud quotas**: Monitor execution limits
 - **OpenAI rate limits**: Implement queuing if needed
 - **Telegram API limits**: Rate limiting on notifications
 - **VM resource limits**: Monitor CPU/RAM usage on production VM
 
 ### Acceptable Trade-offs
+
 - **Latency vs Reliability**: Favor reliable webhooks over instant responses
 - **Features vs Speed**: 2-week delivery over comprehensive features
 - **Customization vs Maintenance**: Use tools as-is rather than extensive configuration
@@ -182,16 +199,19 @@ Supabase Task Update:
 ## Security Considerations
 
 ### API Security
+
 - All API keys stored in environment variables
 - Webhook endpoints with signature verification
 - No sensitive data in logs or error messages
 
 ### Data Privacy
+
 - Task data encrypted in transit and at rest
 - No personal data beyond task assignments
 - Telegram data handling per their privacy policy
 
 ### Access Control
+
 - Telegram bot token security
 - OpenProject API key management
 - Supabase RLS policies (if needed)
@@ -199,6 +219,7 @@ Supabase Task Update:
 ## Deployment Strategy
 
 ### Environment Setup
+
 1. **VM + Docker**: OpenProject deployed with managed PostgreSQL
 2. **Cloudflare Tunnel**: Secure public access configured
 3. **Cloudflare R2**: S3-compatible storage for file attachments
@@ -207,12 +228,14 @@ Supabase Task Update:
 6. **Telegram**: Bot registered, Mini App configured
 
 ### Configuration Management
+
 - Environment variables for all API keys
 - n8n workflows version controlled
 - OpenProject configuration via Docker Compose
 - Infrastructure deployed via VM provisioning scripts
 
 ### Monitoring & Observability
+
 - n8n workflow execution logs
 - VM performance monitoring
 - Supabase webhook delivery status
@@ -222,12 +245,14 @@ Supabase Task Update:
 ## Scaling Considerations (Post-MVP)
 
 ### Performance Bottlenecks
+
 - OpenAI API rate limits → implement caching/queuing
 - n8n execution limits → move to self-hosted if needed  
 - Webhook reliability → add retry and dead letter queues
 - VM resource scaling → vertical scaling or load balancing
 
 ### Feature Expansion
+
 - Additional Supabase tables → extend existing workflows
 - User management → add authentication and user table sync
 - Advanced NLP → more sophisticated OpenAI prompts
@@ -236,12 +261,14 @@ Supabase Task Update:
 ## Success Metrics
 
 ### Technical Metrics
+
 - **Uptime**: >99% availability for core workflows
 - **Latency**: <5 seconds for task creation end-to-end
 - **Reliability**: <1% data loss or sync failures
 - **Error Rate**: <5% workflow execution failures
 
 ### Business Metrics
+
 - **User Adoption**: Daily active users creating tasks
 - **Task Completion**: Tasks being marked complete via either system
 - **User Satisfaction**: Positive feedback on Telegram interface

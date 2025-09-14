@@ -1,6 +1,7 @@
 # Supabase → n8n → OpenProject Webhook Configuration
 
 ## Overview
+
 This document describes the webhook integration setup for syncing tasks from Supabase to OpenProject via n8n middleware.
 
 ## Architecture
@@ -16,12 +17,14 @@ OpenProject (work_packages)
 ## Components
 
 ### 1. n8n Workflow
+
 - **Workflow Name**: "Supabase Tasks → OpenProject Sync"
 - **Workflow ID**: `xeXX1rxX2chJdQis`
 - **Webhook URL**: `https://n8n-rrrs.sliplane.app/webhook/supabase-tasks-webhook`
 - **Status**: Created, not yet activated
 
 ### 2. Supabase Database Webhook Configuration
+
 **⚠️ Manual Configuration Required**
 
 Access Supabase Dashboard at:
@@ -44,6 +47,7 @@ Create webhook with these settings:
 ### 3. Webhook Payload Format
 
 #### INSERT/UPDATE Events
+
 ```json
 {
   "type": "INSERT" | "UPDATE",
@@ -64,6 +68,7 @@ Create webhook with these settings:
 ```
 
 #### DELETE Events
+
 ```json
 {
   "type": "DELETE",
@@ -81,6 +86,7 @@ Create webhook with these settings:
 ## Field Mappings
 
 ### Priority Mapping (Fixed)
+
 | Supabase | OpenProject | ID |
 |----------|-------------|-----|
 | High     | High        | 1   |
@@ -88,6 +94,7 @@ Create webhook with these settings:
 | Low      | Low         | 3   |
 
 ### Status Mapping
+
 | Supabase Status | OpenProject Status | ID |
 |----------------|-------------------|-----|
 | open           | New               | 1   |
@@ -104,6 +111,7 @@ Create webhook with these settings:
 5. **Response**: Returns success/error status to Supabase
 
 ### Error Handling
+
 - Invalid table names rejected
 - Missing required data throws errors
 - Malformed payloads return 500 status
@@ -112,6 +120,7 @@ Create webhook with these settings:
 ## Testing Procedure
 
 ### Prerequisites
+
 1. Supabase webhook configured (manual step above)
 2. n8n workflow activated
 3. OpenProject API accessible
@@ -119,6 +128,7 @@ Create webhook with these settings:
 ### Test Steps
 
 #### Test 1: INSERT
+
 ```sql
 -- In Supabase SQL Editor
 INSERT INTO tasks (title, description, status, priority, due_date)
@@ -126,6 +136,7 @@ VALUES ('Test Webhook Task', 'Testing webhook integration', 'open', 'High', '202
 ```
 
 #### Test 2: UPDATE
+
 ```sql
 UPDATE tasks 
 SET status = 'in_progress', priority = 'Medium'
@@ -133,11 +144,13 @@ WHERE title = 'Test Webhook Task';
 ```
 
 #### Test 3: DELETE
+
 ```sql
 DELETE FROM tasks WHERE title = 'Test Webhook Task';
 ```
 
 ### Expected Results
+
 1. Each operation should trigger webhook within 1 second
 2. n8n workflow execution appears in logs
 3. Success response returned to Supabase
@@ -146,10 +159,12 @@ DELETE FROM tasks WHERE title = 'Test Webhook Task';
 ## Monitoring
 
 ### Supabase
+
 - Database → Webhooks → View delivery logs
 - Check for failed deliveries and retry attempts
 
 ### n8n
+
 - Workflow executions list shows each webhook trigger
 - Detailed logs show data processing steps
 - Error messages visible in failed executions

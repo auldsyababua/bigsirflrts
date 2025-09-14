@@ -1,6 +1,7 @@
 // FLRTS OpenProject Extension - Content Script
+/* global chrome, webkitSpeechRecognition */
 
-console.log('🚀 FLRTS Extension loaded for OpenProject');
+console.log('🚀 FLRTS Extension loaded for OpenProject'); // eslint-disable-line no-console
 
 // Configuration
 const FLRTS_API_URL = 'http://localhost:3000/api/v1';
@@ -17,12 +18,13 @@ window.addEventListener('load', () => {
  */
 function injectFLRTSInterface() {
   // Check if we're on a valid OpenProject page
-  const toolbar = document.querySelector('.toolbar-container') || 
-                  document.querySelector('#toolbar') ||
-                  document.querySelector('.op-app-header');
-  
+  const toolbar =
+    document.querySelector('.toolbar-container') ||
+    document.querySelector('#toolbar') ||
+    document.querySelector('.op-app-header');
+
   if (!toolbar) {
-    console.log('FLRTS: Toolbar not found, retrying...');
+    console.log('FLRTS: Toolbar not found, retrying...'); // eslint-disable-line no-console
     setTimeout(injectFLRTSInterface, 1000);
     return;
   }
@@ -64,7 +66,7 @@ function injectFLRTSInterface() {
  */
 function replaceLogo() {
   const logos = document.querySelectorAll('.op-logo, .logo, .header-logo');
-  logos.forEach(logo => {
+  logos.forEach((logo) => {
     logo.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50"><text x="10" y="35" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="%234A90E2">FLRTS</text></svg>')`;
     logo.style.backgroundSize = 'contain';
     logo.style.backgroundRepeat = 'no-repeat';
@@ -86,7 +88,7 @@ function setupKeyboardShortcuts() {
         input.select();
       }
     }
-    
+
     // Escape to close preview
     if (e.key === 'Escape') {
       const preview = document.getElementById('flrts-preview');
@@ -137,7 +139,7 @@ function setupEventListeners() {
 async function handleSubmit() {
   const input = document.getElementById('flrts-nlp-input');
   const submitBtn = document.getElementById('flrts-submit-btn');
-  
+
   if (!input || !input.value.trim()) return;
 
   const originalText = submitBtn.textContent;
@@ -147,20 +149,20 @@ async function handleSubmit() {
   try {
     // Parse with FLRTS API
     const parsed = await parseFLRTS(input.value);
-    
+
     // Show confirmation dialog
     const confirmed = await showConfirmation(parsed);
-    
+
     if (confirmed) {
       // Create work package in OpenProject
       const workPackage = await createWorkPackage(parsed);
-      
+
       // Show success message
       showNotification('✅ Task created successfully!', 'success');
-      
+
       // Clear input
       input.value = '';
-      
+
       // Redirect to the new work package
       if (workPackage.id) {
         window.location.href = `/work_packages/${workPackage.id}`;
@@ -183,15 +185,15 @@ async function parseFLRTS(input) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Extension-Version': '1.0.0'
+      'X-Extension-Version': '1.0.0',
     },
-    body: JSON.stringify({ 
+    body: JSON.stringify({
       input,
       context: {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        userId: getCurrentUserId()
-      }
-    })
+        userId: getCurrentUserId(),
+      },
+    }),
   });
 
   if (!response.ok) {
@@ -208,7 +210,7 @@ async function previewParse(input) {
   try {
     const parsed = await parseFLRTS(input);
     const preview = document.getElementById('flrts-preview');
-    
+
     if (preview) {
       preview.innerHTML = `
         <div class="flrts-preview-content">
@@ -231,26 +233,26 @@ async function previewParse(input) {
 async function createWorkPackage(parsed) {
   // Get OpenProject API token from storage
   const apiKey = await getOpenProjectAPIKey();
-  
+
   const response = await fetch('/api/v3/work_packages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Basic ${btoa('apikey:' + apiKey)}`
+      Authorization: `Basic ${btoa('apikey:' + apiKey)}`,
     },
     body: JSON.stringify({
       subject: parsed.workPackage.subject,
       description: {
         format: 'markdown',
-        raw: parsed.workPackage.description || ''
+        raw: parsed.workPackage.description || '',
       },
       _links: {
         type: { href: `/api/v3/types/${parsed.workPackage.typeId || 2}` },
         assignee: { href: `/api/v3/users/${parsed.workPackage.assigneeId}` },
-        project: { href: `/api/v3/projects/${parsed.workPackage.projectId || 1}` }
+        project: { href: `/api/v3/projects/${parsed.workPackage.projectId || 1}` },
       },
-      dueDate: parsed.workPackage.dueDate
-    })
+      dueDate: parsed.workPackage.dueDate,
+    }),
   });
 
   if (!response.ok) {
@@ -345,13 +347,13 @@ function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `flrts-notification flrts-notification-${type}`;
   notification.textContent = message;
-  
+
   document.body.appendChild(notification);
-  
+
   setTimeout(() => {
     notification.classList.add('flrts-notification-show');
   }, 10);
-  
+
   setTimeout(() => {
     notification.classList.remove('flrts-notification-show');
     setTimeout(() => {
@@ -380,4 +382,4 @@ async function getOpenProjectAPIKey() {
 }
 
 // Initialize
-console.log('FLRTS Extension initialized successfully');
+console.log('FLRTS Extension initialized successfully'); // eslint-disable-line no-console

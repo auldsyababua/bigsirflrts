@@ -38,6 +38,7 @@ Internet → Cloudflare Tunnel → Digital Ocean VM (NYC3)
 ### 1. Provision the Server
 
 The server has already been provisioned:
+
 - **Droplet Name**: flrts-openproject-prod
 - **IP Address**: 165.227.216.172
 - **Size**: s-4vcpu-8gb (4 vCPU, 8GB RAM, 160GB SSD)
@@ -77,6 +78,7 @@ nano .env
 ```
 
 Required environment variables to configure:
+
 - `POSTGRES_PASSWORD` - Strong password for PostgreSQL
 - `OPENPROJECT_SECRET_KEY_BASE` - Generated above
 - `OPENPROJECT_HOST_NAME` - Your domain (e.g., openproject.yourdomain.com)
@@ -119,6 +121,7 @@ cloudflared tunnel token openproject-tunnel
 ```
 
 Configure tunnel ingress rules in Cloudflare Dashboard:
+
 1. Go to Zero Trust → Access → Tunnels
 2. Select your tunnel
 3. Add public hostname:
@@ -170,6 +173,7 @@ docker compose up -d
 ### Daily Backups
 
 Automated backups run daily at 2 AM UTC:
+
 ```bash
 # Manual backup
 /opt/flrts-openproject/scripts/backup.sh
@@ -210,6 +214,7 @@ docker compose up -d
 ### Troubleshooting
 
 #### OpenProject won't start
+
 ```bash
 # Check logs
 docker compose logs openproject
@@ -222,6 +227,7 @@ docker compose restart
 ```
 
 #### High memory usage
+
 ```bash
 # Check memory consumers
 docker stats --no-stream
@@ -234,6 +240,7 @@ docker exec flrts-openproject rails runner "Rails.cache.clear"
 ```
 
 #### Cloudflare Tunnel issues
+
 ```bash
 # Check tunnel status
 docker logs flrts-cloudflared
@@ -275,6 +282,7 @@ docker compose restart cloudflared
 ## Emergency Procedures
 
 ### Complete System Recovery
+
 ```bash
 # 1. Provision new droplet
 # 2. Run setup script
@@ -285,6 +293,7 @@ docker compose up -d
 ```
 
 ### Rollback Deployment
+
 ```bash
 # Stop services
 docker compose down
@@ -295,7 +304,9 @@ docker compose up -d
 ```
 
 ### Emergency Access
+
 If Cloudflare Tunnel fails:
+
 ```bash
 # Temporarily enable direct access
 ufw allow 8080/tcp

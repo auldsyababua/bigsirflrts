@@ -3,6 +3,7 @@
 ## Goals and Background Context
 
 ### Goals
+
 • Enable rapid, friction-free task creation through natural language processing for distributed team operations
 • Eliminate manual timezone conversion errors by automatically converting all times to assignee's local timezone  
 • Reduce average task creation time from 45 seconds to under 5 seconds
@@ -12,9 +13,10 @@
 
 ### Background Context
 
-The FLRTS NLP Task Management Service addresses critical operational friction at a distributed bitcoin mining company where team members across PST, CST, and EST zones need rapid task coordination. The current manual form-based task entry in OpenProject creates significant delays and dropped tasks due to timezone confusion and workflow interruption. By leveraging a simplified single-database architecture where OpenProject connects directly to Supabase PostgreSQL, FLRTS provides a natural language enhancement layer that converts conversational commands like "Hey Taylor, Colin needs the server logs by 1pm his time" into properly structured API calls to OpenProject. 
+The FLRTS NLP Task Management Service addresses critical operational friction at a distributed bitcoin mining company where team members across PST, CST, and EST zones need rapid task coordination. The current manual form-based task entry in OpenProject creates significant delays and dropped tasks due to timezone confusion and workflow interruption. By leveraging a simplified single-database architecture where OpenProject connects directly to Supabase PostgreSQL, FLRTS provides a natural language enhancement layer that converts conversational commands like "Hey Taylor, Colin needs the server logs by 1pm his time" into properly structured API calls to OpenProject.
 
 **Critical Architecture Rule:** FLRTS implements a "Reflex and Brain" hybrid architecture:
+
 - **Reflex Layer (Edge Functions)**: Handles immediate responses (<100ms) for Telegram acknowledgments and simple queries
 - **Brain Layer (n8n Workflows)**: Orchestrates complex business logic, multi-step operations, and all OpenProject API interactions
 - **Data Flow**: User → Telegram → Edge Function (instant ACK) → n8n Workflow → OpenProject API → Supabase PostgreSQL
@@ -22,6 +24,7 @@ The FLRTS NLP Task Management Service addresses critical operational friction at
 - **Database Rule**: FLRTS never writes to the database directly - all writes go through OpenProject REST API
 
 ### Change Log
+
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
 | 2025-01-12 | 1.0 | Initial PRD creation with single-database architecture | John (PM Agent) |
@@ -66,25 +69,31 @@ The FLRTS NLP Task Management Service addresses critical operational friction at
 ## User Interface Design Goals
 
 ### Overall UX Vision
+
 Telegram-first conversational interface where users send natural language messages and receive parsed JSON confirmations. The correction loop happens entirely through chat messages - users reply with corrections until the parsing is accurate, then confirm for execution.
 
 ### Key Interaction Paradigms
+
 • **Conversational correction loop**: Send message → Review bot response → Reply with corrections → Repeat until correct → Confirm
 • **Text-only confirmation**: Bot shows parsed JSON in readable format, user types "yes" or "confirm" to execute
 • **OpenProject fallback**: Users can confirm faulty parsing and fix directly in OpenProject's mobile-responsive UI
 
 ### Core Screens and Views
+
 • **Telegram Bot Chat** - Primary interface for all NLP interactions
 • **JSON Confirmation Message** - Bot's formatted response showing parsed intent
 • **OpenProject Mobile UI** - Fallback interface for manual corrections (existing responsive design)
 
 ### Accessibility: None
+
 (Telegram handles its own accessibility)
 
 ### Branding
+
 No custom branding required - uses standard Telegram bot interface
 
 ### Target Device and Platforms: Mobile Only
+
 (Telegram app on phones)
 
 ## Technical Assumptions
@@ -92,16 +101,20 @@ No custom branding required - uses standard Telegram bot interface
 ### Repository Structure: Monorepo
 
 ### Service Architecture
+
 **Hybrid "Reflex and Brain" Model:**
+
 - **Reflex Layer**: Supabase Edge Functions for immediate responses (<100ms latency)
 - **Brain Layer**: n8n workflows in queue mode for complex orchestration (20-50ms base overhead acceptable)
 - **Infrastructure**: VM-based deployment using Docker Compose with OpenProject, n8n (queue mode), Redis, and supporting services
 - **Integration Pattern**: Edge Functions acknowledge users instantly, then trigger n8n workflows asynchronously
 
 ### Testing Requirements  
+
 Unit tests for timezone conversion logic and NLP parsing validation against 100-example synthetic dataset. Manual testing via Telegram bot for MVP, with automated integration tests post-MVP.
 
 ### Additional Technical Assumptions and Requests
+
 • **Single Supabase PostgreSQL database** with logical schema separation (openproject schema owned by OpenProject, flrts schema for FLRTS logs/metrics only)
 • **OpenProject connects directly to Supabase** via DATABASE_URL - no synchronization needed
 • **FLRTS never writes to openproject schema** - all writes go through OpenProject REST API
@@ -130,6 +143,7 @@ Unit tests for timezone conversion logic and NLP parsing validation against 100-
 **Goal:** Establish production infrastructure with OpenProject deployed, n8n configured in queue mode with Redis, and Edge Functions layer for low-latency operations.
 
 ### Story 1.1: Deploy OpenProject via Docker on DigitalOcean [COMPLETED]
+
 As a system administrator,
 I want OpenProject deployed via Docker on Digital Ocean,
 so that we have our core project management platform running.
@@ -137,22 +151,26 @@ so that we have our core project management platform running.
 **Status:** ✅ COMPLETED - Running at https://ops.10nz.tools
 
 ### Story 1.2: PostgreSQL 15.8 Validation
+
 As a system administrator,
 I want to ensure the Supabase database meets version requirements,
 so that OpenProject runs without compatibility issues.
 
 **Acceptance Criteria:**
+
 1. Verify PostgreSQL version is 15.8 (Supabase default)
 2. Confirm OpenProject compatibility with 15.8
 3. Document that pgjwt extension requires 15.8
 4. Remove any references to PostgreSQL 16+
 
 ### Story 1.3: n8n Queue Mode Configuration
+
 As a DevOps engineer,
 I want n8n configured in queue mode with Redis,
 so that we can handle concurrent workflows at scale.
 
 **Acceptance Criteria:**
+
 1. Redis container deployed for queue management
 2. n8n main instance configured with EXECUTIONS_MODE=queue
 3. n8n worker instances configured with concurrency=20
@@ -161,11 +179,13 @@ so that we can handle concurrent workflows at scale.
 6. Health checks verify queue connectivity
 
 ### Story 1.4: Supabase Edge Functions Setup
+
 As a backend developer,
 I want Edge Functions deployed for low-latency operations,
 so that Telegram webhooks respond instantly.
 
 **Acceptance Criteria:**
+
 1. Edge Functions deployed for Telegram webhook receiver
 2. Edge Function responds in <100ms with acknowledgment
 3. Edge Function triggers n8n workflow via webhook
@@ -174,11 +194,13 @@ so that Telegram webhooks respond instantly.
 6. Monitoring for function execution times
 
 ### Story 1.5: Supabase Webhooks Configuration
+
 As a backend developer,
 I want Supabase webhooks configured,
 so that database changes trigger n8n workflows.
 
 **Acceptance Criteria:**
+
 1. Database webhooks configured for task table changes
 2. Webhook endpoints point to n8n workflows
 3. Retry logic configured for failed webhooks
@@ -186,11 +208,13 @@ so that database changes trigger n8n workflows.
 5. Security tokens configured for webhook validation
 
 ### Story 1.6: Redis Queue Configuration [TODO]
+
 As a DevOps engineer,
 I want Redis properly configured for n8n queue mode,
 so that workflows execute reliably.
 
 **Acceptance Criteria:**
+
 1. Redis container deployed with persistence
 2. Redis connection verified from n8n main and workers
 3. Queue monitoring dashboard accessible
@@ -199,11 +223,13 @@ so that workflows execute reliably.
 6. Connection pooling optimized
 
 ### Story 1.7: Monitoring and Observability [TODO]
+
 As a DevOps engineer,
 I want monitoring for all infrastructure components,
 so that we can track performance and reliability.
 
 **Acceptance Criteria:**
+
 1. n8n queue length monitoring
 2. Edge Function latency tracking
 3. Database connection pool metrics
@@ -211,17 +237,18 @@ so that we can track performance and reliability.
 5. Webhook response time measurements
 6. Alert thresholds configured
 
-
 ## Epic 2: Telegram Interface
 
 **Goal:** Build the Telegram bot interface layer with natural language task creation, reminders, inline keyboards, and error recovery.
 
 ### Story 2.1: Telegram Task Creation Workflow
+
 As a field employee,
 I want to create tasks through Telegram using natural language,
 so that I can quickly assign work without opening OpenProject.
 
 **Acceptance Criteria:**
+
 1. Telegram bot receives natural language messages
 2. Messages sent to n8n workflow for processing
 3. Parsed results shown as confirmation message
@@ -230,11 +257,13 @@ so that I can quickly assign work without opening OpenProject.
 6. Success/failure notification sent back
 
 ### Story 2.2: Telegram Reminder System
+
 As a field employee,
 I want to receive task reminders in Telegram,
 so that I don't miss important deadlines.
 
 **Acceptance Criteria:**
+
 1. Reminder times parsed from task creation
 2. n8n cron workflow checks for due reminders
 3. Telegram messages sent at reminder times
@@ -243,11 +272,13 @@ so that I don't miss important deadlines.
 6. Reminder status synced back to OpenProject
 
 ### Story 2.3: Telegram Inline Keyboards
+
 As a mobile user,
 I want to use buttons instead of typing commands,
 so that I can interact faster on my phone.
 
 **Acceptance Criteria:**
+
 1. Inline keyboards for common actions (confirm/cancel/edit)
 2. Task status buttons (complete/in-progress/blocked)
 3. Quick reply templates for common responses
@@ -256,11 +287,13 @@ so that I can interact faster on my phone.
 6. Visual feedback for button interactions
 
 ### Story 2.4: Error Recovery Procedures
+
 As a user,
 I want helpful error messages when something fails,
 so that I know how to fix the problem.
 
 **Acceptance Criteria:**
+
 1. NLP parsing failures show suggested corrections
 2. API errors translated to user-friendly messages
 3. Retry logic for transient failures
@@ -269,11 +302,13 @@ so that I know how to fix the problem.
 6. Admin notifications for critical failures
 
 ### Story 2.5: Telegram Command Parser [TODO]
+
 As a power user,
 I want to use explicit commands for precise control,
 so that I can bypass NLP when needed.
 
 **Acceptance Criteria:**
+
 1. /create, /update, /list, /archive commands
 2. Structured command syntax documented
 3. Parameter validation and error messages
@@ -282,11 +317,13 @@ so that I can bypass NLP when needed.
 6. Command history and autocomplete
 
 ### Story 2.6: Telegram User Context [TODO]
+
 As a user,
 I want the bot to remember my context,
 so that I don't have to repeat information.
 
 **Acceptance Criteria:**
+
 1. User timezone stored and applied automatically
 2. Recent tasks remembered for quick updates
 3. Default project/assignee preferences
@@ -348,6 +385,7 @@ OpenAI must return the following structured JSON for ALL operations:
 ```
 
 **Note on Test Data:** The existing 100 synthetic examples in `/docs/flrts-crud-query-examples.md` currently only show CREATE operations without CRUD operation type or timezone context. These examples need to be expanded to include:
+
 - Operation type field (CREATE/READ/UPDATE/ARCHIVE)
 - FLRT type field (TASK/LIST)
 - Time context information (sender_time/assignee_time/absolute)
@@ -359,11 +397,13 @@ OpenAI must return the following structured JSON for ALL operations:
 **Goal:** Build n8n workflows for OpenProject API integration, webhook processing, batch operations, and NLP processing.
 
 ### Story 3.1: OpenProject API Workflows [TODO]
+
 As a backend developer,
 I want n8n workflows for all OpenProject operations,
 so that we have reliable API integration.
 
 **Acceptance Criteria:**
+
 1. CREATE work package workflow via POST /api/v3/work_packages
 2. READ work packages workflow with filtering
 3. UPDATE work package workflow via PATCH
@@ -372,11 +412,13 @@ so that we have reliable API integration.
 6. Response transformation to standard format
 
 ### Story 3.2: OpenProject Webhook Sync
+
 As a system administrator,
 I want OpenProject changes to sync back to our system,
 so that we maintain data consistency.
 
 **Acceptance Criteria:**
+
 1. OpenProject webhooks configured for work package changes
 2. n8n webhook receiver processes OpenProject events
 3. Status updates reflected in Telegram notifications
@@ -385,11 +427,13 @@ so that we maintain data consistency.
 6. Webhook signature validation implemented
 
 ### Story 3.3: Batch Sync Workflows [TODO]
+
 As a system administrator,
 I want batch synchronization workflows,
 so that we can handle bulk operations efficiently.
 
 **Acceptance Criteria:**
+
 1. SplitInBatches node configuration
 2. Rate limiting for external APIs
 3. Progress tracking and reporting
@@ -398,11 +442,13 @@ so that we can handle bulk operations efficiently.
 6. Performance optimization for large datasets
 
 ### Story 3.4: OpenAI Context Injection (MVP)
+
 As a backend developer,
 I want to pass all valid options to OpenAI,
 so that it can match natural language to specific entities.
 
 **Acceptance Criteria:**
+
 1. Fetch all users, sites, contractors from database
 2. Include complete lists in OpenAI prompt
 3. Include current UTC timestamp in prompt
@@ -411,11 +457,13 @@ so that it can match natural language to specific entities.
 6. Prompt stays within token limits
 
 ### Story 3.5: Timezone Conversion Logic [TODO]
+
 As a distributed team,
 I want automatic timezone conversion,
 so that times are always correct.
 
 **Acceptance Criteria:**
+
 1. Timezone detection from context
 2. User timezone mapping configuration
 3. DST handling for all zones
@@ -428,11 +476,13 @@ so that times are always correct.
 **Goal:** Implement Lists feature for organizing tasks, managing collections via Telegram commands, with templates and sharing capabilities.
 
 ### Story 4.1: Lists Interface
+
 As a field employee,
 I want to create filtered task views and simple bullet lists,
 so that I can organize work and personal reminders.
 
 **Acceptance Criteria:**
+
 1. Telegram commands for task filtering: `/my_tasks`, `/overdue`, `/today`
 2. Simple bullet list creation: `/create_list Shopping`
 3. List management commands: `/add_to_list`, `/show_list`
@@ -441,11 +491,13 @@ so that I can organize work and personal reminders.
 6. Mobile-optimized display format
 
 ### Story 4.2: List Management Commands
+
 As an operations team member,
 I want to manage task lists via Telegram commands,
 so that I can organize work by project, client, or operational area.
 
 **Acceptance Criteria:**
+
 1. `/createlist` and `/newlist` commands work identically
 2. Parse list name and optional description
 3. Support visibility setting (team/private)
@@ -454,11 +506,13 @@ so that I can organize work by project, client, or operational area.
 6. Natural language support for list operations
 
 ### Story 4.3: List Templates System [TODO]
+
 As a team lead,
 I want to create reusable list templates,
 so that standard processes can be quickly instantiated.
 
 **Acceptance Criteria:**
+
 1. Create template from existing list
 2. Template library management
 3. Instantiate template with variables
@@ -467,11 +521,13 @@ so that standard processes can be quickly instantiated.
 6. Template usage analytics
 
 ### Story 4.4: List Sharing & Permissions [TODO]
+
 As a team member,
 I want to share lists with specific colleagues,
 so that we can collaborate on task collections.
 
 **Acceptance Criteria:**
+
 1. Share lists with individuals or groups
 2. Read-only vs edit permissions
 3. Notification on share
@@ -480,11 +536,13 @@ so that we can collaborate on task collections.
 6. List ownership transfer
 
 ### Story 4.5: List Notifications [TODO]
+
 As a list member,
 I want notifications about list changes,
 so that I stay informed about shared work.
 
 **Acceptance Criteria:**
+
 1. Notification on task added to list
 2. Notification on list shared
 3. Daily list summary option
@@ -521,7 +579,9 @@ so that I stay informed about shared work.
 ## Next Steps
 
 ### UX Expert Prompt
+
 Review the FLRTS PRD focusing on the Telegram bot interface (Epic 3). Design the conversational flow for the correction loop, ensuring clear feedback and intuitive interaction patterns for mobile users.
 
 ### Architect Prompt
+
 Review the FLRTS PRD with focus on Epic 1 migration stories and Epic 2 service enhancement. Create technical architecture for VM-based deployment with direct Supabase connection, eliminating all synchronization complexity.
