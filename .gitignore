@@ -28,3 +28,78 @@ AGENTS.md
 /web-bundles
 /tools/PiecesOS-Documentation
 /tools/openproject-cli
+
+# === NEW EXCLUSIONS FOR CONTEXT MANAGEMENT ===
+
+# Archive directories (should be external anyway)
+**/ARCHIVE*
+**/archive/
+**/archived/
+**/old/
+**/backup/
+**/deprecated/
+
+# All node_modules everywhere
+**/node_modules/
+
+# Binary and media files
+*.gif
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.mov
+*.avi
+*.zip
+*.tar
+*.gz
+*.dmg
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Large generated files
+*.min.js
+*.bundle.js
+dist/
+build/
+out/
+
+# Database files
+*.sqlite
+*.db
+*.sql
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files beyond the allowed ones
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+scratch/
+*.tmp
+
+# Documentation builds
+docs/_build/
+docs/site/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Package manager locks (controversial - you might want to keep)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
