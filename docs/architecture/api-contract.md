@@ -1,7 +1,7 @@
 # FLRTS-OpenProject API Contract Specification
 
 ## Overview
-This document defines the API contract between FLRTS NLP Service and OpenProject REST API v3. **CRITICAL**: FLRTS never writes directly to the database. All operations MUST go through the OpenProject REST API.
+This document defines the API contract between FLRTS NLP Service and OpenProject REST API v3, implementing Story 3.1 (OpenProject API Workflows). **CRITICAL**: FLRTS never writes directly to the database. All operations MUST go through the OpenProject REST API.
 
 ## Authentication
 
@@ -222,29 +222,32 @@ POST /api/v3/projects/:id/work_packages/form
 ## FLRTS Integration Pattern
 
 ```typescript
-// Example TypeScript integration
+import { Temporal } from '@js-temporal/polyfill';
+
+// Example TypeScript integration (aligned with Story 3.5 timezone handling)
 interface FLRTSToOpenProjectMapper {
   // Map parsed NLP to OpenProject API format
   async mapToWorkPackage(parsedData: ParsedNLPData): Promise<OpenProjectWorkPackage> {
-    // 1. Convert timezone
-    const convertedDueDate = this.convertToAssigneeTimezone(
-      parsedData.due_at,
-      parsedData.assignee_timezone
-    );
-    
-    // 2. Map entities to IDs
+    // 1. Convert timezone using Temporal API (Story 3.5)
+    const parsedTime = Temporal.PlainDateTime.from(parsedData.due_at);
+    const zonedTime = parsedTime.toZonedDateTime(parsedData.assignee_timezone);
+    const convertedDueDate = zonedTime.toPlainDate().toString();
+
+    // 2. Map entities to IDs (cached from Story 3.4 context injection)
     const projectId = await this.getProjectId(parsedData.location);
     const assigneeId = await this.getUserId(parsedData.assignee);
-    
-    // 3. Build OpenProject payload
+
+    // 3. Build OpenProject payload with HAL+JSON format
     return {
       subject: parsedData.task_description,
       dueDate: convertedDueDate,
+      lockVersion: 0, // New work package
       _links: {
         project: { href: `/api/v3/projects/${projectId}` },
         assignee: { href: `/api/v3/users/${assigneeId}` },
         type: { href: '/api/v3/types/2' },
-        status: { href: '/api/v3/statuses/1' }
+        status: { href: '/api/v3/statuses/1' },
+        priority: { href: '/api/v3/priorities/8' } // Normal priority
       }
     };
   }

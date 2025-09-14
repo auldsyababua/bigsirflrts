@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+  # OpenProject Community Edition with Supabase PostgreSQL
+  openproject:
+    image: openproject/community:13
+    container_name: flrts-openproject
+    restart: unless-stopped
+    environment:
+      OPENPROJECT_SECRET_KEY_BASE: "supersecretbasekey1234567890abcdefghijklmnopqrstuvwxyz"
+      OPENPROJECT_HOST__NAME: "localhost:8080"
+      OPENPROJECT_HTTPS: "false"
+      OPENPROJECT_DEFAULT__LANGUAGE: "en"
+      OPENPROJECT_SEED_LOCALE: "en"
+      OPENPROJECT_ENABLE__REGISTRATION: "false"
+      # Supabase PostgreSQL connection (Session Mode on port 5432)
+      DATABASE_URL: "postgresql://postgres.thnwlykidzhrsagyjncc:[YOUR-DB-PASSWORD]@aws-0-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require"
+      # Initial admin credentials
+      OPENPROJECT_ADMIN__USER__NAME: "admin"
+      OPENPROJECT_ADMIN__USER__PASSWORD: "admin"
+      OPENPROJECT_ADMIN__USER__MAIL: "admin@flrts.local"
+      # Enable API
+      OPENPROJECT_API__ENABLED: "true"
+    volumes:
+      - opdata:/var/openproject/assets
+      - ./custom-css:/var/openproject/assets/custom
+    ports:
+      - "8080:80"
+    networks:
+      - flrts-network
+    # Add health check for better monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health_checks/default"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis for caching (required for OpenProject)
+  redis:
+    image: redis:7-alpine
+    container_name: flrts-redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    networks:
+      - flrts-network
+
+volumes:
+  opdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  flrts-network:
+    driver: bridge

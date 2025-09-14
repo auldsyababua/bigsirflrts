@@ -186,6 +186,7 @@ grep -r "single.*Supabase\|openproject schema" docs/architecture/
 3. Begin implementation of MVP based on completed priority stories
 
 **Note to next PM:** Priority stories for MVP are complete. The 18 completed stories provide everything needed for:
+
 - Infrastructure setup (Epic 1)
 - Telegram bot functionality (Epic 2)
 - OpenProject integration (Epic 3)
@@ -193,6 +194,7 @@ grep -r "single.*Supabase\|openproject schema" docs/architecture/
 
 **Story Creation Summary (Jan 13, 2025):**
 All 7 priority stories were created with:
+
 - Production-ready TypeScript code examples
 - Comprehensive testing requirements
 - Performance specifications

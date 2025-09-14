@@ -12,7 +12,17 @@
 
 # Specific files
 AGENTS.md
+
+# Environment files (all variants)
 .env
+.env.*
+*.env
+.env.local
+.env.production
+.env.development
+.env.test
+.env.supabase
+.env.telegram
 
 # Directories
 /web-bundles

@@ -379,11 +379,12 @@ class TokenEstimator {
   }
 
   calculateCost(inputTokens: number, outputTokens: number): number {
-    const INPUT_COST_PER_1K = 0.0025;   // GPT-4o pricing
-    const OUTPUT_COST_PER_1K = 0.01;    // GPT-4o pricing
-    
-    return (inputTokens / 1000 * INPUT_COST_PER_1K) + 
-           (outputTokens / 1000 * OUTPUT_COST_PER_1K);
+    // GPT-4o pricing as of 2025
+    const INPUT_COST_PER_1M = 2.50;    // $2.50 per 1M input tokens
+    const OUTPUT_COST_PER_1M = 10.00;  // $10.00 per 1M output tokens
+
+    return (inputTokens / 1_000_000 * INPUT_COST_PER_1M) +
+           (outputTokens / 1_000_000 * OUTPUT_COST_PER_1M);
   }
 }
 ```
@@ -407,6 +408,7 @@ class TokenEstimator {
 ## Testing Strategy
 
 ### Unit Tests for Timezone Logic
+
 ```typescript
 describe('TimezoneConverter', () => {
   it('converts sender time to assignee time correctly', () => {
@@ -431,6 +433,7 @@ describe('TimezoneConverter', () => {
 ```
 
 ### Integration Tests
+
 - Mock OpenAI responses for consistent testing
 - Test full flow: Telegram → NLP → OpenAI → OpenProject
 - Validate timezone conversion accuracy
