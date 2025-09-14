@@ -49,6 +49,7 @@
    - **INCLUDES**: Current UTC timestamp for relative date parsing
    - **OUTPUT**: Matched IDs and structured JSON for OpenProject API
    - **NO PREPROCESSING**: Let OpenAI handle everything for MVP
+   - **Assigner is ALWAYS user**: The assigner of a new task IS ALWAYS the person who submitted it. OpenAI does not need to determine this. We will know it based on the telegram userID tied to the flrts_user,
    - **POST-MVP**: Add @mentions and /commands preprocessing
 
 6. **Timezone Handling (Only Processing We Do)**
@@ -72,23 +73,23 @@
 3. **1.3: n8n Queue Mode Configuration** ✅ EXISTS
 4. **1.4: Supabase Edge Functions Setup** ✅ EXISTS
 5. **1.5: Supabase Webhooks Configuration** ✅ EXISTS
-6. **1.6: Redis Queue Configuration** ❌ TODO
-7. **1.7: Monitoring and Observability** ❌ TODO
+6. **1.6: Redis Queue Configuration** ✅ CREATED
+7. **1.7: Monitoring and Observability** ✅ CREATED
 
 ### Epic 2: Telegram Interface (6 stories)
 1. **2.1: Telegram Task Creation Workflow** ✅ EXISTS
 2. **2.2: Telegram Reminder System** ✅ EXISTS
 3. **2.3: Telegram Inline Keyboards** ✅ EXISTS
 4. **2.4: Error Recovery Procedures** ✅ EXISTS
-5. **2.5: Telegram Command Parser** ❌ TODO
-6. **2.6: Telegram User Context** ❌ TODO
+5. **2.5: Telegram Command Parser** ✅ CREATED
+6. **2.6: Telegram User Context** ✅ CREATED
 
 ### Epic 3: Integration Layer (5 stories)
-1. **3.1: OpenProject API Workflows** ❌ TODO
+1. **3.1: OpenProject API Workflows** ✅ CREATED
 2. **3.2: OpenProject Webhook Sync** ✅ EXISTS
-3. **3.3: Batch Sync Workflows** ❌ TODO
+3. **3.3: Batch Sync Workflows** ✅ CREATED
 4. **3.4: OpenAI Context Injection (MVP)** ✅ EXISTS
-5. **3.5: Timezone Conversion Logic** ❌ TODO
+5. **3.5: Timezone Conversion Logic** ✅ CREATED
 
 ### Epic 4: Lists Management (5 stories)
 1. **4.1: Lists Interface** ✅ EXISTS
@@ -97,7 +98,7 @@
 4. **4.4: List Sharing & Permissions** ❌ TODO
 5. **4.5: List Notifications** ❌ TODO
 
-**TOTAL: 23 stories (13 exist, 10 to create)**
+**TOTAL: 23 stories (18 complete, 5 remaining for lists features)**
 
 ---
 
@@ -118,14 +119,20 @@
 - [ ] Remove old epic structure
 - [ ] Add all missing stories to PRD
 
-### Phase 4: Create Missing Stories
-Priority order (most critical first):
-1. [ ] 3.1: OpenProject API Workflows (critical for task creation)
-2. [ ] 1.6: Redis Queue Configuration (needed for scaling)
-3. [ ] 2.5: Telegram Command Parser (improves UX)
-4. [ ] 3.5: Timezone Conversion Logic
-5. [ ] 3.3: Batch Sync Workflows (efficiency)
-6. [ ] Others as needed...
+### Phase 4: Create Missing Stories ✅ PRIORITY STORIES COMPLETED
+Priority stories completed (most critical first):
+1. [x] 3.1: OpenProject API Workflows (critical for task creation)
+2. [x] 1.6: Redis Queue Configuration (needed for scaling)
+3. [x] 2.5: Telegram Command Parser (improves UX)
+4. [x] 1.7: Monitoring & Observability (production readiness)
+5. [x] 2.6: Telegram User Context (session management)
+6. [x] 3.3: Batch Sync Workflows (efficiency)
+7. [x] 3.5: Timezone Conversion Logic (accurate scheduling)
+
+Remaining (lower priority list features):
+1. [ ] 4.3: List Templates System
+2. [ ] 4.4: List Sharing & Permissions
+3. [ ] 4.5: List Notifications
 
 ---
 
@@ -167,15 +174,28 @@ grep -r "single.*Supabase\|openproject schema" docs/architecture/
 | Remove PG 16+ refs | ✅ DONE | Claude | 2024-12-13 |
 | Reorganize stories | ✅ DONE | Claude | 2024-12-13 |
 | Update PRD | ⏳ TODO | - | - |
-| Create missing stories | ⏳ TODO | - | - |
-| Enrich with current docs | ⏳ TODO | - | - |
+| Create priority stories | ✅ DONE | Claude | 2025-01-13 |
+| Enrich with current docs | ✅ DONE | Claude | 2025-01-13 |
 
 ---
 
 ## 🚀 NEXT STEPS
 
 1. Update the PRD to match the story structure above
-2. Create the 10 missing story files
-3. Ensure all new stories follow the architecture clarifications
+2. Create the 3 remaining list feature stories (4.3, 4.4, 4.5) - lower priority
+3. Begin implementation of MVP based on completed priority stories
 
-**Note to next PM:** The story structure shown above is the SINGLE SOURCE OF TRUTH. Update the PRD to match this exactly.
+**Note to next PM:** Priority stories for MVP are complete. The 18 completed stories provide everything needed for:
+- Infrastructure setup (Epic 1)
+- Telegram bot functionality (Epic 2)
+- OpenProject integration (Epic 3)
+- Basic list operations (4.1, 4.2)
+
+**Story Creation Summary (Jan 13, 2025):**
+All 7 priority stories were created with:
+- Production-ready TypeScript code examples
+- Comprehensive testing requirements
+- Performance specifications
+- Security considerations
+- Developer resources with MCP tool references
+- Best practices from 2025 documentation
