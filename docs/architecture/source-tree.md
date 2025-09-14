@@ -114,13 +114,13 @@ flrts-nlp/
 openproject-config/
 ├── src/
 │   ├── env/                          # Environment configuration
-│   │   ├── database.config.ts       # DATABASE_URL for Supabase Session Mode
-│   │   ├── ssl.config.ts            # SSL/TLS configuration (required)
+│   │   ├── database.config.ts       # DATABASE_URL for Supabase Session Mode (port 5432)
+│   │   ├── ssl.config.ts            # SSL/TLS configuration (sslmode=require)
 │   │   ├── r2.config.ts             # Cloudflare R2 object storage
 │   │   └── connection.validator.ts  # Connection validation
 │   │
 │   ├── deployment/                   # Deployment helpers
-│   │   ├── docker-compose.yml       # OpenProject with Supabase DB
+│   │   ├── docker-compose.yml       # OpenProject with Supabase PostgreSQL 15.8
 │   │   └── health-check.ts          # Database connectivity check
 │   │
 │   └── index.ts                     # Configuration exports
@@ -232,8 +232,11 @@ docker/
 ├── nginx/
 │   ├── nginx.conf                 # Main config
 │   └── sites/                     # Site configs
-└── redis/
-    └── redis.conf                  # Redis config
+├── redis/
+│   └── redis.conf                  # Redis config for n8n queue mode
+└── n8n/
+    ├── n8n.config.json             # n8n v1.105.2 configuration
+    └── queue.config.json           # Queue mode settings
 ```
 
 ### infrastructure/cloudflare/
@@ -342,9 +345,10 @@ bigsirflrts/
 
 ### Must Not Modify Without Review
 - `packages/shared/src/schemas/*` - Data contracts
-- `packages/openproject-config/src/env/database.config.ts` - Database connection (Session Mode required!)
+- `packages/openproject-config/src/env/database.config.ts` - Database connection (Session Mode port 5432 required!)
 - `.github/workflows/deploy.yml` - Deployment pipeline
 - `infrastructure/docker/docker-compose.yml` - Service orchestration
+- `infrastructure/n8n/queue.config.json` - n8n queue mode configuration
 
 ### Frequently Modified
 - `packages/flrts-nlp/src/prompts/*` - Prompt tuning

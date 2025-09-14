@@ -3,9 +3,9 @@
 ## Core Technologies
 
 ### Runtime & Language
-- **Node.js 20 LTS** - JavaScript runtime with native TypeScript support
-- **TypeScript 5.3** - Type safety and modern JavaScript features
-- **Bun** (alternative) - Fast all-in-one JavaScript runtime for development
+- **Node.js 22 LTS** - JavaScript runtime with native TypeScript support via --experimental-strip-types
+- **TypeScript 5.6** - Type safety and modern JavaScript features
+- **Bun 1.1** (alternative) - Fast all-in-one JavaScript runtime for development
 
 ### Frameworks
 
@@ -40,12 +40,13 @@
 ### Data Layer
 
 #### Databases
-- **Supabase PostgreSQL 16+** - Single database instance shared by all services
+- **Supabase PostgreSQL 15.8** - Single database instance shared by all services
   - OpenProject connects directly via DATABASE_URL (Session Mode, port 5432)
   - FLRTS stores metadata only (conversations, preferences)
-  - Business data in separate schema
+  - Business data in separate schema (openproject schema)
   - **NO SYNCHRONIZATION NEEDED** - Single source of truth
-- **Redis 7** - Caching and session management (containerized)
+  - Uses Supavisor connection pooling for optimal performance
+- **Redis 7** - Queue management for n8n and session caching (containerized)
 - **SQLite 3** - Local development only
 
 #### ORMs & Query Builders
@@ -61,11 +62,12 @@
 
 ### External APIs
 - **OpenProject REST API v3** - FLRTS interacts via API, not database
-- **OpenAI API** - Natural language processing for FLRTS
+- **OpenAI GPT-4o API** - Natural language processing for FLRTS
 - **Google Cloud APIs** - Speech services (future)
 - **Telegram Bot API** - Messaging interface
-- **Supabase API** - FLRTS metadata operations only
-- **n8n Cloud API** - Workflow automation and webhooks
+- **Supabase REST API** - FLRTS metadata operations only
+- **n8n v1.105.2 API** - Workflow automation in queue mode with Redis
+- **Supabase Edge Functions** - Low-latency operations (<100ms response)
 
 ### Infrastructure
 
@@ -158,17 +160,20 @@
 
 | Category | Primary Choice | Rationale | Alternatives |
 |----------|---------------|-----------|--------------|
-| Runtime | Node.js 20 LTS | Stability, TypeScript support, ecosystem | Bun (speed), Deno (security) |
+| Runtime | Node.js 22 LTS | Native TypeScript support, stability, ecosystem | Bun 1.1 (speed), Deno 2 (security) |
 | Web Framework | Express.js | Maturity, middleware ecosystem | Fastify (performance), Koa (modern) |
-| Database | Supabase PostgreSQL 16+ | Single instance, no sync complexity, direct OpenProject support | Self-hosted PostgreSQL |
+| Database | Supabase PostgreSQL 15.8 | Single instance, no sync complexity, direct OpenProject support | Self-hosted PostgreSQL |
+| Connection Pooling | Supavisor | Session mode for persistent, transaction mode for serverless | PgBouncer |
 | Object Storage | Cloudflare R2 | S3-compatible, cost-effective | AWS S3, MinIO |
-| Cache | Redis | Performance, pub/sub support | Memcached, KeyDB |
-| Queue | Bull | Redis integration, reliability | BullMQ, RabbitMQ |
+| Cache | Redis 7 | n8n queue mode, pub/sub support | Memcached, KeyDB |
+| Queue | n8n Queue Mode | Native n8n integration, Redis-based | Bull, BullMQ, RabbitMQ |
+| Workflow Orchestration | n8n v1.105.2 | Visual workflow builder, extensive integrations | Temporal, Apache Airflow |
+| Edge Functions | Supabase Edge Functions | Low-latency, TypeScript-first | Cloudflare Workers, Vercel Edge |
 | AI/NLP | OpenAI GPT-4o | Quality, ease of integration | Local LLMs, Azure OpenAI |
-| Frontend | Next.js 14 | Full-stack, performance | Remix, Astro |
+| Frontend | Next.js 14 | App Router, RSC, performance | Remix, Astro |
 | CSS | Tailwind CSS | Rapid development, consistency | CSS Modules, styled-components |
-| Testing | Jest | Comprehensive, wide support | Vitest, Mocha |
-| Container | Docker | Industry standard | Podman, containerd |
+| Testing | Jest 29 | Comprehensive, wide support | Vitest, Mocha |
+| Container | Docker 24 | Industry standard | Podman, containerd |
 | Monitoring | Prometheus + Grafana | Open source, powerful | DataDog, New Relic |
 
 ## Version Management Strategy
@@ -216,6 +221,8 @@ All dependencies are compatible with MIT license:
 | Google Speech API | 100 minutes/month (future) | $2-5 |
 | Digital Ocean VM | s-4vcpu-8gb (4GB RAM minimum) | $48 |
 | Supabase PostgreSQL | Pro tier (single instance for all) | $25 |
+| Supabase Edge Functions | 150,000 invocations/month | Included in Pro |
+| n8n Cloud (optional) | Self-hosted on VM | $0 |
 | Cloudflare R2 | 100GB storage + bandwidth | $5 |
 | Redis (containerized) | Included in VM | $0 |
 | **Total** | | **$85-93/month** |
@@ -232,9 +239,10 @@ All dependencies are compatible with MIT license:
 ## Future Technology Considerations
 
 ### Near-term (3-6 months)
-- **Bun runtime** for 2-3x performance improvement
+- **Bun 1.1 runtime** for 2-3x performance improvement
 - **Drizzle ORM** for better TypeScript integration
-- **tRPC** for type-safe API communication
+- **tRPC v11** for type-safe API communication
+- **Hono** as Express.js alternative for edge deployment
 
 ### Medium-term (6-12 months)
 - **Local LLM** option via Ollama

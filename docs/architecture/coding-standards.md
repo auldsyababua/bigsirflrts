@@ -290,6 +290,20 @@ function useParser() {
 
 ## Database Patterns
 
+### Connection Management (Supabase)
+
+```typescript
+// ✅ GOOD: Use Supavisor pooling appropriately
+// For serverless/edge functions - Transaction mode (port 6543)
+const DATABASE_URL = 'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true';
+
+// For persistent servers - Session mode (port 5432)
+const DATABASE_URL = 'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:5432/postgres';
+
+// ❌ BAD: Direct connection from serverless
+const DATABASE_URL = 'postgresql://postgres:[password]@db.project.supabase.co:5432/postgres';
+```
+
 ### Query Patterns
 
 ```typescript
@@ -332,14 +346,17 @@ try {
 import { z } from 'zod';
 
 const CreateTaskSchema = z.object({
-  input: z.string().min(1).max(1000),
+  input: z.string().min(1).max(1000).trim(),
   userId: z.string().uuid(),
   timezone: z.enum(['PST', 'CST', 'EST'])
 });
 
 function createTask(req: Request) {
-  const validated = CreateTaskSchema.parse(req.body);
-  // Process validated data
+  const validated = CreateTaskSchema.safeParse(req.body);
+  if (!validated.success) {
+    throw new ValidationError(validated.error);
+  }
+  // Process validated.data
 }
 ```
 
