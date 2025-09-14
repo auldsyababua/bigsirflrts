@@ -5,8 +5,8 @@
   "description": "MVP test suite for Story 1.1 (Deploy OpenProject to Cloudflare)",
   "scripts": {
     "test:mvp": "npm run test:unit && npm run test:integration && npm run test:e2e",
-    "test:unit": "vitest run tests/unit --reporter=dot --grep @P0",
-    "test:integration": "vitest run tests/integration --reporter=dot --grep @P0",
+    "test:unit": "vitest run tests/unit --reporter=dot -t @P0",
+    "test:integration": "vitest run tests/integration --reporter=dot -t @P0",
     "test:e2e": "playwright test tests/e2e --grep @P0",
     "test:smoke": "bash tests/mvp-smoke-test.sh",
     "lint": "npm run lint:js && npm run lint:md && npm run lint:shell",
@@ -28,7 +28,7 @@
     "playwright": "^1.46.0",
     "prettier": "^3.2.5",
     "typescript": "^5.4.0",
-    "vitest": "^1.6.0"
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18"
