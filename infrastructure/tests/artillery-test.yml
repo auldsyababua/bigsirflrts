@@ -1,0 +1,104 @@
+# Artillery Load Testing Configuration for n8n Queue Mode
+# Tests webhook handling capacity under load
+
+config:
+  target: "https://n8n.10nz.tools"
+  phases:
+    # Warm-up phase
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm up"
+
+    # Ramp up phase
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 100
+      name: "Ramp up load"
+
+    # Sustained load phase
+    - duration: 120
+      arrivalRate: 100
+      name: "Sustained load"
+
+    # Cool down phase
+    - duration: 30
+      arrivalRate: 10
+      name: "Cool down"
+
+  # Payload configuration
+  payload:
+    - path: "./test-data.csv"
+      fields:
+        - "userId"
+        - "message"
+        - "timestamp"
+      skipHeader: true
+
+  # Custom metrics
+  plugins:
+    expect: {}
+
+scenarios:
+  - name: "Webhook Load Test - Simple Message"
+    weight: 60
+    flow:
+      - post:
+          url: "/webhook/telegram-test"
+          json:
+            message: "Test message {{ $randomNumber(1, 10000) }}"
+            timestamp: "{{ $timestamp() }}"
+            userId: "{{ userId }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 5000  # Max 5 seconds
+
+      - think: 1  # Wait 1 second between requests
+
+  - name: "Webhook Load Test - Complex Payload"
+    weight: 30
+    flow:
+      - post:
+          url: "/webhook/telegram-complex"
+          json:
+            message: "{{ message }}"
+            timestamp: "{{ $timestamp() }}"
+            userId: "{{ userId }}"
+            metadata:
+              source: "artillery-test"
+              version: "1.0"
+              testRun: "{{ $randomNumber(1, 1000) }}"
+            data:
+              field1: "value1"
+              field2: "value2"
+              field3: "{{ $randomString(10) }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 10000  # Max 10 seconds for complex
+
+      - think: 2
+
+  - name: "Webhook Load Test - Batch Operations"
+    weight: 10
+    flow:
+      - loop:
+        - post:
+            url: "/webhook/telegram-batch"
+            json:
+              batch: true
+              messages:
+                - text: "Message 1 - {{ $timestamp() }}"
+                - text: "Message 2 - {{ $timestamp() }}"
+                - text: "Message 3 - {{ $timestamp() }}"
+              userId: "{{ userId }}"
+            expect:
+              - statusCode: 200
+        count: 5
+
+      - think: 5
+
+# Reporting configuration
+reporting:
+  - type: "json"
+    file: "./artillery-report.json"
+  - type: "html"
+    file: "./artillery-report.html"
