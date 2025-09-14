@@ -1,0 +1,132 @@
+DIGITAL OCEAN SERVER SETUP INSTRUCTIONS
+========================================
+
+IMPORTANT: When prompted for "Current password", use the temporary password
+that Digital Ocean sent to your email after we initiated the password reset.
+
+Step 1: Password Change
+------------------------
+1. Enter the temporary password from your email
+2. Enter a new password when prompted
+3. Confirm the new password
+
+Step 2: Add SSH Key to Server
+------------------------------
+Once you're logged in with your new password, copy and paste this entire command:
+
+mkdir -p /root/.ssh && echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3WeTfx2WBHBm0deRkfHKY30MLDcijtwLZnYz6xLPkZDQPq3tr/dNzQ1Wv+l0w9TMzzhlNdyp3pCNJ2vxK74fIsCs94h8mmt1asdF+ZDukr5Kx2ZZfUQ3Z7xOCpokgAXzdlsEXiTDledcr2PA7Ir+J3dXxwadGlXvjPqK1+9C9Byn9Tu0XcIYmThF7EtuXn1yxpoY0jTRceDitqhu/xi2zVmHJG21iE7OFffpYEIjjvCqANHqt4ZS0xz2yavBQ8IBlyjCFmU+UYR6ATGB2Jn9wHzNTEMAjCXNEYVpC0kRFP6HovLxIUzNnksqV7T9e12gw1jao6B3ZkQwa8AwlyPA+7kteDnLyTNgF2uUbx/wTffR8YciSC+Lp7JlToVOHOYnGYxQ9HIwz0ydLR+3CF6RgmmA2CHQ/8gqyd8UrDAUhPRO3HVv3FrtL1zYhf5lJpVpQt8j9Yb8HWsocE6og7VjMz2eLgGoszcMp9gQUS+qopS5pciJRwCAtUptev77JE2iVeplkIHUto3clqsmWdnDMOYf5Y2aVVon/23bEb+RmgvsBJ+mOwqwUBnTphaA5Fd1mNxz3vfG3zQxuLRP2I0uoLqBjWJtaeRZcRX0YYafHhsNDgQxHImT11Bo+cNgdTPmk3ZZxZ0qLeEhNfBLlR5ngjdgGuCii4OHiXzYmn+9McQ== openproject@flrts.dev" >> /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && echo "SSH key added successfully!"
+
+Step 3: Verify SSH Key Was Added
+---------------------------------
+Run this command to confirm:
+
+cat /root/.ssh/authorized_keys
+
+You should see the SSH key starting with "ssh-rsa AAAAB3..."
+
+Step 4: Install Docker and Deploy OpenProject
+----------------------------------------------
+Now run the automated setup script by copying this entire block:
+
+#!/bin/bash
+# Update system
+apt-get update && apt-get upgrade -y
+
+# Install Docker
+curl -fsSL https://get.docker.com | sh
+systemctl enable docker
+systemctl start docker
+
+# Install Docker Compose
+curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
+# Create project directory
+mkdir -p /root/openproject
+cd /root/openproject
+
+# Create docker-compose.yml
+cat > docker-compose.yml << 'DOCKER_EOF'
+version: '3.8'
+
+services:
+  openproject:
+    image: openproject/community:14
+    container_name: openproject
+    restart: unless-stopped
+    environment:
+      - OPENPROJECT_SECRET_KEY_BASE=changeme1234567890abcdef
+      - OPENPROJECT_HOST__NAME=165.227.216.172
+      - OPENPROJECT_PROTOCOL=http
+      - DATABASE_URL=postgresql://openproject:changeme@openproject-db/openproject
+      - OPENPROJECT_CACHE__MEMCACHE__SERVER=memcached:11211
+      - OPENPROJECT_RAILS__CACHE__STORE=memcache
+      - OPENPROJECT_SEED_ADMIN_USER__PASSWORD=admin
+      - OPENPROJECT_SEED_ADMIN_USER__NAME=admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - openproject-data:/var/openproject/assets
+    depends_on:
+      - openproject-db
+      - memcached
+    networks:
+      - openproject_network
+
+  openproject-db:
+    image: postgres:16-alpine
+    container_name: openproject-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=openproject
+      - POSTGRES_USER=openproject
+      - POSTGRES_PASSWORD=changeme
+    volumes:
+      - openproject-db-data:/var/lib/postgresql/data
+    networks:
+      - openproject_network
+
+  memcached:
+    image: memcached:alpine
+    container_name: memcached
+    restart: unless-stopped
+    networks:
+      - openproject_network
+
+volumes:
+  openproject-data:
+  openproject-db-data:
+
+networks:
+  openproject_network:
+    driver: bridge
+DOCKER_EOF
+
+# Start services
+docker-compose pull
+docker-compose up -d
+
+# Wait for services to be ready
+echo "Waiting for services to start..."
+sleep 30
+
+# Check status
+docker-compose ps
+
+echo "OpenProject deployment complete!"
+echo "Access OpenProject at: http://165.227.216.172:8080"
+echo "Default login: admin / admin"
+
+Step 5: Exit the Console
+-------------------------
+Once everything is running, type:
+exit
+
+========================================
+SUMMARY OF WHAT'S HAPPENING:
+1. First, you need to change the password (use temp password from email)
+2. Then add the SSH key so we can connect remotely
+3. Finally, install Docker and deploy OpenProject
+4. OpenProject will be accessible at http://165.227.216.172:8080
+
+After you complete these steps, I'll be able to SSH in directly and manage the server!

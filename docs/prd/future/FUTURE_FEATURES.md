@@ -44,6 +44,95 @@ This document tracks features and enhancements that are planned for future devel
 
 ---
 
+## Notifications & Integrations
+
+### Telegram Bot Integration
+**Priority:** Medium (Post-MVP)
+**Description:** Implement native Telegram bot integration for task creation, updates, and notifications without requiring the Mini App interface.
+
+**Current State:** Telegram Mini App integration planned for MVP (web-based interface)
+
+**Requirements:**
+- Native Telegram Bot API integration using polling or webhooks
+- Slash commands for task operations (/create, /list, /update, /complete)
+- Inline keyboards for quick task actions (assign, prioritize, complete)
+- Rich message formatting with task details and status
+- Proactive notifications for:
+  - Task assignments
+  - Due date reminders
+  - Status changes
+  - Comment mentions
+- Group chat support for team task management
+- Direct message support for personal task lists
+
+**Context:** While the MVP uses a Telegram Mini App, many users prefer native bot interactions for speed and simplicity. Native bot commands provide faster task creation and management without opening a web interface.
+
+**Estimated Effort:** 2-3 sprints
+**Dependencies:** Telegram Bot API, webhook infrastructure, notification queue system
+
+### Slack App Integration
+**Priority:** Medium (Post-MVP)
+**Description:** Create a comprehensive Slack app for task management within Slack workspaces, enabling natural language task creation and team collaboration.
+
+**Current State:** No Slack integration currently planned
+
+**Requirements:**
+- Slack App with OAuth 2.0 authentication
+- Slash commands (/flrts-create, /flrts-list, /flrts-assign)
+- Interactive messages with buttons and select menus
+- Modal dialogs for detailed task creation/editing
+- Thread-based task discussions
+- Channel-specific task lists and project associations
+- Notification features:
+  - DM notifications for personal task updates
+  - Channel notifications for team tasks
+  - Customizable notification preferences
+  - @mentions in task comments
+- Natural language processing via Slack messages
+- Home tab with personal task dashboard
+- Workflow builder integration for automation
+
+**Context:** Many organizations use Slack as their primary communication platform. Native Slack integration would enable seamless task management without context switching, improving adoption and team collaboration.
+
+**Estimated Effort:** 3-4 sprints
+**Dependencies:** Slack API, OAuth infrastructure, event subscription handling, Block Kit UI components
+
+### Multi-Channel Notification System
+**Priority:** High (Post-MVP Phase 2)
+**Description:** Unified notification framework supporting multiple channels with user preferences and intelligent routing.
+
+**Current State:** Basic email notifications planned for MVP
+
+**Requirements:**
+- Centralized notification service with channel abstraction
+- Supported channels:
+  - Email (enhanced with templates and tracking)
+  - Telegram (bot messages and Mini App push)
+  - Slack (DMs and channel messages)
+  - SMS (via Twilio or similar)
+  - In-app notifications (WebSocket real-time)
+  - Mobile push (iOS/Android future apps)
+- User preference management:
+  - Channel preferences per notification type
+  - Quiet hours and timezone-aware delivery
+  - Notification frequency controls (immediate, digest, daily summary)
+  - Opt-in/opt-out granular controls
+- Intelligent routing:
+  - Escalation paths for urgent tasks
+  - Fallback channels if primary fails
+  - De-duplication across channels
+  - Smart batching to prevent notification fatigue
+- Template management for consistent messaging
+- Delivery tracking and analytics
+- Webhook support for custom integrations
+
+**Context:** Different users prefer different notification channels based on their workflow and urgency. A unified system ensures reliable delivery while respecting user preferences and preventing notification overload.
+
+**Estimated Effort:** 4-5 sprints
+**Dependencies:** Message queue system, template engine, third-party APIs (Twilio, SendGrid, etc.), user preference storage
+
+---
+
 ## Template
 
 When adding new future features, use this template:
