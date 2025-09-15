@@ -1,4 +1,6 @@
-version: '3.8'
+# Docker Compose file for n8n Queue Mode
+# Note: 'version' field is deprecated in Docker Compose v2+
+# This configuration requires Docker Compose v2.0 or later
 
 services:
   # PostgreSQL Database (Shared by all n8n instances)
@@ -85,7 +87,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5678/healthz"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5678/healthz || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -129,7 +131,7 @@ services:
     ports:
       - "5679:5679"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5679/healthz"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5679/healthz || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -165,7 +167,7 @@ services:
     ports:
       - "5680:5680"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5680/healthz"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5680/healthz || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -201,7 +203,7 @@ services:
       n8n-main:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5678/healthz"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5678/healthz || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -220,7 +222,7 @@ services:
       - n8n-main
       - n8n-webhook
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -29,6 +29,7 @@ The FLRTS NLP Task Management Service addresses critical operational friction at
 |------|---------|-------------|--------|
 | 2025-01-12 | 1.0 | Initial PRD creation with single-database architecture | John (PM Agent) |
 | 2025-01-13 | 2.0 | Major update: PostgreSQL 15.8, n8n-first hybrid architecture, Lists feature | John (PM Agent) |
+| 2025-09-15 | 2.1 | Architecture revision: Single-instance n8n for 10-user scale, deferred queue mode | John (PM Agent) |
 
 ## Requirements
 
@@ -50,7 +51,7 @@ The FLRTS NLP Task Management Service addresses critical operational friction at
 ### Non-Functional Requirements
 
 • **NFR1:** [DEFERRED] Google Workspace SSO for authentication (use basic auth for MVP)
-• **NFR2:** The system shall be "fast enough" for 5-10 users (performance metrics post-MVP)
+• **NFR2:** The system shall support 10 active users with single-instance n8n deployment (100+ webhooks/hour capacity)
 • **NFR3:** The system shall achieve 95% parse accuracy on the 100-example synthetic test dataset
 • **NFR4:** The system shall achieve 100% mathematical accuracy for timezone conversions
 • **NFR5:** The system shall use Supavisor Session Mode (port 5432) for all database connections to prevent transaction mode incompatibilities
@@ -61,9 +62,9 @@ The FLRTS NLP Task Management Service addresses critical operational friction at
 • **NFR10:** The system shall use SSL/TLS encryption for all database connections (sslmode=require)
 • **NFR11:** The system shall implement container isolation between services using Docker Compose
 • **NFR12:** The system shall use Cloudflare Tunnel for zero-trust external access
-• **NFR13:** n8n must run in queue mode with Redis for production scaling (not main mode)
+• **NFR13:** [REVISED] n8n shall use single-instance mode for 10-user scale (queue mode preserved for future 50+ users)
 • **NFR14:** Edge Functions handle all operations requiring <500ms response time
-• **NFR15:** n8n worker concurrency set to 20 for I/O-bound operations (N8N_CONCURRENCY=20)
+• **NFR15:** n8n concurrency optimized for single-instance mode (10-20 concurrent executions)
 • **NFR16:** PostgreSQL connection pool size set to 4 minimum (DB_POSTGRESDB_POOL_SIZE=4)
 
 ## User Interface Design Goals
@@ -105,13 +106,53 @@ No custom branding required - uses standard Telegram bot interface
 **Hybrid "Reflex and Brain" Model:**
 
 - **Reflex Layer**: Supabase Edge Functions for immediate responses (<100ms latency)
-- **Brain Layer**: n8n workflows in queue mode for complex orchestration (20-50ms base overhead acceptable)
-- **Infrastructure**: VM-based deployment using Docker Compose with OpenProject, n8n (queue mode), Redis, and supporting services
+- **Brain Layer**: n8n workflows in single-instance mode for 10-user scale (queue mode available for 50+ users)
+- **Infrastructure**: VM-based deployment using Docker Compose with OpenProject and n8n
 - **Integration Pattern**: Edge Functions acknowledge users instantly, then trigger n8n workflows asynchronously
+
+#### n8n Deployment Architecture
+
+**Current Scale (10 Users):**
+- Single-instance mode deployment
+- Configuration: `docker-compose.single.yml`
+- Capacity: 100+ webhooks/hour, 10-20 concurrent executions
+- Resource usage: 2GB RAM, 1 CPU core
+
+**Migration Path (Future):**
+- Queue mode configuration preserved at `docker-compose.yml`
+- Trigger migration when:
+  - Sustained 50+ active users
+  - >500 webhooks/hour consistently
+  - Execution times exceeding 30 seconds regularly
+- Migration guide: `/infrastructure/docs/SCALING_GUIDE.md`
 
 ### Testing Requirements  
 
 Unit tests for timezone conversion logic and NLP parsing validation against 100-example synthetic dataset. Manual testing via Telegram bot for MVP, with automated integration tests post-MVP.
+
+### Performance Requirements & Capacity Planning
+
+#### Current Scale (10 Users)
+- **Webhook Processing:** <500ms response time
+- **Concurrent Executions:** 10-20 maximum
+- **Throughput:** 100+ webhooks/hour
+- **Database Connections:** 50 maximum pool size
+- **Memory Footprint:** <2GB total for n8n container
+- **CPU Usage:** 1 CPU core sufficient
+- **Cost Estimate:** ~$20-40/month for VM resources
+
+#### Queue Mode Activation Triggers
+Migrate from single-instance to queue mode when:
+- User count exceeds 50 active users
+- Webhook volume exceeds 500/hour consistently
+- Execution times regularly exceed 30 seconds
+- Memory usage consistently >80% of 2GB allocation
+- CPU usage consistently >70%
+
+#### Cost-Benefit Analysis
+- **Single-Instance (Current):** ~50% lower resource cost, simpler operations
+- **Queue Mode (Future):** 2-3x resource cost, handles 25-50x current capacity
+- **Migration Time:** <1 hour with prepared configuration
 
 ### Additional Technical Assumptions and Requests
 
@@ -163,20 +204,23 @@ so that OpenProject runs without compatibility issues.
 3. Document that pgjwt extension requires 15.8
 4. Remove any references to PostgreSQL 16+
 
-### Story 1.3: n8n Queue Mode Configuration
+### Story 1.3: n8n Deployment Configuration [COMPLETED]
 
 As a DevOps engineer,
-I want n8n configured in queue mode with Redis,
-so that we can handle concurrent workflows at scale.
+I want n8n properly configured for our 10-user scale,
+so that we have optimal performance without unnecessary complexity.
 
 **Acceptance Criteria:**
 
-1. Redis container deployed for queue management
-2. n8n main instance configured with EXECUTIONS_MODE=queue
-3. n8n worker instances configured with concurrency=20
+1. Single-instance n8n deployment (`docker-compose.single.yml`)
+2. Resource allocation: 2GB RAM, 1 CPU core
+3. Handles 100+ webhooks/hour, 10-20 concurrent executions
 4. DB_POSTGRESDB_POOL_SIZE=4 configured
 5. Execution pruning enabled (EXECUTIONS_DATA_PRUNE=true)
-6. Health checks verify queue connectivity
+6. Queue mode config preserved for future scaling (`docker-compose.yml`)
+7. Scaling guide documented at `/infrastructure/docs/SCALING_GUIDE.md`
+
+**Status:** ✅ COMPLETED - Decision made for single-instance based on actual scale requirements
 
 ### Story 1.4: Supabase Edge Functions Setup
 
@@ -207,20 +251,21 @@ so that database changes trigger n8n workflows.
 4. Webhook payload structure documented
 5. Security tokens configured for webhook validation
 
-### Story 1.6: Redis Queue Configuration [TODO]
+### Story 1.6: [DEFERRED] Redis Queue Configuration
 
 As a DevOps engineer,
-I want Redis properly configured for n8n queue mode,
-so that workflows execute reliably.
+I want Redis ready for when we scale to queue mode,
+so that migration is seamless when needed.
 
 **Acceptance Criteria:**
 
-1. Redis container deployed with persistence
-2. Redis connection verified from n8n main and workers
-3. Queue monitoring dashboard accessible
-4. Automatic queue cleanup configured
-5. Redis memory limits set appropriately
-6. Connection pooling optimized
+1. Queue mode configuration preserved in `docker-compose.yml`
+2. Migration triggers documented (50+ users, 500+ webhooks/hour)
+3. Scaling guide available at `/infrastructure/docs/SCALING_GUIDE.md`
+4. Redis configuration templates ready for deployment
+5. Migration can be completed in <1 hour when triggered
+
+**Note:** Not needed for current 10-user scale. Single-instance mode handles current load efficiently.
 
 ### Story 1.7: Monitoring and Observability [TODO]
 

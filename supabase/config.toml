@@ -1,0 +1,10 @@
+# Supabase Edge Functions Configuration
+
+# Telegram webhook needs to accept requests from Telegram without JWT
+# Telegram uses X-Telegram-Bot-Api-Secret-Token header for authentication
+[functions.telegram-webhook]
+verify_jwt = false
+
+# Parse request function keeps JWT verification enabled
+# It requires either service role key or custom PARSE_AUTH_TOKEN
+# (no config needed - JWT verification is the default)

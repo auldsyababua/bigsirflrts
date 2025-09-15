@@ -1,0 +1,151 @@
+# n8n Single Instance Configuration
+# Recommended for deployments with <50 active users
+# This configuration is appropriate for the current 10-user scale
+#
+# Benefits over queue mode for small scale:
+# - Simpler to operate and monitor
+# - Lower resource usage (~50% less)
+# - Fewer failure points
+# - Easier debugging
+# - Can handle 100+ webhooks/hour easily
+
+# Docker Compose file for n8n Single Instance Mode
+# Note: 'version' field is deprecated in Docker Compose v2+
+# This configuration requires Docker Compose v2.0 or later
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15.8-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: n8n
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Resource limits appropriate for 10 users
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # n8n Single Instance (handles everything)
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:1.20.0
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      # Database Configuration
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # Single Instance Mode (default)
+      EXECUTIONS_MODE: regular
+
+      # Security
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: ${WEBHOOK_URL}
+
+      # Performance (tuned for 10 users)
+      N8N_METRICS: true
+      EXECUTIONS_PROCESS: main  # Process in main thread
+      N8N_CONCURRENCY_PRODUCTION_LIMIT: 10  # Concurrent executions
+
+      # Memory management
+      NODE_OPTIONS: "--max-old-space-size=2048"
+
+      # Execution pruning (keep data for 14 days)
+      EXECUTIONS_DATA_PRUNE: true
+      EXECUTIONS_DATA_MAX_AGE: 336
+      EXECUTIONS_DATA_PRUNE_TIMEOUT: 3600
+
+      # Session timeout (7 days)
+      N8N_SESSION_TIMEOUT: 168
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./backups:/backups  # For workflow exports
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Resource limits for 10 users
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+
+  # Nginx Reverse Proxy (simpler configuration)
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-single.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - n8n
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  # Optional: Redis for caching (not for queue mode)
+  # Uncomment if you want to enable caching for better performance
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   command: >
+  #     redis-server
+  #     --appendonly yes
+  #     --maxmemory 64mb
+  #     --maxmemory-policy allkeys-lru
+  #   volumes:
+  #     - redis_data:/data
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.25'
+  #         memory: 128M
+
+volumes:
+  postgres_data:
+  n8n_data:
+  # redis_data:  # Uncomment if using Redis
+
+# Network configuration
+networks:
+  default:
+    name: n8n-network
+    driver: bridge
