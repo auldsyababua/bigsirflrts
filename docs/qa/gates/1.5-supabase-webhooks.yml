@@ -1,42 +1,137 @@
+# Quality Gate Decision - Story 1.5: Configure Supabase Native Webhooks to Trigger n8n-cloud
 schema: 1
-story: '1.5'
-gate: APPROVED
-status_reason: 'Working webhook integration with comprehensive infrastructure - functional implementation complete regardless of configuration method.'
-reviewer: 'Quinn'
-updated: '2025-09-16T07:04:42-07:00'
-resolved_issues:
-  - id: 'REQ-001'
+story: "1.5"
+story_title: "Configure Supabase Native Webhooks to Trigger n8n-cloud"
+gate: "FAIL" # CRITICAL PRODUCTION FAILURES DISCOVERED
+status_reason: "100% webhook failure rate in production. n8n workflow code expects 'table' at root level but Supabase sends it nested in 'body.table'. All 9 recent webhook executions failed with 'Unexpected table: undefined' error."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-09-16T15:30:00-07:00"
+
+# CRITICAL PRODUCTION FAILURES - IMMEDIATE ACTION REQUIRED
+top_issues:
+  - id: "PROD-001"
     severity: high
-    finding: 'Supabase webhook integration required for tasks table operations'
-    resolution: 'COMPLETE - Working webhook integration verified via SQL triggers (Dashboard configuration not technically required)'
-    evidence: 'n8n workflow xeXX1rxX2chJdQis actively processing webhooks, verified executions and proper data flow'
-  - id: 'TEST-001'
+    finding: "100% WEBHOOK FAILURE RATE - All n8n executions failing with 'Unexpected table: undefined'"
+    suggested_action: "FIX IMMEDIATELY: Update n8n workflow code line 7 from 'webhookData.table' to 'webhookData.body.table'"
+    evidence: "Execution IDs 15-22 all show same failure. Real production data being lost."
+
+  - id: "TEST-001"
     severity: high
-    finding: 'No automated testing infrastructure for webhook integration'
-    resolution: 'COMPLETE - Comprehensive test suite implemented'
-    evidence: 'tests/integration/supabase-webhook-n8n.test.js with INSERT/UPDATE/DELETE coverage and performance thresholds'
-  - id: 'MNT-001'
-    severity: medium
-    finding: 'Missing webhook delivery monitoring and alerting'
-    resolution: 'COMPLETE - Monitoring infrastructure implemented'
-    evidence: 'docs/monitoring/webhook-monitoring-setup.md + monitoring/webhook-health-check.sh + monitoring/webhook-monitor.js'
-  - id: 'REL-001'
-    severity: medium
-    finding: 'No evidence of Supabase retry logic configuration'
-    resolution: 'COMPLETE - Retry configuration documented'
-    evidence: 'docs/setup/supabase-retry-configuration.md with comprehensive retry setup options'
-  - id: 'DOC-001'
-    severity: low
-    finding: 'Story marked COMPLETED despite missing acceptance criteria'
-    resolution: 'COMPLETE - All functional requirements met'
-    evidence: 'Working integration with full documentation and testing infrastructure'
-implementation_status:
-  webhook_integration: 'COMPLETE - Functional webhook integration operational'
-  automated_testing: 'COMPLETE - Comprehensive test suite with performance validation'
-  monitoring_alerting: 'COMPLETE - Full monitoring infrastructure documented and ready'
-  retry_logic: 'COMPLETE - Retry configuration options documented'
-  documentation: 'EXCELLENT - High-quality comprehensive documentation'
-next_actions:
-  - 'Deploy monitoring and alerting infrastructure to production'
-  - 'Consider migrating from SQL triggers to Dashboard webhooks if operational benefits exist'
-qa_assessment: 'APPROVED - Working webhook integration with outstanding infrastructure. Dev team delivered functional solution with comprehensive testing, monitoring, and documentation. Configuration method (SQL vs Dashboard) irrelevant when integration works properly.'
+    finding: "FAKE TESTING DISCOVERED - Tests send mocked payloads directly to n8n, bypassing actual Supabase webhook flow"
+    suggested_action: "Tests must trigger REAL database operations and verify ACTUAL webhook delivery, not mock payloads"
+    evidence: "Lines 368-451 in test file show direct mock payload testing instead of real database triggers"
+
+  - id: "MON-001"
+    severity: high
+    finding: "MONITORING BLIND TO FAILURES - Health checks use incorrect payload structure, hiding production issues"
+    suggested_action: "Update monitoring to match actual Supabase webhook payload structure with nested body object"
+    evidence: "webhook-monitor.js line 43-56 and webhook-health-check.sh line 39-49 use wrong format"
+
+# Risk Assessment
+risk_summary:
+  totals: { critical: 3, high: 0, medium: 0, low: 0 }
+  highest: critical
+  recommendations:
+    must_fix:
+      - "Fix n8n workflow code to handle actual Supabase payload structure"
+      - "Update all tests to use REAL database operations, not mocks"
+      - "Fix monitoring health checks to detect actual failures"
+    monitor:
+      - "Track webhook success rate after fixes"
+      - "Verify no data loss from failed webhooks"
+
+# NFR Validation - ALL FAILING
+nfr_validation:
+  security:
+    status: FAIL
+    notes: "Error responses leak internal structure. No proper error handling for malformed payloads."
+  performance:
+    status: FAIL
+    notes: "Cannot meet <1 second requirement when webhooks are failing 100% of the time"
+  reliability:
+    status: FAIL
+    notes: "Zero reliability - complete production failure with no recovery mechanism"
+  maintainability:
+    status: FAIL
+    notes: "Tests don't catch real issues. Monitoring doesn't detect failures. Code/tests/monitoring all use different payload structures."
+
+# Evidence of Testing Failures
+evidence:
+  tests_reviewed: 675 # Lines of test code
+  risks_identified: 3 # All critical
+  real_failures_tested: 0 # ZERO real failure scenarios tested
+  mocked_tests: 100% # ALL tests use mocks instead of real scenarios
+  production_failures: 9 # Recent failed webhook executions
+  trace:
+    ac_covered: [] # No ACs actually covered due to production failure
+    ac_gaps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] # ALL acceptance criteria failing
+
+# Developer Team Requirements - MANDATORY
+dev_team_requirements:
+  ZERO_TOLERANCE_POLICY: |
+    NO HAPPY PATH TESTING ACCEPTED. Every test must simulate REAL failure conditions.
+
+    CRITICAL FIXES REQUIRED:
+    1. Fix n8n workflow immediately - change line 7 from webhookData.table to webhookData.body.table
+    2. Rewrite ALL tests to use REAL Supabase database operations, not mocked payloads
+    3. Update monitoring to match actual payload structure
+    4. Add tests that verify ACTUAL webhook delivery through complete pipeline
+    5. Test with REAL invalid data, not simulated responses
+
+    UNACCEPTABLE PRACTICES FOUND:
+    - Mocking webhook payloads instead of triggering real database changes
+    - Testing with fake data that doesn't match production structure
+    - Monitoring that passes while production fails
+    - No verification of actual end-to-end flow
+    - Generic error messages that don't help operations team
+
+    MANDATORY REQUIREMENTS:
+    - All tests must use REAL Supabase → n8n flow
+    - Error messages must be SPECIFIC: "Webhook payload missing 'body.table' field" not "Unexpected table: undefined"
+    - Tests must demonstrate ACTUAL webhook delivery and processing
+    - Recovery procedures must be tested with REAL failures
+    - QA will independently reproduce ALL scenarios with actual database operations
+
+    DO NOT RETURN until:
+    1. Production webhook failures are fixed (0% failure rate)
+    2. All tests use REAL database triggers, not mocks
+    3. Monitoring detects ACTUAL failures
+    4. Error messages guide team to specific solutions
+    5. Recovery procedures tested with REAL webhook failures
+
+quality_score: 0 # Complete failure - production system not working
+expires: "2025-09-17T00:00:00Z" # Must be fixed immediately
+
+recommendations:
+  immediate:
+    - action: "HOTFIX: Update n8n workflow Process Webhook Data node line 7"
+      refs: ["n8n workflow xeXX1rxX2chJdQis, Process Webhook Data node, line 7"]
+    - action: "Rewrite test suite to use real database operations"
+      refs: ["tests/integration/supabase-webhook-n8n.test.js:368-451"]
+    - action: "Fix monitoring payload structure"
+      refs: ["monitoring/webhook-monitor.js:43-56", "monitoring/webhook-health-check.sh:39-49"]
+  future:
+    - action: "Add webhook retry queue for failed deliveries"
+      refs: ["Supabase webhook configuration"]
+    - action: "Implement webhook signature verification"
+      refs: ["n8n webhook security"]
+
+# Audit Trail
+history:
+  - at: "2025-09-15T00:00:00Z"
+    gate: CONCERNS
+    note: "Initial review - functional but missing requirements"
+  - at: "2025-09-16T07:04:00Z"
+    gate: APPROVED
+    note: "Dev team claimed fixes complete - but did not verify actual production"
+  - at: "2025-09-16T15:30:00Z"
+    gate: FAIL
+    note: "Production failures discovered. 100% webhook failure rate. Tests using mocks not real scenarios."
+
+# Final Assessment
+waiver: { active: false } # CANNOT BE WAIVED - PRODUCTION IS BROKEN
+
+# QA VERDICT: Story 1.5 is experiencing complete production failure. The integration
+# exists but is fundamentally broken due to payload structure mismatch. All recent
+# webhooks are failing. Tests are not testing real scenarios. Monitoring is not
+# detecting failures. This is a CRITICAL FAILURE requiring immediate hotfix.
