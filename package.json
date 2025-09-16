@@ -2,6 +2,7 @@
   "name": "bigsirflrts",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "FLRTS project with NLP service",
   "workspaces": [
     "packages/*"
@@ -12,6 +13,10 @@
     "test:integration": "vitest run tests/integration --reporter=dot -t @P0",
     "test:e2e": "playwright test tests/e2e --grep @P0",
     "test:smoke": "bash tests/mvp-smoke-test.sh",
+    "test:api": "node tests/run-tests.js --api",
+    "test:api:watch": "node tests/run-tests.js --api --watch",
+    "test:secure": "node tests/run-tests.js",
+    "test:secure:watch": "node tests/run-tests.js --watch",
     "lint": "npm run lint:js && npm run lint:md && npm run lint:shell",
     "lint:js": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:md": "markdownlint '**/*.md' --ignore node_modules --ignore docs/archive",
