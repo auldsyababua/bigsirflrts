@@ -22,10 +22,34 @@ export const testConfig = {
     telegramWebhook: `${process.env.SUPABASE_URL}/functions/v1/telegram-webhook`,
   },
 
+  // n8n Configuration
+  n8n: {
+    webhookUrl: process.env.N8N_WEBHOOK_URL,
+    instanceUrl: process.env.N8N_INSTANCE_URL,
+    authToken: process.env.N8N_AUTH_TOKEN,
+  },
+
   // Test Settings
   test: {
     timeout: parseInt(process.env.TEST_TIMEOUT) || 30000,
     environment: process.env.NODE_ENV || 'test',
+
+    // Retry Testing Configuration
+    retry: {
+      maxAttempts: parseInt(process.env.RETRY_MAX_ATTEMPTS) || 3,
+      baseDelayMs: parseInt(process.env.RETRY_BASE_DELAY_MS) || 1000,
+      maxDelayMs: parseInt(process.env.RETRY_MAX_DELAY_MS) || 32000,
+      backoffMultiplier: parseFloat(process.env.RETRY_BACKOFF_MULTIPLIER) || 2,
+      jitterMaxMs: parseInt(process.env.RETRY_JITTER_MAX_MS) || 100,
+      testTimeoutMs: parseInt(process.env.RETRY_TEST_TIMEOUT_MS) || 45000,
+
+      // Mock server configuration for retry testing
+      mockServer: {
+        port: parseInt(process.env.MOCK_WEBHOOK_PORT) || 3001,
+        failingWebhookUrl: process.env.MOCK_FAILING_WEBHOOK_URL || 'http://localhost:3001/failing-webhook',
+        slowWebhookUrl: process.env.MOCK_SLOW_WEBHOOK_URL || 'http://localhost:3001/slow-webhook',
+      }
+    },
   },
 
   // OpenAI Configuration (for NLP testing)

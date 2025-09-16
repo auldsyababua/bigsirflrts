@@ -106,6 +106,37 @@ export OP_SERVICE_ACCOUNT_TOKEN="your_token"
 
 ---
 
+## 🔄 **Webhook Retry and Backoff Testing** (Story 1.5)
+
+**Status: ✅ COMPLETE** - Comprehensive testing suite for webhook retry mechanisms with exponential backoff.
+
+### **What's Tested**
+- ✅ Exponential backoff pattern validation (1s → 2s → 4s → 8s → 16s → 32s capped)
+- ✅ Circuit breaker behavior (max retry attempts enforcement)
+- ✅ Recovery after temporary failures
+- ✅ Performance impact during retry scenarios
+- ✅ High-frequency webhook operations under load
+- ✅ Configuration parameter validation
+
+### **Quick Commands**
+```bash
+# Run all retry tests
+op run --env-file=tests/.env.test -- node tests/run-retry-tests.js
+
+# Test specific failure scenarios
+node tests/helpers/retry-test-simulator.js --scenario=exponential-backoff
+node tests/helpers/retry-test-simulator.js --scenario=circuit-breaker
+node tests/helpers/retry-test-simulator.js --scenario=recovery
+
+# Run retry tests directly
+op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webhook-retry-backoff.test.js
+```
+
+### **Documentation**
+- 📖 **[Complete Retry Testing Guide](../docs/misc/webhook-retry-testing.md)** - Detailed documentation, configuration, and troubleshooting
+
+---
+
 ## 🔗 **Edge Function → n8n Webhook Integration Tests** (Story 1.4)
 
 **Status: ✅ NEW** - Automated testing for the "Reflex + Brain" architecture pattern.

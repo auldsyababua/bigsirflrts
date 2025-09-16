@@ -1,194 +1,427 @@
-# Supabase → n8n → OpenProject Webhook Configuration
+# FLRTS Webhook Integration Setup
 
 ## Overview
 
-This document describes the webhook integration setup for syncing tasks from Supabase to OpenProject via n8n middleware.
+This document describes the current webhook integration architecture for FLRTS, covering task synchronization and communication flows between Supabase, Edge Functions, n8n, and OpenProject.
 
-## Architecture
+## Current Architecture (Updated 2025)
 
 ```
-Supabase Database (tasks table) 
-    ↓ Database Webhooks
-n8n Cloud Workflow 
-    ↓ OpenProject API
-OpenProject (work_packages)
+Telegram Bot API
+    ↓ HTTPS Webhook
+Supabase Edge Functions (telegram-webhook)
+    ↓ HTTP Request
+Self-hosted n8n (single instance)
+    ↓ API Calls
+OpenProject + PostgreSQL Database
+
+Alternative Flow:
+Supabase Database Changes
+    ↓ Database Triggers/Functions
+Supabase Edge Functions (database-webhook)
+    ↓ HTTP Request
+Self-hosted n8n (single instance)
+    ↓ API Calls
+OpenProject Sync
 ```
 
-## Components
+## Integration Components
 
-### 1. n8n Workflow
+### 1. Supabase Edge Functions
 
-- **Workflow Name**: "Supabase Tasks → OpenProject Sync"
-- **Workflow ID**: `xeXX1rxX2chJdQis`
-- **Webhook URL**: `https://n8n-rrrs.sliplane.app/webhook/supabase-tasks-webhook`
-- **Status**: Created, not yet activated
+**Primary Integration Points:**
 
-### 2. Supabase Database Webhook Configuration
+- **`telegram-webhook`**: Handles Telegram bot messages
+- **`database-webhook`**: Handles database change events
+- **`openproject-sync`**: Direct OpenProject API integration
 
-**⚠️ Manual Configuration Required**
+### 2. Self-hosted n8n Configuration
 
-Access Supabase Dashboard at:
-`https://supabase.com/dashboard/project/thnwlykidzhrsagyjncc`
+**Current Setup:**
+- **Deployment**: Single instance (not queue mode)
+- **URL**: `http://localhost:5678` (development) or configured domain
+- **Version**: v1.105.2+
+- **Mode**: Docker container with persistent volume
 
-Navigate to: **Database → Webhooks**
+**Key Webhooks:**
+- `/webhook/telegram-commands` - Telegram message processing
+- `/webhook/database-changes` - Database change notifications
+- `/webhook/openproject-sync` - Bidirectional sync operations
 
-Create webhook with these settings:
+### 3. Database Integration Patterns
 
-| Setting | Value |
-|---------|-------|
-| **Name** | `n8n Tasks Sync Webhook` |
-| **Table** | `tasks` |
-| **Events** | `INSERT`, `UPDATE`, `DELETE` |
-| **URL** | `https://n8n-rrrs.sliplane.app/webhook/supabase-tasks-webhook` |
-| **HTTP Method** | `POST` |
-| **Content-Type** | `application/json` |
-| **Custom Headers** | `X-Webhook-Source: Supabase-FLRTS` |
+#### Pattern 1: Database Triggers → Edge Functions
 
-### 3. Webhook Payload Format
+**Supabase Function SQL Trigger:**
 
-#### INSERT/UPDATE Events
+```sql
+-- Create function to call Edge Function on task changes
+CREATE OR REPLACE FUNCTION notify_task_change()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM http_post(
+    'https://{your-project-ref}.supabase.co/functions/v1/database-webhook',
+    json_build_object(
+      'type', TG_OP,
+      'table', TG_TABLE_NAME,
+      'schema', TG_TABLE_SCHEMA,
+      'record', CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE row_to_json(NEW) END,
+      'old_record', CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE row_to_json(OLD) END
+    )::text,
+    'application/json'
+  );
+  RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger
+CREATE TRIGGER task_change_webhook
+  AFTER INSERT OR UPDATE OR DELETE ON tasks
+  FOR EACH ROW EXECUTE FUNCTION notify_task_change();
+```
+
+#### Pattern 2: Telegram Messages
+
+**Telegram Update Payload** (from telegram-webhook Edge Function):
 
 ```json
 {
-  "type": "INSERT" | "UPDATE",
-  "table": "tasks",
-  "schema": "public",
-  "record": {
-    "id": "uuid",
-    "title": "string",
-    "description": "string",
-    "status": "open" | "in_progress" | "completed" | "on_hold",
-    "priority": "High" | "Medium" | "Low",
-    "due_date": "2024-01-15T10:00:00Z",
-    "assignee_id": "uuid",
-    "openproject_work_package_id": "number"
-  },
-  "old_record": null | {...}
+  "source": "telegram",
+  "update_id": 123456,
+  "user_id": 123456789,
+  "chat_id": 123456789,
+  "message_text": "Create task: Fix the pump",
+  "username": "john_doe",
+  "first_name": "John",
+  "timestamp": "2025-01-15T10:00:00Z"
 }
 ```
 
-#### DELETE Events
+## Edge Function Implementations
 
+### 1. Database Webhook Handler
+
+**File**: `supabase/functions/database-webhook/index.ts`
+
+```typescript
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+
+const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL');
+
+serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
+  }
+
+  try {
+    const payload = await req.json();
+
+    // Validate payload structure
+    if (!payload.type || !payload.table) {
+      return new Response('Invalid payload', { status: 400 });
+    }
+
+    // Forward to n8n with enhanced context
+    const response = await fetch(`${N8N_WEBHOOK_URL}/webhook/database-changes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Source': 'supabase-database',
+      },
+      body: JSON.stringify({
+        ...payload,
+        timestamp: new Date().toISOString(),
+        source: 'database',
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('n8n webhook failed:', response.statusText);
+      return new Response('Processing failed', { status: 500 });
+    }
+
+    return new Response('OK', { status: 200 });
+
+  } catch (error) {
+    console.error('Database webhook error:', error);
+    return new Response('Internal error', { status: 500 });
+  }
+});
+```
+
+### 2. OpenProject Sync Handler
+
+**File**: `supabase/functions/openproject-sync/index.ts`
+
+```typescript
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+
+const OPENPROJECT_API_URL = Deno.env.get('OPENPROJECT_API_URL');
+const OPENPROJECT_API_KEY = Deno.env.get('OPENPROJECT_API_KEY');
+
+interface TaskData {
+  title: string;
+  description?: string;
+  status: 'open' | 'in_progress' | 'completed' | 'on_hold';
+  priority: 'High' | 'Medium' | 'Low';
+  due_date?: string;
+}
+
+// Field mappings
+const STATUS_MAPPING = {
+  'open': 1,        // New
+  'in_progress': 7, // In progress
+  'completed': 12,  // Closed
+  'on_hold': 4      // On hold
+};
+
+const PRIORITY_MAPPING = {
+  'High': 1,    // High
+  'Medium': 2,  // Normal
+  'Low': 3      // Low
+};
+
+serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
+  }
+
+  try {
+    const { operation, data }: { operation: string; data: TaskData } = await req.json();
+
+    const authHeader = `Basic ${btoa(`apikey:${OPENPROJECT_API_KEY}`)}`;
+
+    switch (operation) {
+      case 'create':
+        const workPackage = {
+          subject: data.title,
+          description: { raw: data.description || '' },
+          _links: {
+            type: { href: '/api/v3/types/1' }, // Task type
+            project: { href: '/api/v3/projects/1' }, // Default project
+            status: { href: `/api/v3/statuses/${STATUS_MAPPING[data.status]}` },
+            priority: { href: `/api/v3/priorities/${PRIORITY_MAPPING[data.priority]}` }
+          },
+          ...(data.due_date && { dueDate: data.due_date })
+        };
+
+        const createResponse = await fetch(`${OPENPROJECT_API_URL}/work_packages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(workPackage),
+        });
+
+        if (!createResponse.ok) {
+          const error = await createResponse.text();
+          throw new Error(`OpenProject API error: ${error}`);
+        }
+
+        const created = await createResponse.json();
+        return new Response(JSON.stringify({ success: true, id: created.id }), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+      default:
+        return new Response('Unsupported operation', { status: 400 });
+    }
+
+  } catch (error) {
+    console.error('OpenProject sync error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+});
+```
+
+## n8n Workflow Configurations
+
+### 1. Telegram Command Processing
+
+**Webhook Trigger Node:**
 ```json
 {
-  "type": "DELETE",
-  "table": "tasks", 
-  "schema": "public",
-  "record": null,
-  "old_record": {
-    "id": "uuid",
-    "title": "string",
-    // ... full deleted record
+  "httpMethod": "POST",
+  "path": "telegram-commands",
+  "responseMode": "responseNode"
+}
+```
+
+**Function Node - Parse Telegram Message:**
+```javascript
+// Extract intent from Telegram message
+const messageText = $json.message_text?.toLowerCase() || '';
+
+let intent = 'unknown';
+let extractedData = {};
+
+if (messageText.includes('create task') || messageText.includes('new task')) {
+  intent = 'create_task';
+  extractedData.title = messageText.replace(/^(create task|new task):?\s*/i, '');
+} else if (messageText.includes('list tasks') || messageText.includes('show tasks')) {
+  intent = 'list_tasks';
+} else if (messageText.includes('help')) {
+  intent = 'help';
+}
+
+return {
+  intent,
+  user_id: $json.user_id,
+  chat_id: $json.chat_id,
+  username: $json.username,
+  extractedData
+};
+```
+
+### 2. Database Change Processing
+
+**Webhook Trigger Node:**
+```json
+{
+  "httpMethod": "POST",
+  "path": "database-changes",
+  "responseMode": "responseNode"
+}
+```
+
+**Switch Node - Route by Operation:**
+```json
+{
+  "mode": "expression",
+  "output": "={{$json.type}}",
+  "rules": {
+    "INSERT": 0,
+    "UPDATE": 1,
+    "DELETE": 2
   }
 }
 ```
 
-## Field Mappings
+## Testing Setup
 
-### Priority Mapping (Fixed)
+### 1. Local Development Environment
 
-| Supabase | OpenProject | ID |
-|----------|-------------|-----|
-| High     | High        | 1   |
-| Medium   | Normal      | 2   |
-| Low      | Low         | 3   |
+```bash
+# Terminal 1: Start n8n
+docker run -it --rm --name n8n -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n \
+  n8nio/n8n
 
-### Status Mapping
+# Terminal 2: Start Supabase locally
+supabase start
 
-| Supabase Status | OpenProject Status | ID |
-|----------------|-------------------|-----|
-| open           | New               | 1   |
-| in_progress    | In progress       | 7   |
-| completed      | Closed            | 12  |
-| on_hold        | On hold           | 4   |
+# Terminal 3: Serve Edge Functions
+supabase functions serve --env-file .env.local
+```
 
-## n8n Workflow Logic
+### 2. Environment Variables
 
-1. **Webhook Trigger**: Receives POST from Supabase
-2. **Data Processing**: Validates table and extracts data
-3. **Operation Routing**: Routes by INSERT/UPDATE/DELETE
-4. **Data Transformation**: Maps Supabase fields to OpenProject format
-5. **Response**: Returns success/error status to Supabase
+**`.env.local`** for Edge Functions:
+```env
+N8N_WEBHOOK_URL=http://host.docker.internal:5678
+OPENPROJECT_API_URL=http://host.docker.internal:8080/api/v3
+OPENPROJECT_API_KEY=your_api_key_here
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_WEBHOOK_SECRET=your_webhook_secret_here
+```
 
-### Error Handling
+### 3. Test Scenarios
 
-- Invalid table names rejected
-- Missing required data throws errors
-- Malformed payloads return 500 status
-- All operations logged for debugging
-
-## Testing Procedure
-
-### Prerequisites
-
-1. Supabase webhook configured (manual step above)
-2. n8n workflow activated
-3. OpenProject API accessible
-
-### Test Steps
-
-#### Test 1: INSERT
+#### Test Database Integration
 
 ```sql
 -- In Supabase SQL Editor
-INSERT INTO tasks (title, description, status, priority, due_date)
-VALUES ('Test Webhook Task', 'Testing webhook integration', 'open', 'High', '2024-01-15 10:00:00+00');
+INSERT INTO tasks (title, description, status, priority)
+VALUES ('Test Integration', 'Testing webhook flow', 'open', 'High');
 ```
 
-#### Test 2: UPDATE
+#### Test Telegram Integration
 
-```sql
-UPDATE tasks 
-SET status = 'in_progress', priority = 'Medium'
-WHERE title = 'Test Webhook Task';
+Send message to bot: "Create task: Fix the generator"
+
+#### Test OpenProject API
+
+```bash
+curl -X POST http://localhost:54321/functions/v1/openproject-sync \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation": "create",
+    "data": {
+      "title": "API Test Task",
+      "description": "Testing direct API integration",
+      "status": "open",
+      "priority": "Medium"
+    }
+  }'
 ```
 
-#### Test 3: DELETE
+## Monitoring & Debugging
 
-```sql
-DELETE FROM tasks WHERE title = 'Test Webhook Task';
+### Edge Function Logs
+
+```bash
+# View all function logs
+supabase functions logs
+
+# View specific function logs
+supabase functions logs telegram-webhook
+supabase functions logs database-webhook
+supabase functions logs openproject-sync
 ```
 
-### Expected Results
+### n8n Monitoring
 
-1. Each operation should trigger webhook within 1 second
-2. n8n workflow execution appears in logs
-3. Success response returned to Supabase
-4. Changes reflected in OpenProject (once API integration complete)
+- Access n8n UI at http://localhost:5678
+- Check "Executions" tab for webhook triggers
+- Review execution logs for detailed debugging
 
-## Monitoring
+### OpenProject API Testing
 
-### Supabase
+```bash
+# Test API connectivity
+curl -H "Authorization: Basic $(echo -n 'apikey:YOUR_API_KEY' | base64)" \
+  http://localhost:8080/api/v3/projects
 
-- Database → Webhooks → View delivery logs
-- Check for failed deliveries and retry attempts
+# Check work packages
+curl -H "Authorization: Basic $(echo -n 'apikey:YOUR_API_KEY' | base64)" \
+  http://localhost:8080/api/v3/work_packages
+```
 
-### n8n
+## Production Deployment
 
-- Workflow executions list shows each webhook trigger
-- Detailed logs show data processing steps
-- Error messages visible in failed executions
+### 1. Environment Setup
 
-## Next Steps (Not Yet Implemented)
+- Deploy n8n to persistent server/cloud instance
+- Configure Supabase Edge Functions with production URLs
+- Set up OpenProject with proper authentication
+- Configure Telegram webhook with production Edge Function URL
 
-1. **Activate n8n workflow** (currently inactive)
-2. **Add OpenProject API integration nodes** to complete the sync
-3. **Implement user mapping** between Supabase users and OpenProject users
-4. **Add retry logic** for failed OpenProject API calls
-5. **Set up monitoring alerts** for webhook failures
+### 2. Security Checklist
 
-## Configuration Files
+- [ ] All API keys stored in environment variables
+- [ ] Webhook endpoints use HTTPS
+- [ ] Telegram webhook secret configured
+- [ ] OpenProject API access restricted to FLRTS services
+- [ ] Rate limiting implemented on all webhooks
+- [ ] Error logging configured (no sensitive data)
 
-- n8n workflow config: `packages/sync-service/supabase-webhook-config.json`
-- This documentation: `docs/webhook-integration-config.md`
+### 3. Monitoring Setup
 
-## Security Notes
-
-- n8n webhook endpoint is public but validates data structure
-- OpenProject API calls will require authentication tokens
-- Consider adding webhook signature verification for production
+- [ ] Edge Function logs aggregated
+- [ ] n8n execution monitoring configured
+- [ ] OpenProject API call monitoring
+- [ ] Telegram webhook delivery monitoring
+- [ ] Alert thresholds configured for failures
 
 ---
 
-*Configuration completed: 2025-01-09*  
-*Story: 1.2 Configure Supabase Native Webhooks to Trigger n8n-cloud*
+*Updated for current FLRTS architecture: Edge Functions + self-hosted n8n*
+*Replaces obsolete n8n-cloud configuration*
+*Security: All credentials removed from documentation*
