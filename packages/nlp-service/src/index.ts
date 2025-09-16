@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { TaskParser } from './parser';
 import { ParseRequestSchema } from './schemas';
 import { parseExamples } from './prompt';
+import { logger, requestLogger } from './logger';
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 
 // Initialize services
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
@@ -23,10 +25,10 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_AN
 // Debug: Check if API key is loaded
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
-  console.error('❌ OPENAI_API_KEY not found in environment');
+  logger.error('❌ OPENAI_API_KEY not found in environment');
   process.exit(1);
 }
-console.log('✅ OpenAI API key loaded (length:', apiKey.length, ')'); // eslint-disable-line no-console
+logger.info('✅ OpenAI API key loaded', { keyLength: apiKey.length });
 
 const parser = new TaskParser(apiKey);
 
@@ -46,7 +48,7 @@ app.post('/parse', async (req, res) => {
     const validatedRequest = ParseRequestSchema.parse(req.body);
     const { input, userId, context } = validatedRequest;
 
-    console.log('Parsing input:', input); // eslint-disable-line no-console
+    logger.info('Parsing input', { input, userId });
 
     // Parse with OpenAI
     const startTime = Date.now();
@@ -72,7 +74,7 @@ app.post('/parse', async (req, res) => {
     const { error: logError } = await supabase.from('parsing_logs').insert(logEntry);
 
     if (logError) {
-      console.error('Failed to log to Supabase:', logError);
+      logger.error('Failed to log to Supabase', { error: logError });
     }
 
     // Return response
@@ -86,7 +88,7 @@ app.post('/parse', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Parse error:', error);
+    logger.error('Parse error', { error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
 
     // Log error to Supabase
     try {
@@ -99,7 +101,7 @@ app.post('/parse', async (req, res) => {
         user_id: req.body.userId || null,
       });
     } catch (logError) {
-      console.error('Failed to log error:', logError);
+      logger.error('Failed to log error', { error: logError });
     }
 
     res.status(400).json({
@@ -135,7 +137,7 @@ app.get('/history', async (req, res) => {
       count: data?.length || 0,
     });
   } catch (error) {
-    console.error('History error:', error);
+    logger.error('History error', { error: error instanceof Error ? error.message : 'Unknown error' });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch history',
@@ -162,7 +164,7 @@ app.get('/analytics', async (req, res) => {
       successRate: total > 0 ? ((successful / total) * 100).toFixed(1) + '%' : 'N/A',
     });
   } catch (error) {
-    console.error('Analytics error:', error);
+    logger.error('Analytics error', { error: error instanceof Error ? error.message : 'Unknown error' });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch analytics',
@@ -172,7 +174,12 @@ app.get('/analytics', async (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 NLP Service running at http://localhost:${PORT}`); // eslint-disable-line no-console
-  console.log(`📝 Examples available at http://localhost:${PORT}/examples`); // eslint-disable-line no-console
-  console.log(`🔍 Parse endpoint: POST http://localhost:${PORT}/parse`); // eslint-disable-line no-console
+  logger.info('🚀 NLP Service started', {
+    port: PORT,
+    endpoints: {
+      examples: `http://localhost:${PORT}/examples`,
+      parse: `POST http://localhost:${PORT}/parse`,
+      health: `http://localhost:${PORT}/health`
+    }
+  });
 });

@@ -1,0 +1,24 @@
+{
+  "name": "n8n-webhook-monitor",
+  "version": "1.0.0",
+  "description": "n8n webhook monitoring service for FLRTS Story 1.7",
+  "main": "n8n-webhook-monitor.js",
+  "scripts": {
+    "start": "node n8n-webhook-monitor.js",
+    "dev": "nodemon n8n-webhook-monitor.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["n8n", "monitoring", "webhooks", "metrics"],
+  "author": "FLRTS Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "winston": "^3.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

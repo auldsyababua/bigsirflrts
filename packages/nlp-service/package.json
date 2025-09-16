@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec tsx src/index.ts",
+    "dev": "nodemon --exec tsx --import ./instrumentation.ts src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node --import ./instrumentation.ts dist/index.js",
     "test": "tsx test-parser.ts",
     "test:examples": "tsx test-parser.ts"
   },
@@ -14,13 +14,19 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.64.1",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.205.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.205.0",
+    "@opentelemetry/sdk-metrics": "^2.1.0",
+    "@opentelemetry/sdk-node": "^0.205.0",
+    "@opentelemetry/sdk-trace-node": "^2.1.0",
     "@supabase/supabase-js": "^2.57.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "openai": "^5.19.1",
+    "winston": "^3.17.0",
     "zod": "^3.25.76"
-  },
-  "devDependencies": {
   }
 }
