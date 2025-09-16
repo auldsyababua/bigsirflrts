@@ -1,0 +1,195 @@
+# Monitoring Stack for Existing OpenProject DigitalOcean Droplet
+# Adds monitoring services to existing flrts_network
+version: '3.8'
+
+services:
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: flrts-prometheus
+    volumes:
+      - ./monitoring/prometheus.prod.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+      - '--web.listen-address=0.0.0.0:9090'
+    restart: unless-stopped
+    networks:
+      - flrts_network  # Connect to existing OpenProject network
+    ports:
+      - "127.0.0.1:9090:9090"  # Only bind to localhost for security
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 320M
+        reservations:
+          cpus: '0.1'
+          memory: 192M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: flrts-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_STRICT_TRANSPORT_SECURITY=true
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana:/etc/grafana/provisioning
+    restart: unless-stopped
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    networks:
+      - flrts_network
+    ports:
+      - "127.0.0.1:3000:3000"  # Only bind to localhost
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 320M
+        reservations:
+          cpus: '0.1'
+          memory: 192M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Jaeger for distributed tracing (lightweight config)
+  jaeger:
+    image: jaegertracing/all-in-one:1.49
+    container_name: flrts-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=memory
+      - MEMORY_MAX_TRACES=3000  # Reduced for memory efficiency
+    restart: unless-stopped
+    networks:
+      - flrts_network
+    ports:
+      - "127.0.0.1:16686:16686"  # UI - localhost only
+      - "127.0.0.1:14250:14250"  # gRPC
+      - "4317:4317"              # OTLP gRPC - allow container access
+      - "4318:4318"              # OTLP HTTP - allow container access
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 192M
+        reservations:
+          cpus: '0.05'
+          memory: 96M
+
+  # Node Exporter for system metrics
+  node-exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: flrts-node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--web.listen-address=0.0.0.0:9100'
+    restart: unless-stopped
+    networks:
+      - flrts_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 64M
+        reservations:
+          cpus: '0.02'
+          memory: 32M
+    # No external port - internal access only
+
+  # cAdvisor for container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: flrts-cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+    networks:
+      - flrts_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+        reservations:
+          cpus: '0.05'
+          memory: 64M
+    # No external port - internal access only
+
+  # n8n Monitor (simplified for existing n8n instance)
+  n8n-monitor:
+    build:
+      context: ./monitoring
+      dockerfile: Dockerfile.n8n-monitor
+    container_name: flrts-n8n-monitor
+    environment:
+      - NODE_ENV=production
+      - N8N_MONITOR_PORT=3002
+      - LOG_LEVEL=info
+      - N8N_BASE_URL=${N8N_BASE_URL:-http://localhost:5678}
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - flrts_network
+    ports:
+      - "127.0.0.1:3002:3002"  # localhost only
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+        reservations:
+          cpus: '0.05'
+          memory: 64M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# Use existing network from OpenProject
+networks:
+  flrts_network:
+    external: true

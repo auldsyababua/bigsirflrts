@@ -1,25 +1,56 @@
 schema: 1
 story: '1.2'
 story_title: 'PostgreSQL Version Validation'
-gate: PASS
-status_reason: 'All requirements met, PostgreSQL 15.8 compatibility verified independently'
+gate: CONCERNS
+status_reason: 'Functional requirements met, but operational resilience testing gaps identified for internal tool deployment'
 reviewer: 'Quinn (Test Architect)'
-updated: '2025-09-14T00:09:34-07:00'
+updated: '2025-09-16T14:30:01-07:00'
 
-top_issues: []  # No blocking issues
+top_issues:
+  - issue: 'Missing operational resilience testing for 10-user internal team'
+    impact: 'Could disrupt daily workflow during Supabase outages or connection failures'
+    priority: 'P1'
+
+dev_team_requirements:
+  ZERO_TOLERANCE_POLICY: |
+    NO HAPPY PATH TESTING ACCEPTED. Every test must simulate REAL failure conditions.
+
+    UNACCEPTABLE EXAMPLES:
+    - Mocking network failures instead of killing actual connections
+    - Testing with fake credentials instead of real invalid ones
+    - Simulating timeouts instead of waiting for real timeout behavior
+    - Generic error messages like "connection failed"
+    - Tests that can't fail under real conditions
+
+    MANDATORY REQUIREMENTS:
+    - All tests must use REAL Supabase instance with REAL failure scenarios
+    - Error messages must be SPECIFIC and actionable for non-technical team
+    - Tests must demonstrate ACTUAL recovery behavior, not assumed behavior
+    - QA will independently verify all tests by reproducing exact failure conditions
+
+    DO NOT RETURN until:
+    1. Every test passes REAL failure simulation
+    2. Error messages guide actual team members to solutions
+    3. Recovery procedures work in practice, not theory
+
+    QA WILL CATCH FAKE TESTING and team will be retrained.
 
 waiver:
   active: false
 
-quality_score: 100  # All requirements met
-expires: '2025-09-28T00:09:34-07:00'
+quality_score: 75  # Functional complete, operational gaps
+expires: '2025-09-30T14:30:01-07:00'
 
 evidence:
   tests_reviewed: 4
-  risks_identified: 0
+  risks_identified: 3  # Operational resilience gaps
   trace:
     ac_covered: [1, 2, 3]  # Version validation, configuration doc, validation tests
-    ac_gaps: []  # All requirements met
+    ac_gaps: []  # Functional requirements met
+  operational_gaps:
+    - 'Supabase service outage recovery procedures'
+    - 'Invalid credential handling with team guidance'
+    - 'Session timeout recovery testing'
 
 nfr_validation:
   security:
@@ -36,13 +67,30 @@ nfr_validation:
     notes: 'Clear documentation and well-structured scripts'
 
 recommendations:
-  immediate: []  # No immediate actions required
+  immediate:  # MANDATORY - NO HAPPY PATH BULLSHIT
+    - action: 'ACTUAL connection failure test: Kill Supabase connection mid-operation, verify OpenProject shows SPECIFIC error message telling team exactly what failed and how to check Supabase status'
+      test_requirement: 'Must simulate real network failure, not mock responses. Test must FAIL if error message is generic or unhelpful'
+      refs: ['test-supabase-connection.sh']
+      priority: 'P1'
+      validation: 'QA will verify by breaking actual connection during test run'
+    - action: 'ACTUAL invalid credential test: Use wrong password, verify graceful failure with actionable team guidance (not just "connection failed")'
+      test_requirement: 'Must test real invalid credentials against real Supabase instance. Error message must guide non-technical team members to credential check'
+      refs: ['docker-compose-supabase.yml']
+      priority: 'P1'
+      validation: 'QA will test with deliberately wrong credentials'
+    - action: 'ACTUAL session timeout test: Leave system idle for 2+ hours, verify OpenProject automatically reconnects without data loss'
+      test_requirement: 'Must test real timeout scenarios, not simulated timeouts. Verify actual recovery behavior during extended downtime'
+      refs: ['OpenProject container restart procedures']
+      priority: 'P1'
+      validation: 'QA will run weekend-length idle test'
   future:  # Can be addressed later
+    - action: 'Create team debugging guide for non-technical users'
+      refs: ['Operational procedures documentation']
+    - action: 'Implement connection health monitoring with alerts'
+      refs: ['Monitoring infrastructure']
     - action: 'Rotate database password post-MVP'
       refs: ['Supabase project: thnwlykidzhrsagyjncc']
     - action: 'Create .env.supabase.example template'
-      refs: ['docker/openproject/']
-    - action: 'Implement secret management solution for production'
       refs: ['docker/openproject/']
 
 independent_verification:

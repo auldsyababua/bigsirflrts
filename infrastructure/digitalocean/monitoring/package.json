@@ -1,0 +1,17 @@
+{
+  "name": "n8n-monitor",
+  "version": "1.0.0",
+  "description": "Lightweight n8n monitoring service for webhook health checks",
+  "main": "n8n-monitor.js",
+  "scripts": {
+    "start": "node n8n-monitor.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7",
+    "prom-client": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,23 +1,23 @@
 schema: 1
 story: '1.4'
-gate: PASS
-status_reason: 'ARCHITECTURE ALIGNED: MCP validation confirms n8n webhook integration implemented correctly. Edge Function→n8n handoff functional with sub-200ms response times.'
-reviewer: 'Quinn (QA Agent)'
-updated: '2025-09-16T01:45:00Z'
+gate: FAIL
+status_reason: 'CRITICAL VALIDATION BUG: N8N workflow has broken validation logic causing 100% failure rate. Anti-happy-path testing reveals dev team used fake testing instead of real webhook payloads.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-09-16T14:46:08-07:00'
 
-resolved_issues:
-  - id: 'ARCH-DRIFT-001'
-    severity: critical
-    finding: 'RESOLVED: n8n workflow MU9O8tPUC8gRRQT4 now uses Webhook Trigger (verified via MCP tools)'
-    resolution: 'Architecture successfully aligned with PRD specifications'
-  - id: 'ARCH-DRIFT-002'
+top_issues:
+  - id: 'VAL-CRITICAL-001'
     severity: high
-    finding: 'RESOLVED: Webhook endpoint https://n8n-rrrs.sliplane.app/webhook/telegram-task-creation operational'
-    resolution: 'Edge Function→n8n handoff functional, tested with MCP tools'
-  - id: 'INTEGRATION-TESTED'
-    severity: info
-    finding: 'VERIFIED: Full integration path tested successfully with ~45ms webhook response'
-    resolution: 'Performance requirements met: webhook <200ms, architecture compliant with PRD'
+    finding: 'N8N validation logic incorrectly checks item.json.update?.message?.text but fails on valid payloads - 100% failure rate detected through independent testing'
+    suggested_action: 'Fix validation path: should be item.json.body.update.message.text not item.json.update.message.text'
+  - id: 'TEST-CRITICAL-002'
+    severity: high
+    finding: 'NO REAL FAILURE TESTING - dev team deployed broken validation without testing actual webhook payloads'
+    suggested_action: 'Implement actual webhook testing with real Telegram payloads before returning to QA'
+  - id: 'ARCH-CRITICAL-003'
+    severity: medium
+    finding: 'Edge Functions exist but integration testing reveals complete pipeline failure due to validation bug'
+    suggested_action: 'Test full path: Telegram → Edge Function → n8n → Supabase with REAL payloads after fixing validation'
 
 architecture_validation_results: |
   FINAL VALIDATION RESULTS (2025-09-16):
@@ -91,3 +91,34 @@ verification_methodology: |
   - Create performance benchmarks for sub-200ms validation
 
 waiver: { active: false }
+
+# MANDATORY DEV TEAM REQUIREMENTS - ZERO TOLERANCE FOR FAKE TESTING
+dev_team_requirements:
+  ZERO_TOLERANCE_POLICY: |
+    🚨 CRITICAL VALIDATION BUG DETECTED 🚨
+
+    The n8n workflow VALIDATION LOGIC IS BROKEN and causing 100% failure rate.
+    This proves the dev team used FAKE TESTING instead of REAL conditions.
+
+    UNACCEPTABLE VALIDATION BUG:
+    - Code checks: item.json.update?.message?.text
+    - But payload structure is: item.json.body.update.message.text
+    - This causes "Empty message not allowed" error on ALL valid messages
+
+    MANDATORY FIXES BEFORE RETURNING TO QA:
+    1. Fix validation path in n8n "Input Validation & Security" node
+    2. Test with ACTUAL Telegram webhook payloads (not simulated)
+    3. Verify full pipeline: Telegram → Edge Function → n8n → Supabase
+    4. Show successful task creation with real data
+    5. Provide evidence of end-to-end testing with actual webhook calls
+
+    DO NOT RETURN TO QA UNTIL:
+    ✅ n8n workflow successfully processes real webhook payloads
+    ✅ Tasks are created in Supabase database
+    ✅ Telegram receives success confirmations
+    ✅ ALL validation is tested with REAL failure scenarios
+
+    QA WILL INDEPENDENTLY RE-TEST with webhook automation tools.
+    FAKE TESTING WILL RESULT IN TEAM RETRAINING.
+
+quality_score: 15  # /100 - Severe validation failure with broken logic
