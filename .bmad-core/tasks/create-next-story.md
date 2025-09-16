@@ -75,13 +75,34 @@ ALWAYS cite source documents: `[Source: architecture/{filename}.md#{section}]`
 - Ensure file paths, component locations, or module names align with defined structures
 - Document any structural conflicts in "Project Structure Notes" section within the story draft
 
+### 4.5 Technical Implementation Research (MANDATORY)
+
+**CRITICAL: This step is MANDATORY for stories with ANY technical implementation details**
+
+For each technical component mentioned in the story requirements:
+
+1. **Identify Technologies**: List all APIs, frameworks, libraries, or services mentioned
+2. **Research Exact Syntax**:
+   - Use `mcp__ref__ref_search_documentation` for each technology
+   - For n8n workflows: Follow N8N_WORKFLOW_STORY_PROTOCOL from PM agent
+   - For APIs: Find exact endpoints, methods, headers, auth requirements
+   - For configs: Find schema definitions and valid examples
+3. **Extract Working Examples**:
+   - Copy VERBATIM code examples from official documentation
+   - Include complete, runnable code snippets
+   - Document source URLs for every example
+4. **Validate Configurations**:
+   - For n8n: Use `mcp__n8n-cloud__validate_node_minimal` on each node config
+   - For APIs: Verify endpoint availability and rate limits
+   - For databases: Confirm schema compatibility
+
 ### 5. Populate Story Template with Full Context
 
 - Create new story file: `{devStoryLocation}/{epicNum}.{storyNum}.story.md` using Story Template
 - Fill in basic story information: Title, Status (Draft), Story statement, Acceptance Criteria from Epic
 - **`Dev Notes` section (CRITICAL):**
-  - CRITICAL: This section MUST contain ONLY information extracted from architecture documents. NEVER invent or assume technical details.
-  - Include ALL relevant technical details from Steps 2-3, organized by category:
+  - CRITICAL: This section MUST contain ONLY information extracted from architecture documents AND verified technical examples. NEVER invent or assume technical details.
+  - Include ALL relevant technical details from Steps 2-3 AND 4.5, organized by category:
     - **Previous Story Insights**: Key learnings from previous story
     - **Data Models**: Specific schemas, validation rules, relationships [with source references]
     - **API Specifications**: Endpoint details, request/response formats, auth requirements [with source references]
@@ -89,7 +110,23 @@ ALWAYS cite source documents: `[Source: architecture/{filename}.md#{section}]`
     - **File Locations**: Exact paths where new code should be created based on project structure
     - **Testing Requirements**: Specific test cases or strategies from testing-strategy.md
     - **Technical Constraints**: Version requirements, performance considerations, security rules
-  - Every technical detail MUST include its source reference: `[Source: architecture/{filename}.md#{section}]`
+    - **Implementation Examples** (NEW):
+      ```json
+      // Example: n8n OpenAI Node Configuration
+      // Source: https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-langchain.openai/
+      {
+        "resource": "text",
+        "operation": "message",
+        "model": "gpt-4o",
+        "messages": {
+          "messageValues": [
+            {"role": "system", "message": "Your prompt here"},
+            {"role": "user", "message": "={{$json.inputField}}"}
+          ]
+        }
+      }
+      ```
+  - Every technical detail MUST include its source reference: `[Source: architecture/{filename}.md#{section}]` or `[Source: {documentation URL}]`
   - If information for a category is not found in the architecture docs, explicitly state: "No specific guidance found in architecture docs"
 - **`Tasks / Subtasks` section:**
   - Generate detailed, sequential list of technical tasks based ONLY on: Epic Requirements, Story AC, Reviewed Architecture Information

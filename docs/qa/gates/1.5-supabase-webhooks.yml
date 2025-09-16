@@ -1,0 +1,28 @@
+schema: 1
+story: '1.5'
+gate: CONCERNS
+status_reason: 'Functional integration exists but critical acceptance criteria gaps present.'
+reviewer: 'Quinn'
+updated: '2025-09-15T19:51:17-07:00'
+top_issues:
+  - id: 'REQ-001'
+    severity: high
+    finding: 'Supabase webhook NOT configured via Dashboard per story requirements'
+    suggested_action: 'Configure proper Supabase Dashboard webhook to meet acceptance criteria'
+  - id: 'TEST-001'
+    severity: high
+    finding: 'No automated testing infrastructure for webhook integration'
+    suggested_action: 'Implement automated test suite for INSERT/UPDATE/DELETE operations'
+  - id: 'MNT-001'
+    severity: medium
+    finding: 'Missing webhook delivery monitoring and alerting'
+    suggested_action: 'Set up Supabase Dashboard monitoring and failed delivery alerts'
+  - id: 'REL-001'
+    severity: medium
+    finding: 'No evidence of Supabase retry logic configuration'
+    suggested_action: 'Configure webhook retry mechanism in Supabase Dashboard'
+  - id: 'DOC-001'
+    severity: low
+    finding: 'Story marked COMPLETED despite missing acceptance criteria'
+    suggested_action: 'Update story status to reflect actual completion state'
+waiver: { active: false }

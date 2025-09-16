@@ -14,6 +14,12 @@ npm run test:api
 # Run all secure tests
 npm run test:secure
 
+# Run Edge Function → n8n webhook integration tests
+npm run test:integration:webhook
+
+# Run performance regression tests
+npm run test:performance
+
 # Watch mode for development
 npm run test:api:watch
 ```
@@ -36,14 +42,18 @@ npm run test:api:watch
 ### **Directory Structure**
 ```
 tests/
-├── README.md                    # This file
-├── .env.test                   # 1Password secret references (safe to commit)
-├── .env.local                  # Local testing fallback (git-ignored)
+├── README.md                                # This file
+├── .env.test                               # 1Password secret references (safe to commit)
+├── .env.local                              # Local testing fallback (git-ignored)
 ├── config/
-│   └── test-config.js         # Test configuration module
+│   └── test-config.js                     # Test configuration module
 ├── api/
-│   └── edge-functions.test.js # Supabase Edge Function tests
-└── run-tests.js               # Secure test runner
+│   └── edge-functions.test.js             # Supabase Edge Function tests
+├── integration/
+│   ├── edge-function-n8n-webhook.test.js  # Edge Function → n8n webhook tests
+│   └── performance-regression.test.js     # Performance regression tests
+├── run-tests.js                           # Secure test runner
+└── run-integration-tests.js               # Integration test runner
 ```
 
 ### **1Password Configuration**
@@ -57,8 +67,10 @@ SUPABASE_PROJECT_ID: thnwlykidzhrsagyjncc
 SUPABASE_URL: https://thnwlykidzhrsagyjncc.supabase.co
 SUPABASE_ANON_KEY: [your-anon-key]
 SUPABASE_SERVICE_ROLE_KEY: [your-service-role-key]
+N8N_WEBHOOK_URL: https://n8n-rrrs.sliplane.app/webhook/telegram-task-creation
 OPENAI_API_KEY: [your-openai-key]
 TELEGRAM_BOT_TOKEN: [your-bot-token] (optional)
+TELEGRAM_WEBHOOK_SECRET: [your-webhook-secret] (optional)
 ```
 
 #### **Service Account Setup**
@@ -91,6 +103,50 @@ op signout --all
 unset OP_SESSION_my
 export OP_SERVICE_ACCOUNT_TOKEN="your_token"
 ```
+
+---
+
+## 🔗 **Edge Function → n8n Webhook Integration Tests** (Story 1.4)
+
+**Status: ✅ NEW** - Automated testing for the "Reflex + Brain" architecture pattern.
+
+### **What's Tested**
+
+**Integration Tests:**
+- ✅ Complete Edge Function → n8n webhook flow
+- ✅ "Reflex + Brain" architecture pattern validation
+- ✅ Telegram payload processing end-to-end
+- ✅ Error handling and resilience under load
+- ✅ Webhook endpoint health monitoring
+
+**Performance Tests:**
+- ✅ Edge Function response time <200ms requirement
+- ✅ n8n webhook response time <200ms requirement
+- ✅ Performance regression detection
+- ✅ Load testing with concurrent requests
+- ✅ Recovery testing after load spikes
+
+### **Quick Commands**
+```bash
+# Run integration tests
+npm run test:integration:webhook
+
+# Run performance tests
+npm run test:performance
+
+# Run specific test suite
+node tests/run-integration-tests.js --suite=edge-function-n8n-webhook
+
+# Run with verbose output
+node tests/run-integration-tests.js --verbose
+```
+
+### **CI/CD Integration**
+- GitHub Actions workflow at `.github/workflows/integration-tests.yml`
+- Runs on push/PR and daily at 6 AM UTC
+- Uses 1Password Service Account for secure secret injection
+- Validates webhook health and performance thresholds
+- Alerts on architecture drift or performance regressions
 
 ---
 

@@ -36,6 +36,7 @@ export const testConfig = {
   // Telegram Configuration
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN,
+    webhookSecret: process.env.TELEGRAM_WEBHOOK_SECRET,
   },
 };
 
@@ -73,4 +74,18 @@ export function getSupabaseHeaders(useServiceRole = false) {
     'Content-Type': 'application/json',
     'apikey': key,
   };
+}
+
+/**
+ * Get headers for authorized Telegram webhook requests
+ * Uses Telegram's X-Telegram-Bot-Api-Secret-Token header.
+ * If the secret is not configured, tests should skip the authorized webhook test.
+ */
+export function getTelegramAuthHeaders() {
+  const secret = testConfig.telegram.webhookSecret;
+  const headers = { 'Content-Type': 'application/json' };
+  if (secret) {
+    return { ...headers, 'X-Telegram-Bot-Api-Secret-Token': secret };
+  }
+  return headers;
 }
