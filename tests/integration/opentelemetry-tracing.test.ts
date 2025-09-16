@@ -207,12 +207,9 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
       expect(spanIds.length).toBe(3);
       expect(new Set(spanIds).size).toBe(3); // All span IDs should be unique
 
-      // Force export and wait for traces
-      await sdk.shutdown();
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Restart SDK for next test
-      sdk.start();
+      // Force export by flushing the span processor
+      await spanProcessor.forceFlush();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Verify traces were exported
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -297,16 +294,25 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
         receivedTraces = [];
 
         // Create SDK with specific auth header
+        const testExporter = new OTLPTraceExporter({
+          url: `http://localhost:${mockOTLPPort}/v1/traces`,
+          headers: {
+            'authorization': testCase.auth,
+          },
+        });
+
+        const testSpanProcessor = new BatchSpanProcessor(testExporter, {
+          maxQueueSize: 100,
+          maxExportBatchSize: 1,
+          scheduledDelayMillis: 10,
+          exportTimeoutMillis: 1000,
+        });
+
         const testSDK = new NodeSDK({
           resource: resourceFromAttributes({
             [SEMRESATTRS_SERVICE_NAME]: 'auth-test-service',
           }),
-          traceExporter: new OTLPTraceExporter({
-            url: `http://localhost:${mockOTLPPort}/v1/traces`,
-            headers: {
-              'authorization': testCase.auth,
-            },
-          }),
+          spanProcessors: [testSpanProcessor],
         });
 
         testSDK.start();
@@ -320,6 +326,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
           span.end();
         });
 
+        await testSpanProcessor.forceFlush();
         await new Promise(resolve => setTimeout(resolve, 100));
         await testSDK.shutdown();
 
@@ -332,14 +339,23 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
     });
 
     it('should handle OTLP endpoint errors gracefully', async () => {
-      // Arrange - Create SDK pointing to non-existent endpoint
+      // Arrange - Create SDK pointing to non-existent endpoint with valid URL format
+      const failExporter = new OTLPTraceExporter({
+        url: 'http://localhost:9999/v1/traces', // Use a valid but non-responding port
+      });
+
+      const failSpanProcessor = new BatchSpanProcessor(failExporter, {
+        maxQueueSize: 100,
+        maxExportBatchSize: 1,
+        scheduledDelayMillis: 10,
+        exportTimeoutMillis: 1000,
+      });
+
       const failSDK = new NodeSDK({
         resource: resourceFromAttributes({
           [SEMRESATTRS_SERVICE_NAME]: 'fail-test-service',
         }),
-        traceExporter: new OTLPTraceExporter({
-          url: 'http://localhost:99999/v1/traces', // Non-existent port
-        }),
+        spanProcessors: [failSpanProcessor],
       });
 
       failSDK.start();
@@ -376,6 +392,8 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
         span.end();
       });
 
+      // Force export by flushing the span processor
+      await spanProcessor.forceFlush();
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Assert
@@ -474,8 +492,9 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
       await Promise.all(promises);
       const duration = Date.now() - startTime;
 
-      // Allow export time
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Force export by flushing the span processor
+      await spanProcessor.forceFlush();
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Assert
       expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
