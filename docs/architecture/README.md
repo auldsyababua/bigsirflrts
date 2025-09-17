@@ -96,6 +96,13 @@ npm run test:e2e
 npm run build
 docker-compose -f docker-compose.supabase.yml build
 
+## Supabase-Only Architecture Links
+
+- ADRs
+  - [ADR-001: n8n Deployment Mode](./adr/ADR-001-n8n-deployment-mode.md)
+  - [ADR-002: OpenProject Migration Pattern](./adr/ADR-002-openproject-migration-pattern.md)
+- [System Connections & Health](./system-connections.md)
+
 # Deploy to production
 npm run deploy:prod
 ```
