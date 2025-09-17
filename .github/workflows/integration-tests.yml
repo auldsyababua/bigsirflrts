@@ -1,17 +1,13 @@
-name: Integration Tests - Edge Function & n8n Webhook
+name: Integration Tests - Edge Function & n8n Webhook (Non-Blocking)
 
 on:
+  # Keep scheduled and manual runs; remove PR trigger to avoid duplication
   push:
     branches: [ main, develop ]
     paths:
       - 'supabase/functions/**'
       - 'tests/integration/**'
       - '.github/workflows/integration-tests.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'supabase/functions/**'
-      - 'tests/integration/**'
   schedule:
     # Run daily at 6 AM UTC to catch infrastructure drift
     - cron: '0 6 * * *'

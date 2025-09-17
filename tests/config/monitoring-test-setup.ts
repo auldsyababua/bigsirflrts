@@ -1,6 +1,8 @@
 /**
  * Test Environment Setup for Monitoring Infrastructure
- * This file configures the test environment for P0 monitoring tests
+ * This file configures the test environment for P0 monitoring tests.
+ * NOTE: Any Postgres service used here is test-only and ephemeral for monitoring tests.
+ *       Production uses a single Supabase PostgreSQL instance (no local Postgres containers).
  */
 
 import { beforeAll, afterAll } from 'vitest';

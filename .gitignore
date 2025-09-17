@@ -103,3 +103,24 @@ coverage/
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+# === TEST CONFIGURATION FILES ===
+# Playwright and Vitest configs if they're auto-generated
+playwright.config.ts
+vitest.config.ts
+vitest.config.*.ts
+
+# === AI/DEVELOPMENT FILES ===
+# AI debug and development logs
+.ai/
+.ai/debug-log.md
+
+# === INFRASTRUCTURE TEMPORARY FILES ===
+# Migration fix scripts and temporary configs
+infrastructure/digitalocean/*.sh
+infrastructure/digitalocean/docker-compose.migration-fix.yml
+infrastructure/digitalocean/docker-compose.simple.yml
+
+# === ADR DIRECTORY (if using different location) ===
+# Uncomment if ADRs should be in docs/architecture/adr instead
+# docs/adr/

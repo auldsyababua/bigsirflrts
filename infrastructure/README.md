@@ -9,9 +9,9 @@ This directory contains all infrastructure configuration and deployment scripts 
 ```
 infrastructure/
 ├── digitalocean/               # Digital Ocean specific configurations
-│   ├── docker-compose.prod.yml # Production Docker Compose file
-│   ├── .env.production         # Environment variables template
-│   └── DEPLOYMENT_GUIDE.md    # Complete deployment documentation
+│   ├── docker-compose.supabase.yml # Canonical Supabase-based Docker Compose
+│   ├── .env.production             # Environment variables template
+│   └── DEPLOYMENT_GUIDE.md        # Complete deployment documentation
 ├── scripts/                    # Deployment and maintenance scripts
 │   ├── setup-server.sh        # Server initialization script
 │   └── deploy.sh              # Automated deployment script
@@ -74,7 +74,7 @@ ssh root@165.227.216.172
 bash < infrastructure/scripts/setup-server.sh
 
 # Copy files manually
-scp infrastructure/digitalocean/docker-compose.prod.yml root@165.227.216.172:/opt/flrts-openproject/docker-compose.yml
+scp infrastructure/digitalocean/docker-compose.supabase.yml root@165.227.216.172:/opt/flrts-openproject/docker-compose.yml
 scp infrastructure/digitalocean/.env root@165.227.216.172:/opt/flrts-openproject/.env
 
 # Start services
@@ -83,22 +83,21 @@ ssh root@165.227.216.172 "cd /opt/flrts-openproject && docker compose up -d"
 
 ## Key Files
 
-### docker-compose.prod.yml
+### docker-compose.supabase.yml
 
-Production-ready Docker Compose configuration with:
+Canonical Docker Compose configuration with:
 
-- OpenProject Community Edition 14
-- PostgreSQL 16 (dedicated container)
+- OpenProject Community Edition 14-slim
+- Supabase PostgreSQL (single database; no local Postgres container)
+- Migration init-container (db:migrate db:seed)
 - Memcached for caching
 - Cloudflare Tunnel for secure access
-- Automated backup service
-- Resource limits optimized for 8GB RAM
 
 ### .env.production
 
 Template for all required environment variables:
 
-- Database credentials
+- Supabase connection string (pooler, schema=openproject)
 - OpenProject configuration
 - Cloudflare R2 storage
 - Cloudflare Tunnel token

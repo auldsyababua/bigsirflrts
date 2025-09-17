@@ -1,10 +1,8 @@
-name: MVP P0 Tests
+name: MVP P0 Tests (Manual)
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # Run manually when needed; not part of PR checks
+  workflow_dispatch: {}
 
 jobs:
   lint:

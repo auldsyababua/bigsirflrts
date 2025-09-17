@@ -219,8 +219,9 @@ docker compose up -d
 # Check logs
 docker compose logs openproject
 
-# Check database connection
-docker exec flrts-openproject-db pg_isready -U openproject
+# Check database connection (Supabase)
+# Use your Supabase pooler connection string; example:
+# psql "postgresql://<user>:<password>@<pooler-host>:5432/postgres?sslmode=require&schema=openproject" -c "select now()"
 
 # Restart services
 docker compose restart
@@ -254,10 +255,9 @@ docker compose restart cloudflared
 | Service | Memory Limit | CPU Limit | Actual Usage (typical) |
 |---------|-------------|-----------|------------------------|
 | OpenProject | 4GB | 2.0 cores | 2-3GB / 0.5-1.0 cores |
-| PostgreSQL | 2GB | 1.0 core | 500MB-1GB / 0.2 cores |
 | Memcached | 384MB | 0.25 cores | 256MB / 0.05 cores |
 | Cloudflared | 256MB | 0.25 cores | 50MB / 0.01 cores |
-| **Total** | **6.6GB** | **3.5 cores** | **3-4GB / 1-1.5 cores** |
+| **Total** | **4.6GB** | **2.5 cores** | **2.5-3.5GB / 0.6-1.1 cores** |
 
 ## Security Checklist
 

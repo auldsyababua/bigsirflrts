@@ -1,4 +1,6 @@
-# n8n Single Instance Configuration
+# n8n Single Instance Configuration (Local Dev)
+# PRODUCTION NOTE: Production uses single-instance n8n connected to Supabase
+# (no local Postgres container). This file is for local testing only.
 # Recommended for deployments with <50 active users
 # This configuration is appropriate for the current 10-user scale
 #

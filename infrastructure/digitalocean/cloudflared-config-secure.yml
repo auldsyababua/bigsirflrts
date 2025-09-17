@@ -1,0 +1,67 @@
+# Cloudflare Tunnel Configuration for OpenProject
+# Security-hardened configuration following September 2025 best practices
+# Tunnel: openproject-flrts
+
+tunnel: 0db2b84d-306c-4577-9b77-38f145566ee4
+credentials-file: /etc/cloudflared/0db2b84d-306c-4577-9b77-38f145566ee4.json
+
+# Global origin configuration with security defaults
+originRequest:
+  # Connection settings
+  connectTimeout: 30s
+  tcpKeepAlive: 30s
+  keepAliveConnections: 100
+  keepAliveTimeout: 1m30s
+
+  # TLS settings - verify origin certificates
+  noTLSVerify: false
+  tlsTimeout: 10s
+  http2Origin: true  # Use HTTP/2 for better performance
+
+  # HTTP settings
+  httpHostHeader: "ops.10nz.tools"
+  disableChunkedEncoding: false
+
+  # Security: Happy Eyeballs for IPv4/IPv6 fallback
+  noHappyEyeballs: false
+
+# Ingress rules - order matters (first match wins)
+ingress:
+  # Main OpenProject application
+  - hostname: ops.10nz.tools
+    service: http://openproject:8080
+    originRequest:
+      # OpenProject-specific overrides
+      connectTimeout: 45s  # OpenProject can be slow on first load
+      noTLSVerify: true    # Internal docker network, no TLS
+      http2Origin: false   # OpenProject works better with HTTP/1.1
+
+      # Security headers
+      httpHostHeader: "ops.10nz.tools"
+
+      # Access control (optional - uncomment to enable)
+      # access:
+      #   required: true
+      #   teamName: "10netzero"
+      #   audTag:
+      #     - "your-access-application-aud-tag"
+
+  # Health check endpoint (optional)
+  - hostname: ops.10nz.tools
+    path: "^/health_checks/"
+    service: http://openproject:8080
+    originRequest:
+      connectTimeout: 5s  # Health checks should be fast
+      noTLSVerify: true
+
+  # Static assets with longer timeout
+  - hostname: ops.10nz.tools
+    path: "\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$"
+    service: http://openproject:8080
+    originRequest:
+      connectTimeout: 10s
+      keepAliveTimeout: 5m  # Cache static assets longer
+      noTLSVerify: true
+
+  # Catch-all rule (required)
+  - service: http_status:404

@@ -32,7 +32,8 @@
     "nlp:dev": "npm run dev --workspace=nlp-service",
     "nlp:build": "npm run build --workspace=nlp-service",
     "nlp:start": "npm run start --workspace=nlp-service",
-    "nlp:test": "npm run test --workspace=nlp-service"
+    "nlp:test": "npm run test --workspace=nlp-service",
+    "qa:gate": "bash scripts/bmad-qa-gate.sh"
   },
   "devDependencies": {
     "@opentelemetry/resources": "^2.1.0",

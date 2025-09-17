@@ -194,3 +194,4 @@ conclusion: |
 
 ---
 # END QA GATE EXECUTION
+## NOTE: Legacy evidence — Production now uses Supabase single database (no local Postgres) per ADR-002.

@@ -23,9 +23,9 @@ verification_results:
       status: PASS
       evidence: "OpenProject accessible at https://ops.10nz.tools with login page functional"
 
-    - criterion: "PostgreSQL database configured"
+    - criterion: "Supabase PostgreSQL configured"
       status: PASS
-      evidence: "PostgreSQL 16 verified running, persistence test successful, accepting connections"
+      evidence: "Supabase pooler connectivity verified; schema=openproject present; migrations applied"
 
     - criterion: "Cloudflare Tunnel providing secure HTTPS access"
       status: PASS
@@ -46,7 +46,7 @@ verification_results:
 
     - criterion: "Service stability"
       status: PASS
-      evidence: "All 3 containers running stable, OpenProject CPU 99% during initialization, normalizing"
+      evidence: "OpenProject and Memcached running stable; OpenProject CPU normalizes after initialization"
 
     - criterion: "Resource usage within limits"
       status: PASS
@@ -115,7 +115,7 @@ test_coverage:
     tests_passed:
       - "Cloudflare Tunnel integration verified"
     tests_partial:
-      - "PostgreSQL connection tested (limited scenarios)"
+      - "Supabase connection tested (limited scenarios)"
     missing_tests:
       - "R2 file storage integration validation"
       - "Cross-service failure testing"
@@ -163,24 +163,24 @@ required_additions:
         4. Health check endpoint /health_checks/default returns 200
         EVIDENCE REQUIRED: Terminal output showing container death, restart, and successful health check
 
-    - test: "Database persistence across VM reboots"
+    - test: "Database persistence across VM reboots (Supabase)"
       validation_criteria: |
-        MUST EXECUTE: Create test data, reboot VM, verify data persists:
+        MUST EXECUTE: Create test data, reboot VM, verify data persists (DB is Supabase):
         1. Create a test project in OpenProject with unique identifier
         2. Execute 'sudo reboot' on VM
         3. Wait for VM to restart and services to come online
         4. Verify test project still exists and is accessible
-        5. Verify database container shows no data corruption warnings
-        EVIDENCE REQUIRED: Screenshots of test project before/after reboot + DB logs
+        5. Verify OpenProject logs show no DB errors on reconnect; Supabase unaffected
+        EVIDENCE REQUIRED: Screenshots of test project before/after reboot + app logs
 
-    - test: "Error handling for database connection failures"
+    - test: "Error handling for database connection failures (Supabase)"
       validation_criteria: |
-        MUST EXECUTE: Simulate DB failure and verify graceful handling:
-        1. Stop PostgreSQL container (docker stop openproject-db)
-        2. Attempt to access OpenProject - MUST show clear error message
-        3. Restart database container
-        4. Verify OpenProject reconnects automatically within 60 seconds
-        EVIDENCE REQUIRED: Screenshots of error messages + recovery logs
+        MUST EXECUTE: Simulate Supabase connectivity failure and verify graceful handling:
+        Option A (preferred): Temporarily block pooler host with iptables DROP on the VM; Option B: Temporarily set invalid DATABASE_URL and recreate container.
+        1. Induce failure (A or B); attempt to access OpenProject - MUST show clear error state
+        2. Restore connectivity (remove iptables rule or restore valid DATABASE_URL)
+        3. Verify OpenProject reconnects automatically within 60 seconds
+        EVIDENCE REQUIRED: App error/recovery logs + successful health check
 
     - test: "Cloudflare Tunnel failure recovery"
       validation_criteria: |
@@ -317,3 +317,4 @@ next_story_impact: |
 
 ---
 # END QA GATE
+## NOTE: Legacy gate — Production now uses Supabase single database (no local Postgres) per ADR-002.

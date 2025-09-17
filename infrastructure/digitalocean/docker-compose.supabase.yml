@@ -1,0 +1,91 @@
+version: '3.8'
+
+# OpenProject connected to Supabase PostgreSQL
+# Following PRD architecture: Single database with schema separation
+
+services:
+  openproject-migrate:
+    image: openproject/openproject:14-slim
+    container_name: openproject-migrate
+    restart: "no"
+    environment:
+      # Supabase Session Pooler connection (5432)
+      DATABASE_URL: "postgresql://postgres.thnwlykidzhrsagyjncc:jda2NZG7czw0jau%40zxa@aws-0-us-east-2.pooler.supabase.com:5432/postgres?schema=openproject"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-kCB6E+/0HzxTR0yBkBCqNdcntXTpMkLZvpL7K28mZIkiHuDaRVKx1gPihP4VHp2o}
+      RAILS_ENV: production
+      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: openproject
+    command: bundle exec rake db:migrate db:seed
+
+  openproject:
+    image: openproject/openproject:14-slim
+    container_name: openproject
+    restart: always
+    environment:
+      # Supabase Session Pooler connection (port 5432 as per PRD NFR5)
+      DATABASE_URL: "postgresql://postgres.thnwlykidzhrsagyjncc:jda2NZG7czw0jau%40zxa@aws-0-us-east-2.pooler.supabase.com:5432/postgres?schema=openproject"
+
+      # OpenProject configuration
+      OPENPROJECT_HOST__NAME: ops.10nz.tools
+      OPENPROJECT_HTTPS: "true"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-kCB6E+/0HzxTR0yBkBCqNdcntXTpMkLZvpL7K28mZIkiHuDaRVKx1gPihP4VHp2o}
+      RAILS_ENV: production
+      RAILS_MIN_THREADS: 2
+      RAILS_MAX_THREADS: 5
+
+      # Database pool configuration (per PRD NFR16)
+      DB_POSTGRESDB_POOL_SIZE: 4
+
+      # Schema configuration
+      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: openproject
+
+      # Admin credentials
+      OPENPROJECT_SEED_ADMIN_USER_NAME: ${OPENPROJECT_ADMIN_USERNAME:-admin}
+      OPENPROJECT_SEED_ADMIN_USER_PASSWORD: ${OPENPROJECT_ADMIN_PASSWORD:-mqsgyCQNQ2q*NCMT8QARXKJqz}
+
+    volumes:
+      - openproject_data:/var/openproject/assets
+    networks:
+      - flrts_network
+    ports:
+      - "127.0.0.1:8080:8080"  # Localhost only - access via Cloudflare Tunnel
+    depends_on:
+      openproject-migrate:
+        condition: service_completed_successfully
+      memcached:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health_checks/default"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+
+  # NO openproject-db container - using Supabase instead!
+
+  memcached:
+    image: memcached:alpine
+    container_name: memcached
+    restart: always
+    command: memcached -m 256
+    networks:
+      - flrts_network
+
+  cloudflared:
+    image: cloudflare/cloudflared:2024.8.3
+    container_name: cloudflared
+    restart: always
+    command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - flrts_network
+    depends_on:
+      - openproject
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+
+networks:
+  flrts_network:
+    driver: bridge
+
+volumes:
+  openproject_data:  # Only need volume for assets now

@@ -235,7 +235,7 @@ telegram-bot/
 ```
 docker/
 ├── docker-compose.yml              # Development environment
-├── docker-compose.prod.yml         # Production overrides
+├── docker-compose.supabase.yml     # Canonical production compose (Supabase)
 ├── nginx/
 │   ├── nginx.conf                 # Main config
 │   └── sites/                     # Site configs

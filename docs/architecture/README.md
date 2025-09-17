@@ -94,7 +94,7 @@ npm run test:e2e
 
 # Build for production
 npm run build
-docker-compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.supabase.yml build
 
 # Deploy to production
 npm run deploy:prod

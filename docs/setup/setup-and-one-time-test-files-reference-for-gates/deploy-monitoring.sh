@@ -34,7 +34,7 @@ check_prerequisites() {
     fi
 
     # Check if OpenProject is running
-    if ! ssh root@${SERVER_IP} "docker-compose -f /root/openproject/docker-compose.prod.yml ps | grep -q openproject" > /dev/null 2>&1; then
+    if ! ssh root@${SERVER_IP} "docker-compose -f /root/openproject/docker-compose.supabase.yml ps | grep -q openproject" > /dev/null 2>&1; then
         echo -e "${RED}✗ OpenProject not found on server${NC}"
         echo "Please ensure OpenProject is deployed first"
         return 1
@@ -102,7 +102,7 @@ deploy_monitoring() {
     ssh root@${SERVER_IP} "cd /root/openproject && docker-compose -f docker-compose.monitoring.prod.yml build n8n-monitor"
 
     # Start monitoring services
-    ssh root@${SERVER_IP} "cd /root/openproject && docker-compose -f docker-compose.prod.yml -f docker-compose.monitoring.prod.yml up -d"
+    ssh root@${SERVER_IP} "cd /root/openproject && docker-compose -f docker-compose.supabase.yml -f docker-compose.monitoring.prod.yml up -d"
 
     # Wait for services to start
     echo -e "${YELLOW}Waiting for services to start...${NC}"

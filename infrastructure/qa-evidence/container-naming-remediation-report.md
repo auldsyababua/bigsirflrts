@@ -2,6 +2,8 @@
 
 ## Executive Summary
 
+Note: This report reflects legacy pre‑Supabase context. Production now uses a single Supabase PostgreSQL instance (no local Postgres containers) per ADR‑002.
+
 **CRITICAL ISSUE**: Docker container naming is inconsistent across the project, causing test failures and operational issues. The project uses two naming patterns:
 - `flrts-*` (from explicit `container_name` in compose files)
 - `docker-*-1` (from Docker Compose auto-generated names)

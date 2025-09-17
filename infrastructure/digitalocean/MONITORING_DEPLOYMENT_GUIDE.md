@@ -56,7 +56,7 @@ ssh root@165.227.216.172
 cd /root/openproject
 
 # Start monitoring services
-docker-compose -f docker-compose.prod.yml -f docker-compose.monitoring.prod.yml up -d
+docker-compose -f docker-compose.supabase.yml -f docker-compose.monitoring.prod.yml up -d
 
 # Verify services are running
 docker-compose ps
@@ -210,7 +210,7 @@ docker-compose restart prometheus
 
 # Recreate all monitoring services
 docker-compose -f docker-compose.monitoring.prod.yml down
-docker-compose -f docker-compose.prod.yml -f docker-compose.monitoring.prod.yml up -d
+docker-compose -f docker-compose.supabase.yml -f docker-compose.monitoring.prod.yml up -d
 ```
 
 ## Cost Impact
@@ -258,7 +258,7 @@ If resource usage becomes too high:
 ```bash
 # Update monitoring stack
 docker-compose pull
-docker-compose -f docker-compose.prod.yml -f docker-compose.monitoring.prod.yml up -d
+docker-compose -f docker-compose.supabase.yml -f docker-compose.monitoring.prod.yml up -d
 ```
 
 ## Success Metrics
