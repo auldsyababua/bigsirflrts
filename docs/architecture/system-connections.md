@@ -20,8 +20,9 @@ This project runs with a single Supabase PostgreSQL database for all services (A
 - NLP service (packages/nlp-service)
   - Dev‑only locally; not deployed on VM; depends on OpenAI + Supabase
 - Telegram
-  - Supabase Edge Function: `supabase/functions/telegram-webhook`
-  - Docker `telegram-bot` is referenced but source dir is not present (pending alignment)
+  - Canonical: Supabase Edge Function `supabase/functions/telegram-webhook`
+  - Deployment helper: `supabase/deploy-telegram-webhook.sh`
+  - Dockerized bot: removed; no local Telegram container in production
 
 ## Environment Variables (by component)
 - OpenProject (on VM)
