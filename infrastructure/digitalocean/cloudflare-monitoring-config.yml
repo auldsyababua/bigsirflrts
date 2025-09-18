@@ -1,7 +1,7 @@
 # Enhanced Cloudflare Tunnel Configuration for Monitoring Services
 # Extends existing OpenProject tunnel with monitoring endpoints
 
-tunnel: ${TUNNEL_ID}  # Use existing tunnel ID
+tunnel: ${TUNNEL_ID} # Use existing tunnel ID
 credentials-file: /etc/cloudflared/creds.json
 
 ingress:

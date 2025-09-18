@@ -2,7 +2,8 @@
 
 ## Overview
 
-This directory contains all infrastructure configuration and deployment scripts for the FLRTS OpenProject deployment on Digital Ocean.
+This directory contains all infrastructure configuration and deployment scripts
+for the FLRTS OpenProject deployment on Digital Ocean.
 
 ## Directory Structure
 

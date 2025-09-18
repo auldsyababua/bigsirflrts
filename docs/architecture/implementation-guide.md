@@ -81,29 +81,33 @@ import { ParsedTaskSchema } from '@flrts/shared/schemas';
 export class ParsingService {
   private openai: OpenAI;
   private promptTemplate: PromptTemplate;
-  
+
   async parseInput(input: string, context: UserContext): Promise<ParsedTask> {
     // 1. Enhance input with context
     const enhancedPrompt = this.promptTemplate.build({
       input,
       timezone: context.timezone,
       teamMembers: context.teamMembers,
-      recentPatterns: context.patterns
+      recentPatterns: context.patterns,
     });
-    
+
     // 2. Call OpenAI with function calling
     const completion = await this.openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [{ role: 'system', content: enhancedPrompt }],
-      functions: [{ 
-        name: 'parse_task',
-        parameters: ParsedTaskSchema.shape
-      }],
-      function_call: { name: 'parse_task' }
+      functions: [
+        {
+          name: 'parse_task',
+          parameters: ParsedTaskSchema.shape,
+        },
+      ],
+      function_call: { name: 'parse_task' },
     });
-    
+
     // 3. Validate and return
-    const parsed = JSON.parse(completion.choices[0].message.function_call.arguments);
+    const parsed = JSON.parse(
+      completion.choices[0].message.function_call.arguments
+    );
     return ParsedTaskSchema.parse(parsed);
   }
 }
@@ -116,34 +120,34 @@ export class ParsingService {
 export class OpenProjectClient {
   private axios: AxiosInstance;
   private rateLimiter: RateLimiter;
-  
+
   async createWorkPackage(data: WorkPackageInput): Promise<WorkPackage> {
     await this.rateLimiter.acquire();
-    
+
     const payload = {
       subject: data.subject,
       description: { raw: data.description },
       _links: {
         type: { href: `/api/v3/types/${data.typeId}` },
         assignee: { href: `/api/v3/users/${data.assigneeId}` },
-        project: { href: `/api/v3/projects/${data.projectId}` }
+        project: { href: `/api/v3/projects/${data.projectId}` },
       },
       dueDate: data.dueDate,
-      customFields: this.mapCustomFields(data.customFields)
+      customFields: this.mapCustomFields(data.customFields),
     };
-    
+
     const response = await this.axios.post('/api/v3/work_packages', payload);
     return this.mapWorkPackage(response.data);
   }
-  
+
   async bulkCreate(items: WorkPackageInput[]): Promise<WorkPackage[]> {
     // Use OpenProject's bulk operation endpoint
-    const operations = items.map(item => ({
+    const operations = items.map((item) => ({
       method: 'POST',
       href: '/api/v3/work_packages',
-      body: this.mapToPayload(item)
+      body: this.mapToPayload(item),
     }));
-    
+
     const response = await this.axios.post('/api/v3/bulk', operations);
     return response.data.results.map(this.mapWorkPackage);
   }
@@ -158,34 +162,30 @@ import { DateTime } from 'luxon';
 
 export class TimezoneConverter {
   private static readonly TEAM_TIMEZONES = {
-    'Colin': 'America/Los_Angeles',  // PST
-    'Bernie': 'America/Los_Angeles',
-    'Ari': 'America/Los_Angeles',
-    'Taylor': 'America/Chicago',     // CST
-    'Company': 'America/Chicago',
-    'Joel': 'America/New_York',      // EST
-    'Bryan': 'America/New_York'
+    Colin: 'America/Los_Angeles', // PST
+    Bernie: 'America/Los_Angeles',
+    Ari: 'America/Los_Angeles',
+    Taylor: 'America/Chicago', // CST
+    Company: 'America/Chicago',
+    Joel: 'America/New_York', // EST
+    Bryan: 'America/New_York',
   };
-  
+
   static convertToAssigneeTime(
-    dateStr: string, 
+    dateStr: string,
     assignee: string,
     sourceTimezone?: string
   ): string {
     const targetZone = this.TEAM_TIMEZONES[assignee];
     const sourceZone = sourceTimezone || 'America/Chicago'; // Company default
-    
-    return DateTime
-      .fromISO(dateStr, { zone: sourceZone })
+
+    return DateTime.fromISO(dateStr, { zone: sourceZone })
       .setZone(targetZone)
       .toISO();
   }
-  
+
   static convertToUTC(dateStr: string, timezone: string): string {
-    return DateTime
-      .fromISO(dateStr, { zone: timezone })
-      .toUTC()
-      .toISO();
+    return DateTime.fromISO(dateStr, { zone: timezone }).toUTC().toISO();
   }
 }
 ```
@@ -209,32 +209,32 @@ upstream openproject_gateway {
 server {
     listen 443 ssl http2;
     server_name api.flrts.company;
-    
+
     # SSL configuration
     ssl_certificate /etc/nginx/certs/cert.pem;
     ssl_certificate_key /etc/nginx/certs/key.pem;
-    
+
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
-    
+
     # Rate limiting
     limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
     limit_req zone=api burst=20 nodelay;
-    
+
     # NLP endpoints
     location /api/v1/parse {
         proxy_pass http://nlp_service;
         proxy_set_header X-Request-ID $request_id;
     }
-    
+
     # OpenProject endpoints
     location /api/v1/workpackages {
         proxy_pass http://openproject_gateway;
         proxy_set_header X-Request-ID $request_id;
     }
-    
+
     # WebSocket support
     location /ws {
         proxy_pass http://nlp_service;
@@ -321,7 +321,7 @@ CREATE TABLE flrts.usage_events (
 ) PARTITION BY RANGE (created_at);
 
 -- Create monthly partitions
-CREATE TABLE flrts.usage_events_2025_01 
+CREATE TABLE flrts.usage_events_2025_01
     PARTITION OF flrts.usage_events
     FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
 ```
@@ -335,38 +335,40 @@ CREATE TABLE flrts.usage_events_2025_01
 describe('ParsingService', () => {
   let service: ParsingService;
   let mockOpenAI: jest.Mocked<OpenAI>;
-  
+
   beforeEach(() => {
     mockOpenAI = createMockOpenAI();
     service = new ParsingService(mockOpenAI);
   });
-  
+
   describe('parseInput', () => {
     it('should parse simple task creation', async () => {
       const input = 'Create task for @Taylor to check pumps by 3pm';
       mockOpenAI.chat.completions.create.mockResolvedValue({
-        choices: [{
-          message: {
-            function_call: {
-              arguments: JSON.stringify({
-                operation: 'CREATE',
-                workPackage: {
-                  subject: 'Check pumps',
-                  assigneeId: 'taylor-id',
-                  dueDate: '2025-01-05T15:00:00-06:00'
-                }
-              })
-            }
-          }
-        }]
+        choices: [
+          {
+            message: {
+              function_call: {
+                arguments: JSON.stringify({
+                  operation: 'CREATE',
+                  workPackage: {
+                    subject: 'Check pumps',
+                    assigneeId: 'taylor-id',
+                    dueDate: '2025-01-05T15:00:00-06:00',
+                  },
+                }),
+              },
+            },
+          },
+        ],
       });
-      
+
       const result = await service.parseInput(input, defaultContext);
-      
+
       expect(result.operation).toBe('CREATE');
       expect(result.workPackage.assigneeId).toBe('taylor-id');
     });
-    
+
     it('should handle timezone conversion', async () => {
       // Test PST to CST conversion
       const input = 'Task for @Joel due at 2pm Colin time';
@@ -383,23 +385,23 @@ describe('ParsingService', () => {
 describe('NLP to OpenProject Integration', () => {
   let nlpService: INLPService;
   let opGateway: IOpenProjectGateway;
-  
+
   beforeAll(async () => {
     // Start test containers
     await startTestContainers();
     nlpService = await createNLPService();
     opGateway = await createOPGateway();
   });
-  
+
   it('should create task from natural language', async () => {
     // 1. Parse natural language
     const parsed = await nlpService.parse(
       'Create urgent task for Taylor to restart miner-07'
     );
-    
+
     // 2. Create in OpenProject
     const workPackage = await opGateway.create(parsed.workPackage);
-    
+
     // 3. Verify
     expect(workPackage.id).toBeDefined();
     expect(workPackage.subject).toBe('Restart miner-07');
@@ -431,30 +433,30 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - run: npm ci
       - run: npm run test:unit
       - run: npm run test:integration
-      
+
   build:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Build Docker images
         run: |
           docker build -t flrts/nlp-service ./packages/nlp-service
           docker build -t flrts/op-gateway ./packages/openproject-gateway
           docker build -t flrts/telegram-bot ./packages/telegram-bot
-      
+
       - name: Push to registry
         run: |
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push flrts/nlp-service
           docker push flrts/op-gateway
           docker push flrts/telegram-bot
-  
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -473,11 +475,11 @@ jobs:
 // Redis caching implementation
 class CacheService {
   private redis: Redis;
-  
+
   async getCachedParse(input: string): Promise<ParsedTask | null> {
     const hash = crypto.createHash('sha256').update(input).digest('hex');
     const cached = await this.redis.get(`parse:${hash}`);
-    
+
     if (cached) {
       const parsed = JSON.parse(cached);
       // Check if still valid (24 hour cache)
@@ -487,7 +489,7 @@ class CacheService {
     }
     return null;
   }
-  
+
   async setCachedParse(input: string, result: ParsedTask): Promise<void> {
     const hash = crypto.createHash('sha256').update(input).digest('hex');
     await this.redis.setex(
@@ -506,11 +508,11 @@ class CacheService {
 class BatchProcessor {
   private queue: ParseRequest[] = [];
   private timer: NodeJS.Timeout;
-  
+
   async addRequest(request: ParseRequest): Promise<ParsedTask> {
     return new Promise((resolve, reject) => {
       this.queue.push({ ...request, resolve, reject });
-      
+
       if (this.queue.length >= 10) {
         this.processBatch();
       } else if (!this.timer) {
@@ -518,17 +520,17 @@ class BatchProcessor {
       }
     });
   }
-  
+
   private async processBatch() {
     const batch = this.queue.splice(0, 10);
     clearTimeout(this.timer);
     this.timer = null;
-    
+
     try {
       const results = await this.openai.batchParse(batch);
       batch.forEach((req, i) => req.resolve(results[i]));
     } catch (error) {
-      batch.forEach(req => req.reject(error));
+      batch.forEach((req) => req.reject(error));
     }
   }
 }
@@ -548,21 +550,21 @@ const parseCounter = new Counter({
   name: 'flrts_parse_total',
   help: 'Total number of parse requests',
   labelNames: ['status', 'operation'],
-  registers: [registry]
+  registers: [registry],
 });
 
 const parseHistogram = new Histogram({
   name: 'flrts_parse_duration_seconds',
   help: 'Parse request duration',
   buckets: [0.1, 0.5, 1, 2, 5],
-  registers: [registry]
+  registers: [registry],
 });
 
 const openaiTokens = new Counter({
   name: 'flrts_openai_tokens_total',
   help: 'Total OpenAI tokens used',
   labelNames: ['model'],
-  registers: [registry]
+  registers: [registry],
 });
 ```
 
@@ -583,13 +585,13 @@ class FLRTSMCPServer implements MCPServer {
         return this.handleListTasks(request.params);
     }
   }
-  
+
   getCapabilities(): MCPCapabilities {
     return {
       name: 'FLRTS',
       version: '1.0.0',
       methods: ['parse', 'create_task', 'list_tasks'],
-      description: 'Natural language task management for OpenProject'
+      description: 'Natural language task management for OpenProject',
     };
   }
 }

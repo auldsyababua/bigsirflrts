@@ -3,27 +3,27 @@ name: Integration Tests - Edge Function & n8n Webhook (Non-Blocking)
 on:
   # Keep scheduled and manual runs; remove PR trigger to avoid duplication
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'supabase/functions/**'
-      - 'tests/integration/**'
-      - '.github/workflows/integration-tests.yml'
+      - "supabase/functions/**"
+      - "tests/integration/**"
+      - ".github/workflows/integration-tests.yml"
   schedule:
     # Run daily at 6 AM UTC to catch infrastructure drift
-    - cron: '0 6 * * *'
+    - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to test against'
+        description: "Environment to test against"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - staging
           - production
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: "20"
 
 jobs:
   integration-tests:
@@ -51,7 +51,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci

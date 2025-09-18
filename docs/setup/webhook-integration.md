@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document describes the current webhook integration architecture for FLRTS, covering task synchronization and communication flows between Supabase, Edge Functions, n8n, and OpenProject.
+This document describes the current webhook integration architecture for FLRTS,
+covering task synchronization and communication flows between Supabase, Edge
+Functions, n8n, and OpenProject.
 
 ## Current Architecture (Updated 2025)
 
@@ -38,12 +40,14 @@ OpenProject Sync
 ### 2. Self-hosted n8n Configuration
 
 **Current Setup:**
+
 - **Deployment**: Single instance (not queue mode)
 - **URL**: `http://localhost:5678` (development) or configured domain
 - **Version**: v1.105.2+
 - **Mode**: Docker container with persistent volume
 
 **Key Webhooks:**
+
 - `/webhook/telegram-commands` - Telegram message processing
 - `/webhook/database-changes` - Database change notifications
 - `/webhook/openproject-sync` - Bidirectional sync operations
@@ -122,18 +126,21 @@ serve(async (req) => {
     }
 
     // Forward to n8n with enhanced context
-    const response = await fetch(`${N8N_WEBHOOK_URL}/webhook/database-changes`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Source': 'supabase-database',
-      },
-      body: JSON.stringify({
-        ...payload,
-        timestamp: new Date().toISOString(),
-        source: 'database',
-      }),
-    });
+    const response = await fetch(
+      `${N8N_WEBHOOK_URL}/webhook/database-changes`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Source': 'supabase-database',
+        },
+        body: JSON.stringify({
+          ...payload,
+          timestamp: new Date().toISOString(),
+          source: 'database',
+        }),
+      }
+    );
 
     if (!response.ok) {
       console.error('n8n webhook failed:', response.statusText);
@@ -141,7 +148,6 @@ serve(async (req) => {
     }
 
     return new Response('OK', { status: 200 });
-
   } catch (error) {
     console.error('Database webhook error:', error);
     return new Response('Internal error', { status: 500 });
@@ -169,16 +175,16 @@ interface TaskData {
 
 // Field mappings
 const STATUS_MAPPING = {
-  'open': 1,        // New
-  'in_progress': 7, // In progress
-  'completed': 12,  // Closed
-  'on_hold': 4      // On hold
+  open: 1, // New
+  in_progress: 7, // In progress
+  completed: 12, // Closed
+  on_hold: 4, // On hold
 };
 
 const PRIORITY_MAPPING = {
-  'High': 1,    // High
-  'Medium': 2,  // Normal
-  'Low': 3      // Low
+  High: 1, // High
+  Medium: 2, // Normal
+  Low: 3, // Low
 };
 
 serve(async (req) => {
@@ -187,7 +193,8 @@ serve(async (req) => {
   }
 
   try {
-    const { operation, data }: { operation: string; data: TaskData } = await req.json();
+    const { operation, data }: { operation: string; data: TaskData } =
+      await req.json();
 
     const authHeader = `Basic ${btoa(`apikey:${OPENPROJECT_API_KEY}`)}`;
 
@@ -200,19 +207,24 @@ serve(async (req) => {
             type: { href: '/api/v3/types/1' }, // Task type
             project: { href: '/api/v3/projects/1' }, // Default project
             status: { href: `/api/v3/statuses/${STATUS_MAPPING[data.status]}` },
-            priority: { href: `/api/v3/priorities/${PRIORITY_MAPPING[data.priority]}` }
+            priority: {
+              href: `/api/v3/priorities/${PRIORITY_MAPPING[data.priority]}`,
+            },
           },
-          ...(data.due_date && { dueDate: data.due_date })
+          ...(data.due_date && { dueDate: data.due_date }),
         };
 
-        const createResponse = await fetch(`${OPENPROJECT_API_URL}/work_packages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(workPackage),
-        });
+        const createResponse = await fetch(
+          `${OPENPROJECT_API_URL}/work_packages`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: authHeader,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(workPackage),
+          }
+        );
 
         if (!createResponse.ok) {
           const error = await createResponse.text();
@@ -221,22 +233,24 @@ serve(async (req) => {
 
         const created = await createResponse.json();
         return new Response(JSON.stringify({ success: true, id: created.id }), {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         });
 
       default:
         return new Response('Unsupported operation', { status: 400 });
     }
-
   } catch (error) {
     console.error('OpenProject sync error:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message,
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
 ```
@@ -246,6 +260,7 @@ serve(async (req) => {
 ### 1. Telegram Command Processing
 
 **Webhook Trigger Node:**
+
 ```json
 {
   "httpMethod": "POST",
@@ -255,6 +270,7 @@ serve(async (req) => {
 ```
 
 **Function Node - Parse Telegram Message:**
+
 ```javascript
 // Extract intent from Telegram message
 const messageText = $json.message_text?.toLowerCase() || '';
@@ -264,8 +280,14 @@ let extractedData = {};
 
 if (messageText.includes('create task') || messageText.includes('new task')) {
   intent = 'create_task';
-  extractedData.title = messageText.replace(/^(create task|new task):?\s*/i, '');
-} else if (messageText.includes('list tasks') || messageText.includes('show tasks')) {
+  extractedData.title = messageText.replace(
+    /^(create task|new task):?\s*/i,
+    ''
+  );
+} else if (
+  messageText.includes('list tasks') ||
+  messageText.includes('show tasks')
+) {
   intent = 'list_tasks';
 } else if (messageText.includes('help')) {
   intent = 'help';
@@ -276,13 +298,14 @@ return {
   user_id: $json.user_id,
   chat_id: $json.chat_id,
   username: $json.username,
-  extractedData
+  extractedData,
 };
 ```
 
 ### 2. Database Change Processing
 
 **Webhook Trigger Node:**
+
 ```json
 {
   "httpMethod": "POST",
@@ -292,6 +315,7 @@ return {
 ```
 
 **Switch Node - Route by Operation:**
+
 ```json
 {
   "mode": "expression",
@@ -324,6 +348,7 @@ supabase functions serve --env-file .env.local
 ### 2. Environment Variables
 
 **`.env.local`** for Edge Functions:
+
 ```env
 N8N_WEBHOOK_URL=http://host.docker.internal:5678
 OPENPROJECT_API_URL=http://host.docker.internal:8080/api/v3
@@ -422,6 +447,6 @@ curl -H "Authorization: Basic $(echo -n 'apikey:YOUR_API_KEY' | base64)" \
 
 ---
 
-*Updated for current FLRTS architecture: Edge Functions + self-hosted n8n*
-*Replaces obsolete n8n-cloud configuration*
-*Security: All credentials removed from documentation*
+_Updated for current FLRTS architecture: Edge Functions + self-hosted n8n_
+_Replaces obsolete n8n-cloud configuration_ _Security: All credentials removed
+from documentation_

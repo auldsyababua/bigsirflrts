@@ -10,9 +10,9 @@
  *   node tests/helpers/retry-test-simulator.js --scenario=recovery
  */
 
-import { testConfig } from '../config/test-config.js';
-import http from 'http';
-import { URL } from 'url';
+import { testConfig } from "../config/test-config.js";
+import http from "http";
+import { URL } from "url";
 
 class RetryTestSimulator {
   constructor() {
@@ -40,35 +40,48 @@ class RetryTestSimulator {
 
       // Simulate response delay
       setTimeout(() => {
-        if (this.shouldFail && this.failureCount < this.circuitBreakerThreshold) {
+        if (
+          this.shouldFail &&
+          this.failureCount < this.circuitBreakerThreshold
+        ) {
           this.failureCount++;
-          console.log(`[${timestamp}] Simulating failure ${this.failureCount}/${this.circuitBreakerThreshold}`);
+          console.log(
+            `[${timestamp}] Simulating failure ${this.failureCount}/${this.circuitBreakerThreshold}`,
+          );
 
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            error: 'Simulated webhook failure',
-            attempt: requestInfo.attempt,
-            timestamp
-          }));
+          res.writeHead(500, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              error: "Simulated webhook failure",
+              attempt: requestInfo.attempt,
+              timestamp,
+            }),
+          );
         } else {
           // Success response
-          console.log(`[${timestamp}] Responding with success (attempt ${requestInfo.attempt})`);
+          console.log(
+            `[${timestamp}] Responding with success (attempt ${requestInfo.attempt})`,
+          );
 
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            status: 'success',
-            message: 'Mock webhook received',
-            attempt: requestInfo.attempt,
-            timestamp,
-            recovered: this.failureCount > 0
-          }));
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              status: "success",
+              message: "Mock webhook received",
+              attempt: requestInfo.attempt,
+              timestamp,
+              recovered: this.failureCount > 0,
+            }),
+          );
         }
       }, this.responseDelay);
     });
 
     this.mockServer.listen(port, () => {
       console.log(`🎭 Mock webhook server running on http://localhost:${port}`);
-      console.log(`   Failure mode: ${this.shouldFail ? 'ENABLED' : 'DISABLED'}`);
+      console.log(
+        `   Failure mode: ${this.shouldFail ? "ENABLED" : "DISABLED"}`,
+      );
       console.log(`   Response delay: ${this.responseDelay}ms`);
     });
 
@@ -77,7 +90,7 @@ class RetryTestSimulator {
 
   // Simulate exponential backoff failure scenario
   simulateExponentialBackoff() {
-    console.log('\n🔄 Simulating Exponential Backoff Scenario');
+    console.log("\n🔄 Simulating Exponential Backoff Scenario");
     this.shouldFail = true;
     this.circuitBreakerThreshold = 4; // Allow 4 failures before success
     this.responseDelay = 100; // Quick response to focus on retry timing
@@ -90,7 +103,7 @@ class RetryTestSimulator {
 
   // Simulate circuit breaker behavior
   simulateCircuitBreaker() {
-    console.log('\n⚡ Simulating Circuit Breaker Scenario');
+    console.log("\n⚡ Simulating Circuit Breaker Scenario");
     this.shouldFail = true;
     this.circuitBreakerThreshold = 999; // Always fail to test circuit breaker
     this.responseDelay = 50;
@@ -99,14 +112,17 @@ class RetryTestSimulator {
 
     // Monitor for circuit breaker activation
     setTimeout(() => {
-      console.log('\n📊 Circuit Breaker Test Results:');
+      console.log("\n📊 Circuit Breaker Test Results:");
       console.log(`Total requests received: ${this.requestLog.length}`);
       console.log(`Expected: Retries should stop after maximum attempts`);
 
-      if (this.requestLog.length <= 4) { // 1 initial + 3 retries
-        console.log('✅ Circuit breaker working correctly');
+      if (this.requestLog.length <= 4) {
+        // 1 initial + 3 retries
+        console.log("✅ Circuit breaker working correctly");
       } else {
-        console.log('❌ Circuit breaker may not be working - too many requests');
+        console.log(
+          "❌ Circuit breaker may not be working - too many requests",
+        );
       }
 
       this.stopServer();
@@ -115,7 +131,7 @@ class RetryTestSimulator {
 
   // Simulate recovery after temporary failure
   simulateRecovery() {
-    console.log('\n🔧 Simulating Recovery Scenario');
+    console.log("\n🔧 Simulating Recovery Scenario");
     this.shouldFail = true;
     this.circuitBreakerThreshold = 2; // Fail twice, then recover
     this.responseDelay = 200;
@@ -128,16 +144,18 @@ class RetryTestSimulator {
 
   // Simulate slow response times (but not failures)
   simulateSlowResponse() {
-    console.log('\n🐌 Simulating Slow Response Scenario');
+    console.log("\n🐌 Simulating Slow Response Scenario");
     this.shouldFail = false;
     this.responseDelay = 5000; // 5 second delay
 
     this.createMockWebhookServer(3001);
 
     setTimeout(() => {
-      console.log('\n📊 Slow Response Test Results:');
+      console.log("\n📊 Slow Response Test Results:");
       console.log(`Requests with 5s delay: ${this.requestLog.length}`);
-      console.log('Expected: Webhooks should handle slow responses without retries');
+      console.log(
+        "Expected: Webhooks should handle slow responses without retries",
+      );
       this.stopServer();
     }, 30000);
   }
@@ -154,16 +172,24 @@ class RetryTestSimulator {
 
         if (this.requestLog.length > 1) {
           const delay = currentTime - lastAttemptTime;
-          const expectedDelay = this.calculateExpectedDelay(this.requestLog.length - 2);
+          const expectedDelay = this.calculateExpectedDelay(
+            this.requestLog.length - 2,
+          );
 
-          console.log(`⏱️  Attempt ${this.requestLog.length}: ${delay}ms delay (expected ~${expectedDelay}ms)`);
+          console.log(
+            `⏱️  Attempt ${this.requestLog.length}: ${delay}ms delay (expected ~${expectedDelay}ms)`,
+          );
         }
 
         lastAttemptTime = currentTime;
       }
 
       // Stop monitoring after recovery or timeout
-      if (!this.shouldFail || this.requestLog.length >= 5 || Date.now() - startTime > 120000) {
+      if (
+        !this.shouldFail ||
+        this.requestLog.length >= 5 ||
+        Date.now() - startTime > 120000
+      ) {
         clearInterval(monitor);
         this.analyzeRetryPattern();
       }
@@ -173,14 +199,18 @@ class RetryTestSimulator {
   // Monitor recovery pattern
   monitorRecoveryPattern() {
     setTimeout(() => {
-      console.log('\n📊 Recovery Test Results:');
+      console.log("\n📊 Recovery Test Results:");
       console.log(`Total attempts: ${this.requestLog.length}`);
 
       const lastRequest = this.requestLog[this.requestLog.length - 1];
       if (lastRequest && this.requestLog.length >= 3) {
-        console.log('✅ Recovery pattern detected - system should have recovered after failures');
+        console.log(
+          "✅ Recovery pattern detected - system should have recovered after failures",
+        );
       } else {
-        console.log('⚠️  Recovery pattern unclear - may need longer observation');
+        console.log(
+          "⚠️  Recovery pattern unclear - may need longer observation",
+        );
       }
 
       this.stopServer();
@@ -188,13 +218,18 @@ class RetryTestSimulator {
   }
 
   // Calculate expected delay for exponential backoff
-  calculateExpectedDelay(attempt, baseDelay = 1000, multiplier = 2, maxDelay = 32000) {
+  calculateExpectedDelay(
+    attempt,
+    baseDelay = 1000,
+    multiplier = 2,
+    maxDelay = 32000,
+  ) {
     return Math.min(baseDelay * Math.pow(multiplier, attempt), maxDelay);
   }
 
   // Analyze retry pattern results
   analyzeRetryPattern() {
-    console.log('\n📊 Retry Pattern Analysis:');
+    console.log("\n📊 Retry Pattern Analysis:");
     console.log(`Total attempts logged: ${this.requestLog.length}`);
 
     if (this.requestLog.length >= 2) {
@@ -205,26 +240,29 @@ class RetryTestSimulator {
         delays.push(current - previous);
       }
 
-      console.log('Actual delays between attempts:');
+      console.log("Actual delays between attempts:");
       delays.forEach((delay, index) => {
         const expected = this.calculateExpectedDelay(index);
-        const variance = Math.abs(delay - expected) / expected * 100;
-        console.log(`  ${index + 1} → ${index + 2}: ${delay}ms (expected ~${expected}ms, variance: ${variance.toFixed(1)}%)`);
+        const variance = (Math.abs(delay - expected) / expected) * 100;
+        console.log(
+          `  ${index + 1} → ${index + 2}: ${delay}ms (expected ~${expected}ms, variance: ${variance.toFixed(1)}%)`,
+        );
       });
 
       // Check if pattern follows exponential backoff
       let followsPattern = true;
       for (let i = 1; i < delays.length && i < 3; i++) {
-        if (delays[i] < delays[i - 1] * 1.5) { // Allow some variance
+        if (delays[i] < delays[i - 1] * 1.5) {
+          // Allow some variance
           followsPattern = false;
           break;
         }
       }
 
       if (followsPattern) {
-        console.log('✅ Exponential backoff pattern detected');
+        console.log("✅ Exponential backoff pattern detected");
       } else {
-        console.log('⚠️  Exponential backoff pattern unclear');
+        console.log("⚠️  Exponential backoff pattern unclear");
       }
     }
 
@@ -232,19 +270,19 @@ class RetryTestSimulator {
   }
 
   // Send test webhook to trigger retry scenario
-  async triggerWebhookTest(scenario = 'test') {
+  async triggerWebhookTest(scenario = "test") {
     const payload = {
-      type: 'INSERT',
-      table: 'tasks',
-      schema: 'public',
+      type: "INSERT",
+      table: "tasks",
+      schema: "public",
       record: {
         id: `retry-test-${scenario}-${Date.now()}`,
         title: `Retry Test - ${scenario}`,
-        status: 'open',
-        priority: 'High',
-        created_at: new Date().toISOString()
+        status: "open",
+        priority: "High",
+        created_at: new Date().toISOString(),
       },
-      old_record: null
+      old_record: null,
     };
 
     try {
@@ -252,20 +290,24 @@ class RetryTestSimulator {
 
       // This would normally trigger through Supabase database changes
       // For direct testing, we can call the webhook endpoint
-      const webhookUrl = testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL;
+      const webhookUrl =
+        testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL;
 
       if (webhookUrl) {
         const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         });
 
-        console.log(`Webhook response: ${response.status} ${response.statusText}`);
+        console.log(
+          `Webhook response: ${response.status} ${response.statusText}`,
+        );
       } else {
-        console.log('⚠️  N8N webhook URL not configured - simulating with mock server only');
+        console.log(
+          "⚠️  N8N webhook URL not configured - simulating with mock server only",
+        );
       }
-
     } catch (error) {
       console.log(`Webhook trigger error: ${error.message}`);
     }
@@ -275,13 +317,15 @@ class RetryTestSimulator {
   stopServer() {
     if (this.mockServer) {
       this.mockServer.close(() => {
-        console.log('\n🛑 Mock server stopped');
+        console.log("\n🛑 Mock server stopped");
 
         // Final summary
-        console.log('\n📋 Test Summary:');
+        console.log("\n📋 Test Summary:");
         console.log(`- Total requests: ${this.requestLog.length}`);
         console.log(`- Failures simulated: ${this.failureCount}`);
-        console.log(`- Recovery achieved: ${!this.shouldFail || this.failureCount >= this.circuitBreakerThreshold}`);
+        console.log(
+          `- Recovery achieved: ${!this.shouldFail || this.failureCount >= this.circuitBreakerThreshold}`,
+        );
 
         process.exit(0);
       });
@@ -290,13 +334,13 @@ class RetryTestSimulator {
 
   // Graceful shutdown
   setupGracefulShutdown() {
-    process.on('SIGINT', () => {
-      console.log('\n🛑 Received SIGINT, shutting down gracefully...');
+    process.on("SIGINT", () => {
+      console.log("\n🛑 Received SIGINT, shutting down gracefully...");
       this.stopServer();
     });
 
-    process.on('SIGTERM', () => {
-      console.log('\n🛑 Received SIGTERM, shutting down gracefully...');
+    process.on("SIGTERM", () => {
+      console.log("\n🛑 Received SIGTERM, shutting down gracefully...");
       this.stopServer();
     });
   }
@@ -305,42 +349,51 @@ class RetryTestSimulator {
 // CLI interface
 async function main() {
   const args = process.argv.slice(2);
-  const scenario = args.find(arg => arg.startsWith('--scenario='))?.split('=')[1] || 'exponential-backoff';
-  const port = parseInt(args.find(arg => arg.startsWith('--port='))?.split('=')[1]) || 3001;
+  const scenario =
+    args.find((arg) => arg.startsWith("--scenario="))?.split("=")[1] ||
+    "exponential-backoff";
+  const port =
+    parseInt(args.find((arg) => arg.startsWith("--port="))?.split("=")[1]) ||
+    3001;
 
   const simulator = new RetryTestSimulator();
   simulator.setupGracefulShutdown();
 
-  console.log('🧪 Webhook Retry Test Simulator');
+  console.log("🧪 Webhook Retry Test Simulator");
   console.log(`📋 Scenario: ${scenario}`);
   console.log(`🔌 Port: ${port}`);
-  console.log('⏹️  Press Ctrl+C to stop\n');
+  console.log("⏹️  Press Ctrl+C to stop\n");
 
   switch (scenario) {
-    case 'exponential-backoff':
+    case "exponential-backoff":
       simulator.simulateExponentialBackoff();
       // Trigger test after server starts
-      setTimeout(() => simulator.triggerWebhookTest('exponential-backoff'), 2000);
+      setTimeout(
+        () => simulator.triggerWebhookTest("exponential-backoff"),
+        2000,
+      );
       break;
 
-    case 'circuit-breaker':
+    case "circuit-breaker":
       simulator.simulateCircuitBreaker();
-      setTimeout(() => simulator.triggerWebhookTest('circuit-breaker'), 2000);
+      setTimeout(() => simulator.triggerWebhookTest("circuit-breaker"), 2000);
       break;
 
-    case 'recovery':
+    case "recovery":
       simulator.simulateRecovery();
-      setTimeout(() => simulator.triggerWebhookTest('recovery'), 2000);
+      setTimeout(() => simulator.triggerWebhookTest("recovery"), 2000);
       break;
 
-    case 'slow-response':
+    case "slow-response":
       simulator.simulateSlowResponse();
-      setTimeout(() => simulator.triggerWebhookTest('slow-response'), 2000);
+      setTimeout(() => simulator.triggerWebhookTest("slow-response"), 2000);
       break;
 
     default:
       console.log(`❌ Unknown scenario: ${scenario}`);
-      console.log('Available scenarios: exponential-backoff, circuit-breaker, recovery, slow-response');
+      console.log(
+        "Available scenarios: exponential-backoff, circuit-breaker, recovery, slow-response",
+      );
       process.exit(1);
   }
 }

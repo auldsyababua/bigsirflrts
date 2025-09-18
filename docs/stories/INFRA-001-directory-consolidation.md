@@ -1,23 +1,32 @@
 # User Story: Directory Structure Consolidation
 
 ## Story ID: INFRA-001
-**Priority**: Medium
-**Estimated Effort**: 3 hours
+
+**Priority**: Medium **Estimated Effort**: 3 hours
 
 ## Story Title
-As a DevOps engineer, I need to consolidate duplicate monitoring and scripts directories to create a clear, organized infrastructure structure that eliminates confusion and duplication.
+
+As a DevOps engineer, I need to consolidate duplicate monitoring and scripts
+directories to create a clear, organized infrastructure structure that
+eliminates confusion and duplication.
 
 ## Background
-The project currently has duplicate directories causing confusion and maintenance overhead:
+
+The project currently has duplicate directories causing confusion and
+maintenance overhead:
+
 - **Monitoring**: `/monitoring/` vs `/infrastructure/digitalocean/monitoring/`
 - **Scripts**: `/scripts/` vs `/infrastructure/scripts/`
 
-This duplication leads to unclear responsibilities, potential conflicts, and maintenance overhead.
+This duplication leads to unclear responsibilities, potential conflicts, and
+maintenance overhead.
 
 ## Acceptance Criteria
 
 ### AC1: Monitoring Directory Consolidation
-- [ ] Create unified `/infrastructure/monitoring/` structure with subdirectories:
+
+- [ ] Create unified `/infrastructure/monitoring/` structure with
+      subdirectories:
   - `/infrastructure/monitoring/local/` - Local development monitoring configs
   - `/infrastructure/monitoring/production/` - Production monitoring configs
   - `/infrastructure/monitoring/shared/` - Shared monitoring components
@@ -26,12 +35,16 @@ This duplication leads to unclear responsibilities, potential conflicts, and mai
 - [ ] Remove original `/monitoring/` directory after migration
 
 ### AC2: Scripts Directory Organization
-- [ ] Keep `/infrastructure/scripts/` for infrastructure-specific scripts (deploy, health checks, etc.)
-- [ ] Keep `/scripts/` for general utility scripts (cf-wrangler, dns checks, setup)
+
+- [ ] Keep `/infrastructure/scripts/` for infrastructure-specific scripts
+      (deploy, health checks, etc.)
+- [ ] Keep `/scripts/` for general utility scripts (cf-wrangler, dns checks,
+      setup)
 - [ ] Document clear separation of responsibilities in README
 - [ ] Verify all script references and imports still work
 
 ### AC3: Documentation and References
+
 - [ ] Update all docker-compose files that reference monitoring configs
 - [ ] Update documentation to reflect new structure
 - [ ] Update any CI/CD pipelines or automation that references old paths
@@ -39,6 +52,7 @@ This duplication leads to unclear responsibilities, potential conflicts, and mai
 ## Technical Implementation Details
 
 ### Current State Analysis
+
 ```
 /monitoring/                           # 11 files including package.json, n8n-monitor configs
 ├── grafana/
@@ -66,14 +80,17 @@ This duplication leads to unclear responsibilities, potential conflicts, and mai
 ```
 
 ### Migration Plan
+
 1. **Phase 1**: Create new structure
+
    ```bash
    mkdir -p /infrastructure/monitoring/{local,production,shared}
    ```
 
 2. **Phase 2**: Migrate monitoring files
    - Move `/monitoring/` contents to `/infrastructure/monitoring/local/`
-   - Move `/infrastructure/digitalocean/monitoring/` to `/infrastructure/monitoring/production/`
+   - Move `/infrastructure/digitalocean/monitoring/` to
+     `/infrastructure/monitoring/production/`
    - Extract common components to `/infrastructure/monitoring/shared/`
 
 3. **Phase 3**: Update references
@@ -84,6 +101,7 @@ This duplication leads to unclear responsibilities, potential conflicts, and mai
 ## Dev Notes
 
 ### File Reference Updates Required
+
 ```bash
 # Files to check and update:
 grep -r "monitoring/" --include="*.yml" --include="*.yaml"
@@ -92,6 +110,7 @@ grep -r "../monitoring" --include="*.sh"
 ```
 
 ### Docker Compose Volume Mount Pattern
+
 ```yaml
 # Before:
 volumes:
@@ -103,6 +122,7 @@ volumes:
 ```
 
 ### Script Path Updates
+
 ```bash
 # Before:
 source ./scripts/maintenance/cleanup.sh
@@ -115,22 +135,26 @@ source ./infrastructure/scripts/health-check.sh
 ```
 
 ## Risk Assessment
+
 - **Low Risk**: Primarily file movement with reference updates
 - **Main Risk**: Broken volume mounts in docker-compose files
 - **Mitigation**: Test all docker-compose configurations after changes
 
 ## Testing Requirements
+
 - [ ] All docker-compose configurations build successfully
 - [ ] Monitoring services start correctly
 - [ ] All scripts execute without path errors
 - [ ] CI/CD pipelines continue to work
 
 ## Dependencies
+
 - None - can be implemented independently
 
 ## Environment Files & Secrets
 
 ### Required .env Files for Testing
+
 The following .env files contain necessary secrets and configurations:
 
 ```bash
@@ -144,7 +168,9 @@ The following .env files contain necessary secrets and configurations:
 ```
 
 ### ⚠️ CRITICAL INSTRUCTION FOR DEV AGENTS
+
 **If you encounter ANY of the following situations, STOP AND ASK FOR HELP:**
+
 - Missing .env files or secrets
 - Authentication/credential errors
 - Unable to access remote services (n8n Cloud, Supabase)
@@ -152,6 +178,7 @@ The following .env files contain necessary secrets and configurations:
 - Any deviation from the specified implementation plan
 
 **DO NOT:**
+
 - Create new .env files without consultation
 - Modify existing secrets or credentials
 - Skip steps due to missing access
@@ -159,6 +186,7 @@ The following .env files contain necessary secrets and configurations:
 - Assume default values for missing configurations
 
 **Example Stop Points:**
+
 ```bash
 # If this fails, STOP and ask for help:
 docker-compose --env-file .env up -d
@@ -171,6 +199,7 @@ Error: Unable to connect to n8n Cloud dashboard
 ```
 
 ## Definition of Done
+
 - [ ] All monitoring files consolidated under `/infrastructure/monitoring/`
 - [ ] Scripts directories maintain clear separation of concerns
 - [ ] All references updated and working
@@ -178,7 +207,9 @@ Error: Unable to connect to n8n Cloud dashboard
 - [ ] All tests pass
 
 ## Rollback Plan
+
 If issues occur:
+
 1. Restore original directory structure from git
 2. Revert docker-compose file changes
 3. Revert script reference updates

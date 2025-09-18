@@ -2,23 +2,30 @@
 
 # Architect Solution Validation Checklist
 
-This checklist serves as a comprehensive framework for the Architect to validate the technical design and architecture before development execution. The Architect should systematically work through each item, ensuring the architecture is robust, scalable, secure, and aligned with the product requirements.
+This checklist serves as a comprehensive framework for the Architect to validate
+the technical design and architecture before development execution. The
+Architect should systematically work through each item, ensuring the
+architecture is robust, scalable, secure, and aligned with the product
+requirements.
 
 [[LLM: INITIALIZATION INSTRUCTIONS - REQUIRED ARTIFACTS
 
 Before proceeding with this checklist, ensure you have access to:
 
-1. architecture.md - The primary architecture document (check docs/architecture.md)
-2. prd.md - Product Requirements Document for requirements alignment (check docs/prd.md)
-3. frontend-architecture.md or fe-architecture.md - If this is a UI project (check docs/frontend-architecture.md)
+1. architecture.md - The primary architecture document (check
+   docs/architecture.md)
+2. prd.md - Product Requirements Document for requirements alignment (check
+   docs/prd.md)
+3. frontend-architecture.md or fe-architecture.md - If this is a UI project
+   (check docs/frontend-architecture.md)
 4. Any system diagrams referenced in the architecture
 5. API documentation if available
 6. Technology stack details and version specifications
 
-IMPORTANT: If any required documents are missing or inaccessible, immediately ask the user for their location or content before proceeding.
+IMPORTANT: If any required documents are missing or inaccessible, immediately
+ask the user for their location or content before proceeding.
 
-PROJECT TYPE DETECTION:
-First, determine the project type by checking:
+PROJECT TYPE DETECTION: First, determine the project type by checking:
 
 - Does the architecture include a frontend/UI component?
 - Is there a frontend-architecture.md document?
@@ -27,22 +34,28 @@ First, determine the project type by checking:
 If this is a backend-only or service-only project:
 
 - Skip sections marked with [[FRONTEND ONLY]]
-- Focus extra attention on API design, service architecture, and integration patterns
-- Note in your final report that frontend sections were skipped due to project type
+- Focus extra attention on API design, service architecture, and integration
+  patterns
+- Note in your final report that frontend sections were skipped due to project
+  type
 
-VALIDATION APPROACH:
-For each section, you must:
+VALIDATION APPROACH: For each section, you must:
 
-1. Deep Analysis - Don't just check boxes, thoroughly analyze each item against the provided documentation
-2. Evidence-Based - Cite specific sections or quotes from the documents when validating
-3. Critical Thinking - Question assumptions and identify gaps, not just confirm what's present
-4. Risk Assessment - Consider what could go wrong with each architectural decision
+1. Deep Analysis - Don't just check boxes, thoroughly analyze each item against
+   the provided documentation
+2. Evidence-Based - Cite specific sections or quotes from the documents when
+   validating
+3. Critical Thinking - Question assumptions and identify gaps, not just confirm
+   what's present
+4. Risk Assessment - Consider what could go wrong with each architectural
+   decision
 
-EXECUTION MODE:
-Ask the user if they want to work through the checklist:
+EXECUTION MODE: Ask the user if they want to work through the checklist:
 
-- Section by section (interactive mode) - Review each section, present findings, get confirmation before proceeding
-- All at once (comprehensive mode) - Complete full analysis and present comprehensive report at end]]
+- Section by section (interactive mode) - Review each section, present findings,
+  get confirmation before proceeding
+- All at once (comprehensive mode) - Complete full analysis and present
+  comprehensive report at end]]
 
 ## 1. REQUIREMENTS ALIGNMENT
 
@@ -402,7 +415,8 @@ Ask the user if they want to work through the checklist:
 
 [[LLM: FINAL VALIDATION REPORT GENERATION
 
-Now that you've completed the checklist, generate a comprehensive validation report that includes:
+Now that you've completed the checklist, generate a comprehensive validation
+report that includes:
 
 1. Executive Summary
    - Overall architecture readiness (High/Medium/Low)
@@ -437,4 +451,5 @@ Now that you've completed the checklist, generate a comprehensive validation rep
    - UI/UX specification coverage
    - Component design clarity
 
-After presenting the report, ask the user if they would like detailed analysis of any specific section, especially those with warnings or failures.]]
+After presenting the report, ask the user if they would like detailed analysis
+of any specific section, especially those with warnings or failures.]]

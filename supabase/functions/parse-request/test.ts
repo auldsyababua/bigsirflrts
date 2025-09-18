@@ -1,7 +1,10 @@
 // Test file for Parse Request Edge Function
 // Run with: deno test --allow-env --allow-net
 
-import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertExists,
+} from "https://deno.land/std@0.208.0/testing/asserts.ts";
 
 // Mock environment variables for testing
 Deno.env.set("SUPABASE_URL", "https://test.supabase.co");
@@ -13,7 +16,8 @@ Deno.env.set("N8N_WEBHOOK_URL", "https://test-n8n-webhook.com");
 const attemptQuickParse = (input: string): any | null => {
   const SIMPLE_PATTERNS = {
     CREATE_TASK: /^(create|add|new)\s+(task|item|work)\s+(.+)/i,
-    DUE_DATE: /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+    DUE_DATE:
+      /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
     ASSIGNEE: /@(\w+)/g,
     PRIORITY: /(urgent|high|medium|low|critical)/i,
     PROJECT: /#(\w+)/g,
@@ -25,22 +29,26 @@ const attemptQuickParse = (input: string): any | null => {
   const taskDescription = createMatch[3];
 
   // Extract components
-  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map(m => m[1]);
-  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map(m => m[1]);
+  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map(
+    (m) => m[1],
+  );
+  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map(
+    (m) => m[1],
+  );
   const priorityMatch = input.match(SIMPLE_PATTERNS.PRIORITY);
   const dueDateMatch = input.match(SIMPLE_PATTERNS.DUE_DATE);
 
   // Build parsed result
   const parsed = {
-    operation: 'CREATE',
-    type: 'TASK',
-    subject: taskDescription.replace(/@\w+/g, '').replace(/#\w+/g, '').trim(),
+    operation: "CREATE",
+    type: "TASK",
+    subject: taskDescription.replace(/@\w+/g, "").replace(/#\w+/g, "").trim(),
     assignees: assignees.length > 0 ? assignees : undefined,
     projects: projects.length > 0 ? projects : undefined,
-    priority: priorityMatch ? normalizePriority(priorityMatch[1]) : 'normal',
+    priority: priorityMatch ? normalizePriority(priorityMatch[1]) : "normal",
     dueDate: dueDateMatch ? parseDueDate(dueDateMatch[2]) : undefined,
     confidence: calculateConfidence(input, assignees.length, projects.length),
-    raw: input
+    raw: input,
   };
 
   // Only return if we have reasonable confidence
@@ -49,9 +57,9 @@ const attemptQuickParse = (input: string): any | null => {
 
 const normalizePriority = (priority: string): string => {
   const p = priority.toLowerCase();
-  if (p === 'urgent' || p === 'critical') return 'high';
-  if (p === 'low') return 'low';
-  return 'normal';
+  if (p === "urgent" || p === "critical") return "high";
+  if (p === "low") return "low";
+  return "normal";
 };
 
 const parseDueDate = (dateStr: string): string => {
@@ -60,12 +68,20 @@ const parseDueDate = (dateStr: string): string => {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const dateMap: Record<string, Date> = {
-    'today': today,
-    'tomorrow': tomorrow,
+    today: today,
+    tomorrow: tomorrow,
   };
 
   // Add weekdays
-  const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const weekdays = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
   const currentDay = today.getDay();
 
   weekdays.forEach((day, index) => {
@@ -76,10 +92,14 @@ const parseDueDate = (dateStr: string): string => {
   });
 
   const targetDate = dateMap[dateStr.toLowerCase()];
-  return targetDate ? targetDate.toISOString().split('T')[0] : dateStr;
+  return targetDate ? targetDate.toISOString().split("T")[0] : dateStr;
 };
 
-const calculateConfidence = (input: string, assigneeCount: number, projectCount: number): number => {
+const calculateConfidence = (
+  input: string,
+  assigneeCount: number,
+  projectCount: number,
+): number => {
   let confidence = 0.5;
 
   if (assigneeCount > 0) confidence += 0.2;
@@ -98,9 +118,9 @@ Deno.test("Should handle OPTIONS request for CORS", async () => {
   const response = await fetch("http://localhost:8000/", {
     method: "OPTIONS",
     headers: {
-      "Origin": "http://localhost:3000",
-      "Access-Control-Request-Method": "POST"
-    }
+      Origin: "http://localhost:3000",
+      "Access-Control-Request-Method": "POST",
+    },
   });
 
   assertEquals(response.status, 200);
@@ -113,9 +133,9 @@ Deno.test("Should reject requests without authorization", async () => {
   const response = await fetch("http://localhost:8000/", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ input: "Create task for testing" })
+    body: JSON.stringify({ input: "Create task for testing" }),
   });
 
   assertEquals(response.status, 401);
@@ -128,9 +148,9 @@ Deno.test("Should reject requests without input", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer test-token"
+      Authorization: "Bearer test-token",
     },
-    body: JSON.stringify({ context: {} })
+    body: JSON.stringify({ context: {} }),
   });
 
   assertEquals(response.status, 400);
@@ -196,7 +216,11 @@ Deno.test("Priority normalization should work correctly", () => {
 
 Deno.test("Confidence calculation should reflect input quality", () => {
   // High confidence: has assignee and project
-  const high = calculateConfidence("Create task Review PR for @john #backend", 1, 1);
+  const high = calculateConfidence(
+    "Create task Review PR for @john #backend",
+    1,
+    1,
+  );
   assertEquals(high >= 0.8, true);
 
   // Medium confidence: basic task
@@ -210,13 +234,13 @@ Deno.test("Confidence calculation should reflect input quality", () => {
 
 Deno.test("Date parsing should handle relative dates", () => {
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = today.toISOString().split("T")[0];
 
   assertEquals(parseDueDate("today"), todayStr);
 
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const tomorrowStr = tomorrow.toISOString().split("T")[0];
 
   assertEquals(parseDueDate("tomorrow"), tomorrowStr);
 
@@ -231,12 +255,12 @@ Deno.test("Full parse request with quick parse pattern", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer test-token"
+      Authorization: "Bearer test-token",
     },
     body: JSON.stringify({
       input: "Create task Review documentation @sarah #docs urgent",
-      context: { userId: "test-user" }
-    })
+      context: { userId: "test-user" },
+    }),
   });
 
   assertEquals(response.status, 200);
@@ -255,12 +279,13 @@ Deno.test("Complex parse should queue to n8n", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer test-token"
+      Authorization: "Bearer test-token",
     },
     body: JSON.stringify({
-      input: "Schedule a meeting with the team next week to discuss Q4 planning and review budget allocations",
-      context: { userId: "test-user" }
-    })
+      input:
+        "Schedule a meeting with the team next week to discuss Q4 planning and review budget allocations",
+      context: { userId: "test-user" },
+    }),
   });
 
   assertEquals(response.status, 202); // Accepted for processing

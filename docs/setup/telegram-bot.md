@@ -1,6 +1,7 @@
 # Telegram Bot Configuration
 
-⚠️ **SECURITY NOTICE**: This document has been updated to remove exposed credentials and match current architecture.
+⚠️ **SECURITY NOTICE**: This document has been updated to remove exposed
+credentials and match current architecture.
 
 ## Bot Details
 
@@ -129,7 +130,6 @@ serve(async (req) => {
     }
 
     return new Response('OK', { status: 200 });
-
   } catch (error) {
     console.error('Webhook processing error:', error);
     return new Response('Internal error', { status: 500 });
@@ -167,7 +167,8 @@ function checkRateLimit(userId: number): boolean {
     return true;
   }
 
-  if (userLimit.count >= 10) { // 10 messages per minute
+  if (userLimit.count >= 10) {
+    // 10 messages per minute
     return false;
   }
 
@@ -282,5 +283,5 @@ curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteWebhook"
 
 ---
 
-*Updated for current FLRTS architecture - Edge Functions + self-hosted n8n*
-*Security: All credentials removed from documentation*
+_Updated for current FLRTS architecture - Edge Functions + self-hosted n8n_
+_Security: All credentials removed from documentation_

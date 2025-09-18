@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 # OpenProject connected to Supabase PostgreSQL
 # Following PRD architecture: Single database with schema separation
@@ -57,7 +57,7 @@ services:
     networks:
       - flrts_network
     ports:
-      - "127.0.0.1:8080:8080"  # Localhost only - access via Cloudflare Tunnel
+      - "127.0.0.1:8080:8080" # Localhost only - access via Cloudflare Tunnel
     depends_on:
       openproject-migrate:
         condition: service_completed_successfully
@@ -98,4 +98,4 @@ networks:
     driver: bridge
 
 volumes:
-  openproject_data:  # Only need volume for assets now
+  openproject_data: # Only need volume for assets now

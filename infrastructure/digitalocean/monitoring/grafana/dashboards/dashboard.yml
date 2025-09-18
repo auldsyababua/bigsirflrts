@@ -2,9 +2,9 @@
 apiVersion: 1
 
 providers:
-  - name: 'FLRTS Monitoring'
+  - name: "FLRTS Monitoring"
     orgId: 1
-    folder: 'FLRTS'
+    folder: "FLRTS"
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30

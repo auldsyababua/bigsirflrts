@@ -5,14 +5,14 @@
  *       Production uses a single Supabase PostgreSQL instance (no local Postgres containers).
  */
 
-import { beforeAll, afterAll } from 'vitest';
-import { spawn, ChildProcess } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { beforeAll, afterAll } from "vitest";
+import { spawn, ChildProcess } from "child_process";
+import { promises as fs } from "fs";
+import path from "path";
 
 // Test infrastructure processes
 let dockerComposeProcess: ChildProcess | null = null;
-let testServices: ChildProcess[] = [];
+const testServices: ChildProcess[] = [];
 
 export interface TestEnvironmentConfig {
   otlpEndpoint: string;
@@ -24,25 +24,29 @@ export interface TestEnvironmentConfig {
 }
 
 export const TEST_CONFIG: TestEnvironmentConfig = {
-  otlpEndpoint: process.env.TEST_OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318',
-  jaegerUI: process.env.TEST_JAEGER_URL || 'http://localhost:16686',
-  prometheusEndpoint: process.env.TEST_PROMETHEUS_URL || 'http://localhost:9090',
-  grafanaEndpoint: process.env.TEST_GRAFANA_URL || 'http://localhost:3000',
-  testDatabaseUrl: process.env.TEST_DATABASE_URL || 'postgresql://postgres:password@localhost:5432/flrts_test',
-  sentryDSN: process.env.TEST_SENTRY_DSN || 'https://test@sentry.io/project'
+  otlpEndpoint:
+    process.env.TEST_OTEL_EXPORTER_OTLP_ENDPOINT || "http://localhost:4318",
+  jaegerUI: process.env.TEST_JAEGER_URL || "http://localhost:16686",
+  prometheusEndpoint:
+    process.env.TEST_PROMETHEUS_URL || "http://localhost:9090",
+  grafanaEndpoint: process.env.TEST_GRAFANA_URL || "http://localhost:3000",
+  testDatabaseUrl:
+    process.env.TEST_DATABASE_URL ||
+    "postgresql://postgres:password@localhost:5432/flrts_test",
+  sentryDSN: process.env.TEST_SENTRY_DSN || "https://test@sentry.io/project",
 };
 
 /**
  * Setup monitoring infrastructure for testing
  */
 export async function setupMonitoringInfrastructure(): Promise<void> {
-  console.log('Setting up monitoring infrastructure for tests...');
+  console.log("Setting up monitoring infrastructure for tests...");
 
   try {
     // Check if Docker is available
     const dockerAvailable = await checkDockerAvailability();
     if (!dockerAvailable) {
-      console.warn('Docker not available, skipping infrastructure setup');
+      console.warn("Docker not available, skipping infrastructure setup");
       return;
     }
 
@@ -55,9 +59,9 @@ export async function setupMonitoringInfrastructure(): Promise<void> {
     // Wait for services to be ready
     await waitForServicesReady();
 
-    console.log('Monitoring infrastructure setup complete');
+    console.log("Monitoring infrastructure setup complete");
   } catch (error) {
-    console.error('Failed to setup monitoring infrastructure:', error);
+    console.error("Failed to setup monitoring infrastructure:", error);
     // Don't fail tests if infrastructure setup fails
   }
 }
@@ -66,7 +70,7 @@ export async function setupMonitoringInfrastructure(): Promise<void> {
  * Cleanup monitoring infrastructure after tests
  */
 export async function teardownMonitoringInfrastructure(): Promise<void> {
-  console.log('Tearing down monitoring infrastructure...');
+  console.log("Tearing down monitoring infrastructure...");
 
   try {
     // Stop test services
@@ -83,15 +87,19 @@ export async function teardownMonitoringInfrastructure(): Promise<void> {
 
     // Clean up with docker-compose down
     await new Promise<void>((resolve) => {
-      const cleanup = spawn('docker-compose', ['-f', 'tests/config/docker-compose.test.yml', 'down', '-v'], {
-        stdio: 'inherit'
-      });
+      const cleanup = spawn(
+        "docker-compose",
+        ["-f", "tests/config/docker-compose.test.yml", "down", "-v"],
+        {
+          stdio: "inherit",
+        },
+      );
 
-      cleanup.on('close', () => {
+      cleanup.on("close", () => {
         resolve();
       });
 
-      cleanup.on('error', () => {
+      cleanup.on("error", () => {
         // Ignore cleanup errors
         resolve();
       });
@@ -103,21 +111,21 @@ export async function teardownMonitoringInfrastructure(): Promise<void> {
       }, 10000);
     });
 
-    console.log('Monitoring infrastructure teardown complete');
+    console.log("Monitoring infrastructure teardown complete");
   } catch (error) {
-    console.error('Error during teardown:', error);
+    console.error("Error during teardown:", error);
   }
 }
 
 async function checkDockerAvailability(): Promise<boolean> {
   return new Promise((resolve) => {
-    const docker = spawn('docker', ['--version'], { stdio: 'pipe' });
+    const docker = spawn("docker", ["--version"], { stdio: "pipe" });
 
-    docker.on('close', (code) => {
+    docker.on("close", (code) => {
       resolve(code === 0);
     });
 
-    docker.on('error', () => {
+    docker.on("error", () => {
       resolve(false);
     });
 
@@ -204,9 +212,12 @@ volumes:
   postgres-test-data:
 `;
 
-  const configDir = path.join(process.cwd(), 'tests', 'config');
+  const configDir = path.join(process.cwd(), "tests", "config");
   await fs.mkdir(configDir, { recursive: true });
-  await fs.writeFile(path.join(configDir, 'docker-compose.test.yml'), dockerComposeContent);
+  await fs.writeFile(
+    path.join(configDir, "docker-compose.test.yml"),
+    dockerComposeContent,
+  );
 
   // Create Prometheus test configuration
   const prometheusConfig = `
@@ -223,7 +234,10 @@ scrape_configs:
       - targets: ['host.docker.internal:3001']  # NLP service
 `;
 
-  await fs.writeFile(path.join(configDir, 'prometheus-test.yml'), prometheusConfig);
+  await fs.writeFile(
+    path.join(configDir, "prometheus-test.yml"),
+    prometheusConfig,
+  );
 
   // Create PostgreSQL monitoring setup script
   const postgresInitScript = `
@@ -305,19 +319,26 @@ SELECT 'database_size_mb' as metric_name,
        'Total database size in MB' as description;
 `;
 
-  await fs.writeFile(path.join(configDir, 'init-monitoring.sql'), postgresInitScript);
+  await fs.writeFile(
+    path.join(configDir, "init-monitoring.sql"),
+    postgresInitScript,
+  );
 }
 
 async function startMonitoringServices(): Promise<void> {
   return new Promise((resolve, reject) => {
-    const configDir = path.join(process.cwd(), 'tests', 'config');
+    const configDir = path.join(process.cwd(), "tests", "config");
 
-    dockerComposeProcess = spawn('docker-compose', ['-f', 'docker-compose.test.yml', 'up', '-d'], {
-      cwd: configDir,
-      stdio: 'inherit'
-    });
+    dockerComposeProcess = spawn(
+      "docker-compose",
+      ["-f", "docker-compose.test.yml", "up", "-d"],
+      {
+        cwd: configDir,
+        stdio: "inherit",
+      },
+    );
 
-    dockerComposeProcess.on('close', (code) => {
+    dockerComposeProcess.on("close", (code) => {
       if (code === 0) {
         resolve();
       } else {
@@ -325,25 +346,25 @@ async function startMonitoringServices(): Promise<void> {
       }
     });
 
-    dockerComposeProcess.on('error', (error) => {
+    dockerComposeProcess.on("error", (error) => {
       reject(error);
     });
 
     // Timeout after 2 minutes
     setTimeout(() => {
-      reject(new Error('Docker compose startup timeout'));
+      reject(new Error("Docker compose startup timeout"));
     }, 120000);
   });
 }
 
 async function waitForServicesReady(): Promise<void> {
   const services = [
-    { name: 'Jaeger', url: TEST_CONFIG.jaegerUI },
-    { name: 'Prometheus', url: TEST_CONFIG.prometheusEndpoint },
-    { name: 'Grafana', url: TEST_CONFIG.grafanaEndpoint }
+    { name: "Jaeger", url: TEST_CONFIG.jaegerUI },
+    { name: "Prometheus", url: TEST_CONFIG.prometheusEndpoint },
+    { name: "Grafana", url: TEST_CONFIG.grafanaEndpoint },
   ];
 
-  console.log('Waiting for services to be ready...');
+  console.log("Waiting for services to be ready...");
 
   for (const service of services) {
     let attempts = 0;
@@ -352,8 +373,8 @@ async function waitForServicesReady(): Promise<void> {
     while (attempts < maxAttempts) {
       try {
         const response = await fetch(service.url, {
-          method: 'GET',
-          signal: AbortSignal.timeout(2000)
+          method: "GET",
+          signal: AbortSignal.timeout(2000),
         });
 
         if (response.ok) {
@@ -365,10 +386,12 @@ async function waitForServicesReady(): Promise<void> {
       }
 
       attempts++;
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (attempts === maxAttempts) {
-        console.warn(`⚠ ${service.name} not ready after ${maxAttempts} seconds`);
+        console.warn(
+          `⚠ ${service.name} not ready after ${maxAttempts} seconds`,
+        );
       }
     }
   }
@@ -380,13 +403,19 @@ async function waitForServicesReady(): Promise<void> {
 export function setupMonitoringTests() {
   beforeAll(async () => {
     // Only setup infrastructure in CI or when explicitly requested
-    if (process.env.CI === 'true' || process.env.SETUP_TEST_INFRASTRUCTURE === 'true') {
+    if (
+      process.env.CI === "true" ||
+      process.env.SETUP_TEST_INFRASTRUCTURE === "true"
+    ) {
       await setupMonitoringInfrastructure();
     }
   }, 180000); // 3 minute timeout for infrastructure setup
 
   afterAll(async () => {
-    if (process.env.CI === 'true' || process.env.SETUP_TEST_INFRASTRUCTURE === 'true') {
+    if (
+      process.env.CI === "true" ||
+      process.env.SETUP_TEST_INFRASTRUCTURE === "true"
+    ) {
       await teardownMonitoringInfrastructure();
     }
   }, 60000); // 1 minute timeout for cleanup

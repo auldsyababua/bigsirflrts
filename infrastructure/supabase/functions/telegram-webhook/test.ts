@@ -1,7 +1,10 @@
 // Test file for Telegram Webhook Edge Function
 // Run with: deno test --allow-env --allow-net
 
-import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/testing/asserts.ts";
+import {
+  assertEquals,
+  assertExists,
+} from "https://deno.land/std@0.208.0/testing/asserts.ts";
 
 // Mock environment variables for testing
 Deno.env.set("TELEGRAM_BOT_TOKEN", "test-bot-token");
@@ -19,17 +22,17 @@ const validTelegramUpdate = {
       id: 987654321,
       is_bot: false,
       first_name: "Test",
-      username: "testuser"
+      username: "testuser",
     },
     chat: {
       id: 987654321,
       first_name: "Test",
       username: "testuser",
-      type: "private"
+      type: "private",
     },
     date: 1699999999,
-    text: "/start"
-  }
+    text: "/start",
+  },
 };
 
 Deno.test("Webhook should reject unauthorized requests", async () => {
@@ -37,9 +40,9 @@ Deno.test("Webhook should reject unauthorized requests", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Telegram-Bot-Api-Secret-Token": "wrong-secret"
+      "X-Telegram-Bot-Api-Secret-Token": "wrong-secret",
     },
-    body: JSON.stringify(validTelegramUpdate)
+    body: JSON.stringify(validTelegramUpdate),
   });
 
   assertEquals(response.status, 401);
@@ -52,9 +55,9 @@ Deno.test("Webhook should accept valid Telegram updates", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Telegram-Bot-Api-Secret-Token": "test-webhook-secret"
+      "X-Telegram-Bot-Api-Secret-Token": "test-webhook-secret",
     },
-    body: JSON.stringify(validTelegramUpdate)
+    body: JSON.stringify(validTelegramUpdate),
   });
 
   assertEquals(response.status, 200);
@@ -64,44 +67,54 @@ Deno.test("Webhook should accept valid Telegram updates", async () => {
   assertExists(data.processingTime);
 });
 
-Deno.test("Webhook should handle updates without message gracefully", async () => {
-  const updateWithoutMessage = {
-    update_id: 123456790,
-    edited_message: {
-      message_id: 43,
-      text: "edited text"
-    }
-  };
+Deno.test(
+  "Webhook should handle updates without message gracefully",
+  async () => {
+    const updateWithoutMessage = {
+      update_id: 123456790,
+      edited_message: {
+        message_id: 43,
+        text: "edited text",
+      },
+    };
 
-  const response = await fetch("http://localhost:8000/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Telegram-Bot-Api-Secret-Token": "test-webhook-secret"
-    },
-    body: JSON.stringify(updateWithoutMessage)
-  });
+    const response = await fetch("http://localhost:8000/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Telegram-Bot-Api-Secret-Token": "test-webhook-secret",
+      },
+      body: JSON.stringify(updateWithoutMessage),
+    });
 
-  assertEquals(response.status, 200);
-  const text = await response.text();
-  assertEquals(text, "OK");
-});
+    assertEquals(response.status, 200);
+    const text = await response.text();
+    assertEquals(text, "OK");
+  },
+);
 
 Deno.test("Priority detection should work correctly", () => {
   // Import the function for testing (would need to export it from main file)
   const determinePriority = (text: string): "high" | "normal" | "low" => {
     if (!text) return "normal";
 
-    const highPriority = ["urgent", "emergency", "critical", "asap", "immediately", "priority"];
+    const highPriority = [
+      "urgent",
+      "emergency",
+      "critical",
+      "asap",
+      "immediately",
+      "priority",
+    ];
     const lowPriority = ["test", "debug", "ping", "hello"];
 
     const lowerText = text.toLowerCase();
 
-    if (highPriority.some(keyword => lowerText.includes(keyword))) {
+    if (highPriority.some((keyword) => lowerText.includes(keyword))) {
       return "high";
     }
 
-    if (lowPriority.some(keyword => lowerText.includes(keyword))) {
+    if (lowPriority.some((keyword) => lowerText.includes(keyword))) {
       return "low";
     }
 
@@ -136,7 +149,7 @@ Deno.test("Performance timer should track elapsed time", async () => {
   const timer = new PerformanceTimer();
 
   // Wait 100ms
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
 
   const elapsed = timer.elapsed();
 
@@ -150,7 +163,7 @@ Deno.test("Quick responses should match commands", () => {
     "/help": "📚 Loading help menu...",
     "/status": "🔄 Checking system status...",
     "/test": "🧪 Test received! Processing...",
-    "default": "✅ Message received! Processing..."
+    default: "✅ Message received! Processing...",
   };
 
   const getResponse = (text: string) => {
@@ -158,10 +171,16 @@ Deno.test("Quick responses should match commands", () => {
     return quickResponses[command] || quickResponses.default;
   };
 
-  assertEquals(getResponse("/start"), "👋 Welcome! Setting up your workspace...");
+  assertEquals(
+    getResponse("/start"),
+    "👋 Welcome! Setting up your workspace...",
+  );
   assertEquals(getResponse("/help extra params"), "📚 Loading help menu...");
   assertEquals(getResponse("/STATUS"), "🔄 Checking system status...");
-  assertEquals(getResponse("random message"), "✅ Message received! Processing...");
+  assertEquals(
+    getResponse("random message"),
+    "✅ Message received! Processing...",
+  );
 });
 
 Deno.test("Response should be under 200ms for simple requests", async () => {
@@ -171,9 +190,9 @@ Deno.test("Response should be under 200ms for simple requests", async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Telegram-Bot-Api-Secret-Token": "test-webhook-secret"
+      "X-Telegram-Bot-Api-Secret-Token": "test-webhook-secret",
     },
-    body: JSON.stringify(validTelegramUpdate)
+    body: JSON.stringify(validTelegramUpdate),
   });
 
   const responseTime = Date.now() - startTime;
@@ -181,10 +200,18 @@ Deno.test("Response should be under 200ms for simple requests", async () => {
   assertEquals(response.status, 200);
 
   // Check that response time is under 200ms (allowing some buffer for network)
-  assertEquals(responseTime < 300, true, `Response time ${responseTime}ms exceeds target`);
+  assertEquals(
+    responseTime < 300,
+    true,
+    `Response time ${responseTime}ms exceeds target`,
+  );
 
   const data = await response.json();
 
   // Check that reported processing time is under 200ms
-  assertEquals(data.processingTime < 200, true, `Processing time ${data.processingTime}ms exceeds target`);
+  assertEquals(
+    data.processingTime < 200,
+    true,
+    `Processing time ${data.processingTime}ms exceeds target`,
+  );
 });

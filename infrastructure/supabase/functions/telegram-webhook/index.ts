@@ -59,7 +59,11 @@ Deno.serve(async (req: Request) => {
     }
 
     // 4. Send immediate acknowledgment via Telegram API (fire and forget)
-    const acknowledgmentPromise = sendQuickReply(chatId, messageId, messageText);
+    const acknowledgmentPromise = sendQuickReply(
+      chatId,
+      messageId,
+      messageText,
+    );
 
     // 5. Queue for n8n processing (non-blocking)
     const queuePromise = queueForProcessing(update, timer);
@@ -70,27 +74,32 @@ Deno.serve(async (req: Request) => {
     // Don't wait for async operations - respond immediately
     console.log(`[COMPLETE] Total sync time: ${timer.elapsed()}ms`);
 
-    return new Response(JSON.stringify({
-      ok: true,
-      acknowledged: true,
-      processingTime: timer.elapsed()
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-    });
-
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        acknowledged: true,
+        processingTime: timer.elapsed(),
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   } catch (error) {
     console.error("Edge function error:", error);
 
     // Even on error, return 200 to prevent Telegram retries
-    return new Response(JSON.stringify({
-      ok: true,
-      error: true,
-      message: "Queued for retry"
-    }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-    });
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        error: true,
+        message: "Queued for retry",
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 });
 
@@ -98,14 +107,14 @@ Deno.serve(async (req: Request) => {
 async function sendQuickReply(
   chatId: number,
   replyToId: number,
-  originalText: string
+  originalText: string,
 ): Promise<void> {
   const quickResponses: Record<string, string> = {
     "/start": "👋 Welcome! Setting up your workspace...",
     "/help": "📚 Loading help menu...",
     "/status": "🔄 Checking system status...",
     "/test": "🧪 Test received! Processing...",
-    "default": "✅ Message received! Processing..."
+    default: "✅ Message received! Processing...",
   };
 
   // Determine response based on command
@@ -120,13 +129,16 @@ async function sendQuickReply(
       chat_id: chatId,
       text: responseText,
       reply_to_message_id: replyToId,
-      parse_mode: "HTML"
-    })
-  }).catch(err => console.error("Failed to send acknowledgment:", err));
+      parse_mode: "HTML",
+    }),
+  }).catch((err) => console.error("Failed to send acknowledgment:", err));
 }
 
 // Queue for n8n processing via webhook
-async function queueForProcessing(update: any, timer: PerformanceTimer): Promise<void> {
+async function queueForProcessing(
+  update: any,
+  timer: PerformanceTimer,
+): Promise<void> {
   try {
     const queueData = {
       timestamp: new Date().toISOString(),
@@ -137,16 +149,16 @@ async function queueForProcessing(update: any, timer: PerformanceTimer): Promise
         chatId: update.message?.chat?.id,
         userId: update.message?.from?.id,
         username: update.message?.from?.username,
-        messageId: update.message?.message_id
-      }
+        messageId: update.message?.message_id,
+      },
     };
 
     // Send to n8n webhook for processing
     fetch(N8N_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(queueData)
-    }).catch(err => console.error("Failed to queue to n8n:", err));
+      body: JSON.stringify(queueData),
+    }).catch((err) => console.error("Failed to queue to n8n:", err));
 
     timer.checkpoint("Queued to n8n");
   } catch (error) {
@@ -160,16 +172,23 @@ function determinePriority(text: string): "high" | "normal" | "low" {
   if (!text) return "normal";
 
   // High priority keywords
-  const highPriority = ["urgent", "emergency", "critical", "asap", "immediately", "priority"];
+  const highPriority = [
+    "urgent",
+    "emergency",
+    "critical",
+    "asap",
+    "immediately",
+    "priority",
+  ];
   const lowPriority = ["test", "debug", "ping", "hello"];
 
   const lowerText = text.toLowerCase();
 
-  if (highPriority.some(keyword => lowerText.includes(keyword))) {
+  if (highPriority.some((keyword) => lowerText.includes(keyword))) {
     return "high";
   }
 
-  if (lowPriority.some(keyword => lowerText.includes(keyword))) {
+  if (lowPriority.some((keyword) => lowerText.includes(keyword))) {
     return "low";
   }
 
@@ -188,7 +207,7 @@ async function logToSupabase(update: any, responseTime: number): Promise<void> {
       response_time_ms: responseTime,
       processed_by: "edge-function",
       priority: determinePriority(update.message?.text),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Logging error (non-blocking):", error);

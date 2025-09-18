@@ -4,86 +4,125 @@
 
 ### Goals
 
-• Enable rapid, friction-free task creation through natural language processing for distributed team operations
-• Eliminate manual timezone conversion errors by automatically converting all times to assignee's local timezone  
-• Reduce average task creation time from 45 seconds to under 5 seconds
-• Maintain full OpenProject functionality while adding NLP enhancement layer via API integration
-• Provide dual-interface access (OpenProject UI + FLRTS NLP) for maximum flexibility
-• Achieve 95% parse accuracy and 100% timezone conversion accuracy
+• Enable rapid, friction-free task creation through natural language processing
+for distributed team operations • Eliminate manual timezone conversion errors by
+automatically converting all times to assignee's local timezone  
+• Reduce average task creation time from 45 seconds to under 5 seconds •
+Maintain full OpenProject functionality while adding NLP enhancement layer via
+API integration • Provide dual-interface access (OpenProject UI + FLRTS NLP) for
+maximum flexibility • Achieve 95% parse accuracy and 100% timezone conversion
+accuracy
 
 ### Background Context
 
-The FLRTS NLP Task Management Service addresses critical operational friction at a distributed bitcoin mining company where team members across PST, CST, and EST zones need rapid task coordination. The current manual form-based task entry in OpenProject creates significant delays and dropped tasks due to timezone confusion and workflow interruption. By leveraging a simplified single-database architecture where OpenProject connects directly to Supabase PostgreSQL, FLRTS provides a natural language enhancement layer that converts conversational commands like "Hey Taylor, Colin needs the server logs by 1pm his time" into properly structured API calls to OpenProject.
+The FLRTS NLP Task Management Service addresses critical operational friction at
+a distributed bitcoin mining company where team members across PST, CST, and EST
+zones need rapid task coordination. The current manual form-based task entry in
+OpenProject creates significant delays and dropped tasks due to timezone
+confusion and workflow interruption. By leveraging a simplified single-database
+architecture where OpenProject connects directly to Supabase PostgreSQL, FLRTS
+provides a natural language enhancement layer that converts conversational
+commands like "Hey Taylor, Colin needs the server logs by 1pm his time" into
+properly structured API calls to OpenProject.
 
-**Critical Architecture Rule:** FLRTS implements a "Reflex and Brain" hybrid architecture:
+**Critical Architecture Rule:** FLRTS implements a "Reflex and Brain" hybrid
+architecture:
 
-- **Reflex Layer (Edge Functions)**: Handles immediate responses (<100ms) for Telegram acknowledgments and simple queries
-- **Brain Layer (n8n Workflows)**: Orchestrates complex business logic, multi-step operations, and all OpenProject API interactions
-- **Data Flow**: User → Telegram → Edge Function (instant ACK) → n8n Workflow → OpenProject API → Supabase PostgreSQL
-- **Performance Rule**: Operations requiring <500ms response use Edge Functions; all others use n8n workflows
-- **Database Rule**: FLRTS never writes to the database directly - all writes go through OpenProject REST API
+- **Reflex Layer (Edge Functions)**: Handles immediate responses (<100ms) for
+  Telegram acknowledgments and simple queries
+- **Brain Layer (n8n Workflows)**: Orchestrates complex business logic,
+  multi-step operations, and all OpenProject API interactions
+- **Data Flow**: User → Telegram → Edge Function (instant ACK) → n8n Workflow →
+  OpenProject API → Supabase PostgreSQL
+- **Performance Rule**: Operations requiring <500ms response use Edge Functions;
+  all others use n8n workflows
+- **Database Rule**: FLRTS never writes to the database directly - all writes go
+  through OpenProject REST API
 
 ### Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2025-01-12 | 1.0 | Initial PRD creation with single-database architecture | John (PM Agent) |
-| 2025-01-13 | 2.0 | Major update: PostgreSQL 15.8, n8n-first hybrid architecture, Lists feature | John (PM Agent) |
-| 2025-09-15 | 2.1 | Architecture revision: Single-instance n8n for 10-user scale, deferred queue mode | John (PM Agent) |
+| Date       | Version | Description                                                                       | Author          |
+| ---------- | ------- | --------------------------------------------------------------------------------- | --------------- |
+| 2025-01-12 | 1.0     | Initial PRD creation with single-database architecture                            | John (PM Agent) |
+| 2025-01-13 | 2.0     | Major update: PostgreSQL 15.8, n8n-first hybrid architecture, Lists feature       | John (PM Agent) |
+| 2025-09-15 | 2.1     | Architecture revision: Single-instance n8n for 10-user scale, deferred queue mode | John (PM Agent) |
 
 ## Requirements
 
 ### Functional Requirements
 
-• **FR1:** The system shall parse natural language task commands into structured JSON using OpenAI GPT-4o API with a single comprehensive prompt
-• **FR2:** The system shall support CREATE, READ, UPDATE, and ARCHIVE operations for work packages via natural language commands (DELETE operations are soft-delete/archive only to maintain audit trail)
-• **FR3:** The system shall parse time references to identify context (sender's time, assignee's time, or absolute time), then convert times to assignee's local timezone using application-layer timezone logic (OpenAI provides time_context field, FLRTS performs actual conversion)
-• **FR4:** The system shall recognize @mentions for task assignees and map them to OpenProject user IDs
-• **FR5:** The system shall parse relative dates and times ("tomorrow at 2pm", "next Monday", "in 3 days") into absolute timestamps
-• **FR6:** The system shall display a confirmation UI showing the parsed JSON before executing any operation against the OpenProject API
-• **FR7:** The system shall integrate with OpenProject's REST API to execute ALL task management operations (no direct database writes)
-• **FR8:** The system shall provide error messages with suggested manual entry when parsing fails
-• **FR9:** The system shall support /commands for explicit operation types (/create, /update, /archive, /list)
-• **FR10:** The system shall send task reminder notifications to both Telegram and email channels
-• **FR11:** The system shall maintain user access to the full OpenProject UI alongside the NLP interface
-• **FR12:** The system shall maintain a complete audit trail by implementing soft-delete/archive operations only - true deletions are restricted to admin users (Colin) via direct database access
+• **FR1:** The system shall parse natural language task commands into structured
+JSON using OpenAI GPT-4o API with a single comprehensive prompt • **FR2:** The
+system shall support CREATE, READ, UPDATE, and ARCHIVE operations for work
+packages via natural language commands (DELETE operations are
+soft-delete/archive only to maintain audit trail) • **FR3:** The system shall
+parse time references to identify context (sender's time, assignee's time, or
+absolute time), then convert times to assignee's local timezone using
+application-layer timezone logic (OpenAI provides time_context field, FLRTS
+performs actual conversion) • **FR4:** The system shall recognize @mentions for
+task assignees and map them to OpenProject user IDs • **FR5:** The system shall
+parse relative dates and times ("tomorrow at 2pm", "next Monday", "in 3 days")
+into absolute timestamps • **FR6:** The system shall display a confirmation UI
+showing the parsed JSON before executing any operation against the OpenProject
+API • **FR7:** The system shall integrate with OpenProject's REST API to execute
+ALL task management operations (no direct database writes) • **FR8:** The system
+shall provide error messages with suggested manual entry when parsing fails •
+**FR9:** The system shall support /commands for explicit operation types
+(/create, /update, /archive, /list) • **FR10:** The system shall send task
+reminder notifications to both Telegram and email channels • **FR11:** The
+system shall maintain user access to the full OpenProject UI alongside the NLP
+interface • **FR12:** The system shall maintain a complete audit trail by
+implementing soft-delete/archive operations only - true deletions are restricted
+to admin users (Colin) via direct database access
 
 ### Non-Functional Requirements
 
-• **NFR1:** [DEFERRED] Google Workspace SSO for authentication (use basic auth for MVP)
-• **NFR2:** The system shall support 10 active users with single-instance n8n deployment (100+ webhooks/hour capacity)
-• **NFR3:** The system shall achieve 95% parse accuracy on the 100-example synthetic test dataset
-• **NFR4:** The system shall achieve 100% mathematical accuracy for timezone conversions
-• **NFR5:** The system shall use Supavisor Session Mode (port 5432) for all database connections to prevent transaction mode incompatibilities
-• **NFR6:** The system shall use PostgreSQL version 15.8 for optimal Supabase compatibility and extension support
-• **NFR7:** [OPTIONAL] If using R2 storage, set OPENPROJECT_DIRECT__UPLOADS=false (local volume acceptable for MVP)
-• **NFR8:** VM deployment should be in same region/provider family as Supabase (best effort)
-• **NFR9:** [ASPIRATIONAL] Target 99.9% availability (not guaranteed for MVP)
-• **NFR10:** The system shall use SSL/TLS encryption for all database connections (sslmode=require)
-• **NFR11:** The system shall implement container isolation between services using Docker Compose
-• **NFR12:** The system shall use Cloudflare Tunnel for zero-trust external access
-• **NFR13:** [REVISED] n8n shall use single-instance mode for 10-user scale (queue mode preserved for future 50+ users)
-• **NFR14:** Edge Functions handle all operations requiring <500ms response time
-• **NFR15:** n8n concurrency optimized for single-instance mode (10-20 concurrent executions)
-• **NFR16:** PostgreSQL connection pool size set to 4 minimum (DB_POSTGRESDB_POOL_SIZE=4)
+• **NFR1:** [DEFERRED] Google Workspace SSO for authentication (use basic auth
+for MVP) • **NFR2:** The system shall support 10 active users with
+single-instance n8n deployment (100+ webhooks/hour capacity) • **NFR3:** The
+system shall achieve 95% parse accuracy on the 100-example synthetic test
+dataset • **NFR4:** The system shall achieve 100% mathematical accuracy for
+timezone conversions • **NFR5:** The system shall use Supavisor Session Mode
+(port 5432) for all database connections to prevent transaction mode
+incompatibilities • **NFR6:** The system shall use PostgreSQL version 15.8 for
+optimal Supabase compatibility and extension support • **NFR7:** [OPTIONAL] If
+using R2 storage, set OPENPROJECT_DIRECT\_\_UPLOADS=false (local volume
+acceptable for MVP) • **NFR8:** VM deployment should be in same region/provider
+family as Supabase (best effort) • **NFR9:** [ASPIRATIONAL] Target 99.9%
+availability (not guaranteed for MVP) • **NFR10:** The system shall use SSL/TLS
+encryption for all database connections (sslmode=require) • **NFR11:** The
+system shall implement container isolation between services using Docker Compose
+• **NFR12:** The system shall use Cloudflare Tunnel for zero-trust external
+access • **NFR13:** [REVISED] n8n shall use single-instance mode for 10-user
+scale (queue mode preserved for future 50+ users) • **NFR14:** Edge Functions
+handle all operations requiring <500ms response time • **NFR15:** n8n
+concurrency optimized for single-instance mode (10-20 concurrent executions) •
+**NFR16:** PostgreSQL connection pool size set to 4 minimum
+(DB_POSTGRESDB_POOL_SIZE=4)
 
 ## User Interface Design Goals
 
 ### Overall UX Vision
 
-Telegram-first conversational interface where users send natural language messages and receive parsed JSON confirmations. The correction loop happens entirely through chat messages - users reply with corrections until the parsing is accurate, then confirm for execution.
+Telegram-first conversational interface where users send natural language
+messages and receive parsed JSON confirmations. The correction loop happens
+entirely through chat messages - users reply with corrections until the parsing
+is accurate, then confirm for execution.
 
 ### Key Interaction Paradigms
 
-• **Conversational correction loop**: Send message → Review bot response → Reply with corrections → Repeat until correct → Confirm
-• **Text-only confirmation**: Bot shows parsed JSON in readable format, user types "yes" or "confirm" to execute
-• **OpenProject fallback**: Users can confirm faulty parsing and fix directly in OpenProject's mobile-responsive UI
+• **Conversational correction loop**: Send message → Review bot response → Reply
+with corrections → Repeat until correct → Confirm • **Text-only confirmation**:
+Bot shows parsed JSON in readable format, user types "yes" or "confirm" to
+execute • **OpenProject fallback**: Users can confirm faulty parsing and fix
+directly in OpenProject's mobile-responsive UI
 
 ### Core Screens and Views
 
-• **Telegram Bot Chat** - Primary interface for all NLP interactions
-• **JSON Confirmation Message** - Bot's formatted response showing parsed intent
-• **OpenProject Mobile UI** - Fallback interface for manual corrections (existing responsive design)
+• **Telegram Bot Chat** - Primary interface for all NLP interactions • **JSON
+Confirmation Message** - Bot's formatted response showing parsed intent •
+**OpenProject Mobile UI** - Fallback interface for manual corrections (existing
+responsive design)
 
 ### Accessibility: None
 
@@ -105,34 +144,43 @@ No custom branding required - uses standard Telegram bot interface
 
 **Hybrid "Reflex and Brain" Model:**
 
-- **Reflex Layer**: Supabase Edge Functions for immediate responses (<100ms latency)
-- **Brain Layer**: n8n workflows in single-instance mode for 10-user scale (queue mode available for 50+ users)
-- **Infrastructure**: VM-based deployment using Docker Compose with OpenProject and n8n
-- **Integration Pattern**: Edge Functions acknowledge users instantly, then trigger n8n workflows asynchronously
+- **Reflex Layer**: Supabase Edge Functions for immediate responses (<100ms
+  latency)
+- **Brain Layer**: n8n workflows in single-instance mode for 10-user scale
+  (queue mode available for 50+ users)
+- **Infrastructure**: VM-based deployment using Docker Compose with OpenProject
+  and n8n
+- **Integration Pattern**: Edge Functions acknowledge users instantly, then
+  trigger n8n workflows asynchronously
 
 #### n8n Deployment Architecture
 
 **Current Scale (10 Users):**
+
 - Single-instance mode deployment
 - Configuration: `docker-compose.single.yml`
 - Capacity: 100+ webhooks/hour, 10-20 concurrent executions
 - Resource usage: 2GB RAM, 1 CPU core
 
 **Migration Path (Future):**
+
 - Queue mode configuration preserved at `docker-compose.yml`
 - Trigger migration when:
   - Sustained 50+ active users
-  - >500 webhooks/hour consistently
+  - > 500 webhooks/hour consistently
   - Execution times exceeding 30 seconds regularly
 - Migration guide: `/infrastructure/docs/SCALING_GUIDE.md`
 
-### Testing Requirements  
+### Testing Requirements
 
-Unit tests for timezone conversion logic and NLP parsing validation against 100-example synthetic dataset. Manual testing via Telegram bot for MVP, with automated integration tests post-MVP.
+Unit tests for timezone conversion logic and NLP parsing validation against
+100-example synthetic dataset. Manual testing via Telegram bot for MVP, with
+automated integration tests post-MVP.
 
 ### Performance Requirements & Capacity Planning
 
 #### Current Scale (10 Users)
+
 - **Webhook Processing:** <500ms response time
 - **Concurrent Executions:** 10-20 maximum
 - **Throughput:** 100+ webhooks/hour
@@ -142,7 +190,9 @@ Unit tests for timezone conversion logic and NLP parsing validation against 100-
 - **Cost Estimate:** ~$20-40/month for VM resources
 
 #### Queue Mode Activation Triggers
+
 Migrate from single-instance to queue mode when:
+
 - User count exceeds 50 active users
 - Webhook volume exceeds 500/hour consistently
 - Execution times regularly exceed 30 seconds
@@ -150,52 +200,57 @@ Migrate from single-instance to queue mode when:
 - CPU usage consistently >70%
 
 #### Cost-Benefit Analysis
+
 - **Single-Instance (Current):** ~50% lower resource cost, simpler operations
 - **Queue Mode (Future):** 2-3x resource cost, handles 25-50x current capacity
 - **Migration Time:** <1 hour with prepared configuration
 
 ### Additional Technical Assumptions and Requests
 
-• **Single Supabase PostgreSQL database** with logical schema separation (openproject schema owned by OpenProject, flrts schema for FLRTS logs/metrics only)
-• **OpenProject connects directly to Supabase** via DATABASE_URL - no synchronization needed
-• **FLRTS never writes to openproject schema** - all writes go through OpenProject REST API
-• **All parsing logic in single OpenAI GPT-4o prompt** - no preprocessing or separate intent detection for MVP
-• **Hardcoded entity lists in prompt** (team member names, project names) rather than dynamic lookups for MVP
-• **Node.js/TypeScript** for FLRTS NLP service with Zod schema validation
-• **Telegram Bot API** for primary user interface
-• **Cloudflare Tunnel** for secure external access to services
-• **Cloudflare R2** for object storage (replaces local file uploads)
-• **Digital Ocean VM** deployment in same region as Supabase
-• **Docker Compose** for service orchestration and container management
-• **OpenProject REST API** for all task operations (not direct database access)
-• **n8n in Queue Mode** with Redis for workflow orchestration
-• **Supabase Edge Functions** for latency-critical operations
-• **Lists Management** as core feature alongside Tasks
+• **Single Supabase PostgreSQL database** with logical schema separation
+(openproject schema owned by OpenProject, flrts schema for FLRTS logs/metrics
+only) • **OpenProject connects directly to Supabase** via DATABASE_URL - no
+synchronization needed • **FLRTS never writes to openproject schema** - all
+writes go through OpenProject REST API • **All parsing logic in single OpenAI
+GPT-4o prompt** - no preprocessing or separate intent detection for MVP •
+**Hardcoded entity lists in prompt** (team member names, project names) rather
+than dynamic lookups for MVP • **Node.js/TypeScript** for FLRTS NLP service with
+Zod schema validation • **Telegram Bot API** for primary user interface •
+**Cloudflare Tunnel** for secure external access to services • **Cloudflare R2**
+for object storage (replaces local file uploads) • **Digital Ocean VM**
+deployment in same region as Supabase • **Docker Compose** for service
+orchestration and container management • **OpenProject REST API** for all task
+operations (not direct database access) • **n8n in Queue Mode** with Redis for
+workflow orchestration • **Supabase Edge Functions** for latency-critical
+operations • **Lists Management** as core feature alongside Tasks
 
 ## Epic List
 
-• **Epic 1: Infrastructure Foundation** - Deploy OpenProject, configure n8n in queue mode, establish Edge Functions layer
-• **Epic 2: Telegram Interface** - Build Telegram bot interface with task creation, reminders, inline keyboards, and error recovery
-• **Epic 3: Integration Layer** - Build n8n workflows for OpenProject API, webhooks, batch sync, OpenAI integration, and timezone conversion
-• **Epic 4: Lists Management** - Implement Lists interface, management commands, templates, sharing, and notifications
+• **Epic 1: Infrastructure Foundation** - Deploy OpenProject, configure n8n in
+queue mode, establish Edge Functions layer • **Epic 2: Telegram Interface** -
+Build Telegram bot interface with task creation, reminders, inline keyboards,
+and error recovery • **Epic 3: Integration Layer** - Build n8n workflows for
+OpenProject API, webhooks, batch sync, OpenAI integration, and timezone
+conversion • **Epic 4: Lists Management** - Implement Lists interface,
+management commands, templates, sharing, and notifications
 
 ## Epic 1: Infrastructure Foundation
 
-**Goal:** Establish production infrastructure with OpenProject deployed, n8n configured in queue mode with Redis, and Edge Functions layer for low-latency operations.
+**Goal:** Establish production infrastructure with OpenProject deployed, n8n
+configured in queue mode with Redis, and Edge Functions layer for low-latency
+operations.
 
 ### Story 1.1: Deploy OpenProject via Docker on DigitalOcean [COMPLETED]
 
-As a system administrator,
-I want OpenProject deployed via Docker on Digital Ocean,
-so that we have our core project management platform running.
+As a system administrator, I want OpenProject deployed via Docker on Digital
+Ocean, so that we have our core project management platform running.
 
 **Status:** ✅ COMPLETED - Running at https://ops.10nz.tools
 
 ### Story 1.2: PostgreSQL 15.8 Validation
 
-As a system administrator,
-I want to ensure the Supabase database meets version requirements,
-so that OpenProject runs without compatibility issues.
+As a system administrator, I want to ensure the Supabase database meets version
+requirements, so that OpenProject runs without compatibility issues.
 
 **Acceptance Criteria:**
 
@@ -206,9 +261,8 @@ so that OpenProject runs without compatibility issues.
 
 ### Story 1.3: n8n Deployment Configuration [COMPLETED]
 
-As a DevOps engineer,
-I want n8n properly configured for our 10-user scale,
-so that we have optimal performance without unnecessary complexity.
+As a DevOps engineer, I want n8n properly configured for our 10-user scale, so
+that we have optimal performance without unnecessary complexity.
 
 **Acceptance Criteria:**
 
@@ -220,13 +274,13 @@ so that we have optimal performance without unnecessary complexity.
 6. Queue mode config preserved for future scaling (`docker-compose.yml`)
 7. Scaling guide documented at `/infrastructure/docs/SCALING_GUIDE.md`
 
-**Status:** ✅ COMPLETED - Decision made for single-instance based on actual scale requirements
+**Status:** ✅ COMPLETED - Decision made for single-instance based on actual
+scale requirements
 
 ### Story 1.4: Supabase Edge Functions Setup
 
-As a backend developer,
-I want Edge Functions deployed for low-latency operations,
-so that Telegram webhooks respond instantly.
+As a backend developer, I want Edge Functions deployed for low-latency
+operations, so that Telegram webhooks respond instantly.
 
 **Acceptance Criteria:**
 
@@ -239,9 +293,8 @@ so that Telegram webhooks respond instantly.
 
 ### Story 1.5: Supabase Webhooks Configuration
 
-As a backend developer,
-I want Supabase webhooks configured,
-so that database changes trigger n8n workflows.
+As a backend developer, I want Supabase webhooks configured, so that database
+changes trigger n8n workflows.
 
 **Acceptance Criteria:**
 
@@ -253,9 +306,8 @@ so that database changes trigger n8n workflows.
 
 ### Story 1.6: [DEFERRED] Redis Queue Configuration
 
-As a DevOps engineer,
-I want Redis ready for when we scale to queue mode,
-so that migration is seamless when needed.
+As a DevOps engineer, I want Redis ready for when we scale to queue mode, so
+that migration is seamless when needed.
 
 **Acceptance Criteria:**
 
@@ -265,13 +317,13 @@ so that migration is seamless when needed.
 4. Redis configuration templates ready for deployment
 5. Migration can be completed in <1 hour when triggered
 
-**Note:** Not needed for current 10-user scale. Single-instance mode handles current load efficiently.
+**Note:** Not needed for current 10-user scale. Single-instance mode handles
+current load efficiently.
 
 ### Story 1.7: Monitoring and Observability [TODO]
 
-As a DevOps engineer,
-I want monitoring for all infrastructure components,
-so that we can track performance and reliability.
+As a DevOps engineer, I want monitoring for all infrastructure components, so
+that we can track performance and reliability.
 
 **Acceptance Criteria:**
 
@@ -284,13 +336,13 @@ so that we can track performance and reliability.
 
 ## Epic 2: Telegram Interface
 
-**Goal:** Build the Telegram bot interface layer with natural language task creation, reminders, inline keyboards, and error recovery.
+**Goal:** Build the Telegram bot interface layer with natural language task
+creation, reminders, inline keyboards, and error recovery.
 
 ### Story 2.1: Telegram Task Creation Workflow
 
-As a field employee,
-I want to create tasks through Telegram using natural language,
-so that I can quickly assign work without opening OpenProject.
+As a field employee, I want to create tasks through Telegram using natural
+language, so that I can quickly assign work without opening OpenProject.
 
 **Acceptance Criteria:**
 
@@ -303,9 +355,8 @@ so that I can quickly assign work without opening OpenProject.
 
 ### Story 2.2: Telegram Reminder System
 
-As a field employee,
-I want to receive task reminders in Telegram,
-so that I don't miss important deadlines.
+As a field employee, I want to receive task reminders in Telegram, so that I
+don't miss important deadlines.
 
 **Acceptance Criteria:**
 
@@ -318,9 +369,8 @@ so that I don't miss important deadlines.
 
 ### Story 2.3: Telegram Inline Keyboards
 
-As a mobile user,
-I want to use buttons instead of typing commands,
-so that I can interact faster on my phone.
+As a mobile user, I want to use buttons instead of typing commands, so that I
+can interact faster on my phone.
 
 **Acceptance Criteria:**
 
@@ -333,9 +383,8 @@ so that I can interact faster on my phone.
 
 ### Story 2.4: Error Recovery Procedures
 
-As a user,
-I want helpful error messages when something fails,
-so that I know how to fix the problem.
+As a user, I want helpful error messages when something fails, so that I know
+how to fix the problem.
 
 **Acceptance Criteria:**
 
@@ -348,9 +397,8 @@ so that I know how to fix the problem.
 
 ### Story 2.5: Telegram Command Parser [TODO]
 
-As a power user,
-I want to use explicit commands for precise control,
-so that I can bypass NLP when needed.
+As a power user, I want to use explicit commands for precise control, so that I
+can bypass NLP when needed.
 
 **Acceptance Criteria:**
 
@@ -363,9 +411,8 @@ so that I can bypass NLP when needed.
 
 ### Story 2.6: Telegram User Context [TODO]
 
-As a user,
-I want the bot to remember my context,
-so that I don't have to repeat information.
+As a user, I want the bot to remember my context, so that I don't have to repeat
+information.
 
 **Acceptance Criteria:**
 
@@ -376,8 +423,8 @@ so that I don't have to repeat information.
 5. Context reset command available
 6. Privacy-compliant context storage
 
-**OpenAI API Request Payload Structure:**
-The following data MUST be sent to OpenAI for every NLP processing request:
+**OpenAI API Request Payload Structure:** The following data MUST be sent to
+OpenAI for every NLP processing request:
 
 ```json
 {
@@ -402,8 +449,8 @@ The following data MUST be sent to OpenAI for every NLP processing request:
 }
 ```
 
-**Required OpenAI Response Schema:**
-OpenAI must return the following structured JSON for ALL operations:
+**Required OpenAI Response Schema:** OpenAI must return the following structured
+JSON for ALL operations:
 
 ```json
 {
@@ -429,7 +476,10 @@ OpenAI must return the following structured JSON for ALL operations:
 }
 ```
 
-**Note on Test Data:** The existing 100 synthetic examples in `/docs/flrts-crud-query-examples.md` currently only show CREATE operations without CRUD operation type or timezone context. These examples need to be expanded to include:
+**Note on Test Data:** The existing 100 synthetic examples in
+`/docs/flrts-crud-query-examples.md` currently only show CREATE operations
+without CRUD operation type or timezone context. These examples need to be
+expanded to include:
 
 - Operation type field (CREATE/READ/UPDATE/ARCHIVE)
 - FLRT type field (TASK/LIST)
@@ -439,13 +489,13 @@ OpenAI must return the following structured JSON for ALL operations:
 
 ## Epic 3: Integration Layer
 
-**Goal:** Build n8n workflows for OpenProject API integration, webhook processing, batch operations, and NLP processing.
+**Goal:** Build n8n workflows for OpenProject API integration, webhook
+processing, batch operations, and NLP processing.
 
 ### Story 3.1: OpenProject API Workflows [TODO]
 
-As a backend developer,
-I want n8n workflows for all OpenProject operations,
-so that we have reliable API integration.
+As a backend developer, I want n8n workflows for all OpenProject operations, so
+that we have reliable API integration.
 
 **Acceptance Criteria:**
 
@@ -458,9 +508,8 @@ so that we have reliable API integration.
 
 ### Story 3.2: OpenProject Webhook Sync
 
-As a system administrator,
-I want OpenProject changes to sync back to our system,
-so that we maintain data consistency.
+As a system administrator, I want OpenProject changes to sync back to our
+system, so that we maintain data consistency.
 
 **Acceptance Criteria:**
 
@@ -473,9 +522,8 @@ so that we maintain data consistency.
 
 ### Story 3.3: Batch Sync Workflows [TODO]
 
-As a system administrator,
-I want batch synchronization workflows,
-so that we can handle bulk operations efficiently.
+As a system administrator, I want batch synchronization workflows, so that we
+can handle bulk operations efficiently.
 
 **Acceptance Criteria:**
 
@@ -488,9 +536,8 @@ so that we can handle bulk operations efficiently.
 
 ### Story 3.4: OpenAI Context Injection (MVP)
 
-As a backend developer,
-I want to pass all valid options to OpenAI,
-so that it can match natural language to specific entities.
+As a backend developer, I want to pass all valid options to OpenAI, so that it
+can match natural language to specific entities.
 
 **Acceptance Criteria:**
 
@@ -503,9 +550,8 @@ so that it can match natural language to specific entities.
 
 ### Story 3.5: Timezone Conversion Logic [TODO]
 
-As a distributed team,
-I want automatic timezone conversion,
-so that times are always correct.
+As a distributed team, I want automatic timezone conversion, so that times are
+always correct.
 
 **Acceptance Criteria:**
 
@@ -518,13 +564,13 @@ so that times are always correct.
 
 ## Epic 4: Lists Management
 
-**Goal:** Implement Lists feature for organizing tasks, managing collections via Telegram commands, with templates and sharing capabilities.
+**Goal:** Implement Lists feature for organizing tasks, managing collections via
+Telegram commands, with templates and sharing capabilities.
 
 ### Story 4.1: Lists Interface
 
-As a field employee,
-I want to create filtered task views and simple bullet lists,
-so that I can organize work and personal reminders.
+As a field employee, I want to create filtered task views and simple bullet
+lists, so that I can organize work and personal reminders.
 
 **Acceptance Criteria:**
 
@@ -537,8 +583,7 @@ so that I can organize work and personal reminders.
 
 ### Story 4.2: List Management Commands
 
-As an operations team member,
-I want to manage task lists via Telegram commands,
+As an operations team member, I want to manage task lists via Telegram commands,
 so that I can organize work by project, client, or operational area.
 
 **Acceptance Criteria:**
@@ -552,9 +597,8 @@ so that I can organize work by project, client, or operational area.
 
 ### Story 4.3: List Templates System [TODO]
 
-As a team lead,
-I want to create reusable list templates,
-so that standard processes can be quickly instantiated.
+As a team lead, I want to create reusable list templates, so that standard
+processes can be quickly instantiated.
 
 **Acceptance Criteria:**
 
@@ -567,9 +611,8 @@ so that standard processes can be quickly instantiated.
 
 ### Story 4.4: List Sharing & Permissions [TODO]
 
-As a team member,
-I want to share lists with specific colleagues,
-so that we can collaborate on task collections.
+As a team member, I want to share lists with specific colleagues, so that we can
+collaborate on task collections.
 
 **Acceptance Criteria:**
 
@@ -582,9 +625,8 @@ so that we can collaborate on task collections.
 
 ### Story 4.5: List Notifications [TODO]
 
-As a list member,
-I want notifications about list changes,
-so that I stay informed about shared work.
+As a list member, I want notifications about list changes, so that I stay
+informed about shared work.
 
 **Acceptance Criteria:**
 
@@ -597,17 +639,23 @@ so that I stay informed about shared work.
 
 ## Minimal MVP Checklist (Updated)
 
-1. **DB:** Create Supabase project (PostgreSQL 15.8). Create schema `openproject`; create role `openproject_app`; grant `USAGE, CREATE`. Use port 5432 session URL with `sslmode=require`.
+1. **DB:** Create Supabase project (PostgreSQL 15.8). Create schema
+   `openproject`; create role `openproject_app`; grant `USAGE, CREATE`. Use port
+   5432 session URL with `sslmode=require`.
 
-2. **App:** Set `DATABASE_URL` with `sslmode=require`; set `SECRET_KEY_BASE`. Run migrations. Health check returns 200.
+2. **App:** Set `DATABASE_URL` with `sslmode=require`; set `SECRET_KEY_BASE`.
+   Run migrations. Health check returns 200.
 
-3. **Storage:** Choose local volume OR R2 (not both). If R2, set credentials + `OPENPROJECT_DIRECT__UPLOADS=false`. Upload 10MB test file.
+3. **Storage:** Choose local volume OR R2 (not both). If R2, set credentials +
+   `OPENPROJECT_DIRECT__UPLOADS=false`. Upload 10MB test file.
 
 4. **Edge:** Start Cloudflare Tunnel; map hostname; no public ports.
 
-5. **n8n:** Configure queue mode with Redis, set concurrency=20, enable execution pruning. Deploy workflows for OpenProject API integration.
+5. **n8n:** Configure queue mode with Redis, set concurrency=20, enable
+   execution pruning. Deploy workflows for OpenProject API integration.
 
-6. **Edge Functions:** Deploy Telegram webhook receiver with <100ms response time. Trigger n8n workflows asynchronously.
+6. **Edge Functions:** Deploy Telegram webhook receiver with <100ms response
+   time. Trigger n8n workflows asynchronously.
 
 7. **Backup:** Daily snapshots enabled; take manual snapshot before cutover.
 
@@ -625,8 +673,12 @@ so that I stay informed about shared work.
 
 ### UX Expert Prompt
 
-Review the FLRTS PRD focusing on the Telegram bot interface (Epic 3). Design the conversational flow for the correction loop, ensuring clear feedback and intuitive interaction patterns for mobile users.
+Review the FLRTS PRD focusing on the Telegram bot interface (Epic 3). Design the
+conversational flow for the correction loop, ensuring clear feedback and
+intuitive interaction patterns for mobile users.
 
 ### Architect Prompt
 
-Review the FLRTS PRD with focus on Epic 1 migration stories and Epic 2 service enhancement. Create technical architecture for VM-based deployment with direct Supabase connection, eliminating all synchronization complexity.
+Review the FLRTS PRD with focus on Epic 1 migration stories and Epic 2 service
+enhancement. Create technical architecture for VM-based deployment with direct
+Supabase connection, eliminating all synchronization complexity.

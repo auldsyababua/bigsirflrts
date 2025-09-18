@@ -14,7 +14,7 @@ datasources:
       manageAlerts: true
       prometheusType: Prometheus
       prometheusVersion: 2.45.0
-      cacheLevel: 'High'
+      cacheLevel: "High"
       disableRecordingRules: false
       incrementalQueryOverlapWindow: 10m
     secureJsonData: {}

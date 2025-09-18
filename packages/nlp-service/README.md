@@ -1,6 +1,7 @@
 # NLP Service for FLRTS
 
-Natural Language Processing service that parses task requests into structured OpenProject work packages.
+Natural Language Processing service that parses task requests into structured
+OpenProject work packages.
 
 ## Features
 
@@ -109,7 +110,7 @@ This will:
 The service uses a fixed schema with:
 
 - **Team Members:** Taylor, Colin, Bryan, Austin
-- **Sites:** Site A, Site B, Site C  
+- **Sites:** Site A, Site B, Site C
 - **Partners:** Partner 1, Partner 2
 - **Operations:** CREATE, UPDATE, DELETE, LIST
 - **Priorities:** low, normal, high, immediate
@@ -139,7 +140,8 @@ All parses are logged to `parsing_logs` table with:
 
 ## Next Steps
 
-1. **Connect to OpenProject API** - Transform parsed tasks into actual work packages
+1. **Connect to OpenProject API** - Transform parsed tasks into actual work
+   packages
 2. **Add Google OAuth** - Authenticate users via Supabase
 3. **Dynamic Context** - Fetch real-time data from Supabase (V2)
 4. **Improve Prompts** - Use reasoning data to refine parsing accuracy

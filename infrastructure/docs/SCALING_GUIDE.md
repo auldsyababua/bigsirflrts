@@ -116,6 +116,7 @@ Internet → Nginx → n8n → PostgreSQL
 ```
 
 **Pros:**
+
 - Simple architecture
 - Low resource usage (1GB RAM total)
 - Easy debugging
@@ -123,6 +124,7 @@ Internet → Nginx → n8n → PostgreSQL
 - Single log stream
 
 **Cons:**
+
 - No horizontal scaling
 - Single point of failure
 - Limited to ~100 concurrent executions
@@ -140,12 +142,14 @@ Internet → Nginx Load Balancer
 ```
 
 **Pros:**
+
 - Horizontal scaling
 - Fault tolerance
 - 500+ concurrent executions
 - Worker specialization
 
 **Cons:**
+
 - Complex architecture
 - 2-3x resource usage
 - Multiple log streams
@@ -154,12 +158,14 @@ Internet → Nginx Load Balancer
 ## Resource Requirements
 
 ### Single Instance (10 Users)
+
 - **CPU**: 1 vCPU
 - **RAM**: 2GB
 - **Storage**: 20GB
 - **Monthly Cost**: ~$20
 
 ### Queue Mode (50+ Users)
+
 - **CPU**: 4 vCPUs
 - **RAM**: 8GB
 - **Storage**: 100GB
@@ -168,6 +174,7 @@ Internet → Nginx Load Balancer
 ## Performance Benchmarks
 
 ### Single Instance Capacity
+
 ```yaml
 Webhooks/hour: 100-200
 Concurrent executions: 10
@@ -176,6 +183,7 @@ Monthly executions: 5,000
 ```
 
 ### Queue Mode Capacity
+
 ```yaml
 Webhooks/hour: 1000+
 Concurrent executions: 100+
@@ -188,6 +196,7 @@ Monthly executions: 50,000+
 ### Single Instance Issues
 
 1. **High Memory Usage**
+
    ```bash
    # Check memory
    docker stats n8n
@@ -206,6 +215,7 @@ Monthly executions: 50,000+
 ### When to Call for Help
 
 Contact DevOps when:
+
 - Webhook timeouts > 5/hour
 - Memory usage > 80% sustained
 - Error rate > 5%
@@ -232,12 +242,14 @@ docker-compose -f docker-compose.single.yml up -d
 ## Cost-Benefit Analysis
 
 ### Keep Single Instance Until:
+
 - 30+ active users
 - 200+ webhooks/hour sustained
 - 10+ workflow timeout errors/day
 - Business requires HA/fault tolerance
 
 ### ROI of Queue Mode:
+
 - **Cost**: 3-4x infrastructure
 - **Benefit**: 10x capacity
 - **Break-even**: ~40 active users
@@ -257,4 +269,5 @@ docker-compose -f docker-compose.single.yml up -d
 
 ---
 
-*This guide addresses ARCH-001 finding from QA review. The queue mode implementation is ready but not recommended for current scale.*
+_This guide addresses ARCH-001 finding from QA review. The queue mode
+implementation is ready but not recommended for current scale._

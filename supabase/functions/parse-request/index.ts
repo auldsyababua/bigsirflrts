@@ -16,15 +16,17 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // CORS headers for browser requests
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 // Simple parse patterns for immediate response
 const SIMPLE_PATTERNS = {
   CREATE_TASK: /^(create|add|new)\s+(task|item|work)\s+(.+)/i,
-  DUE_DATE: /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+  DUE_DATE:
+    /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
   ASSIGNEE: /@(\w+)/g,
   PRIORITY: /(urgent|high|medium|low|critical)/i,
   PROJECT: /#(\w+)/g,
@@ -32,33 +34,33 @@ const SIMPLE_PATTERNS = {
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
     // Authorization: Accept either Supabase JWT or custom PARSE_AUTH_TOKEN
-    const authHeader = req.headers.get('Authorization');
-    const PARSE_AUTH_TOKEN = Deno.env.get('PARSE_AUTH_TOKEN');
+    const authHeader = req.headers.get("Authorization");
+    const PARSE_AUTH_TOKEN = Deno.env.get("PARSE_AUTH_TOKEN");
 
     // If custom token is set and provided, validate it
     if (PARSE_AUTH_TOKEN && authHeader === `Bearer ${PARSE_AUTH_TOKEN}`) {
       // Custom token is valid, proceed
-      console.log('Authenticated with custom PARSE_AUTH_TOKEN');
+      console.log("Authenticated with custom PARSE_AUTH_TOKEN");
     } else {
       // Otherwise, Supabase JWT verification handles auth
       // (service role key or anon key with proper JWT)
-      console.log('Authenticated with Supabase JWT');
+      console.log("Authenticated with Supabase JWT");
     }
 
     // Parse request body
     const { input, context } = await req.json();
 
     if (!input) {
-      return new Response(
-        JSON.stringify({ error: 'Input text is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: "Input text is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     console.log(`Parsing input: ${input.substring(0, 100)}`);
@@ -68,19 +70,19 @@ Deno.serve(async (req: Request) => {
 
     if (quickParse) {
       // Log the quick parse
-      await logParse(input, quickParse, 'quick-parse', true);
+      await logParse(input, quickParse, "quick-parse", true);
 
       return new Response(
         JSON.stringify({
           success: true,
           data: quickParse,
-          parseType: 'quick',
-          confidence: quickParse.confidence
+          parseType: "quick",
+          confidence: quickParse.confidence,
         }),
         {
           status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -91,31 +93,30 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         data: {
-          status: 'pending',
+          status: "pending",
           queueId: queueId,
-          message: 'Complex parsing queued for processing',
-          estimatedTime: '2-5 seconds'
+          message: "Complex parsing queued for processing",
+          estimatedTime: "2-5 seconds",
         },
-        parseType: 'complex'
+        parseType: "complex",
       }),
       {
         status: 202, // Accepted for processing
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
-
   } catch (error) {
-    console.error('Parse request error:', error);
+    console.error("Parse request error:", error);
 
     return new Response(
       JSON.stringify({
-        error: 'Failed to process parse request',
-        message: error.message
+        error: "Failed to process parse request",
+        message: error.message,
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
@@ -131,22 +132,26 @@ function attemptQuickParse(input: string): any | null {
   const taskDescription = createMatch[3];
 
   // Extract components
-  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map(m => m[1]);
-  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map(m => m[1]);
+  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map(
+    (m) => m[1],
+  );
+  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map(
+    (m) => m[1],
+  );
   const priorityMatch = input.match(SIMPLE_PATTERNS.PRIORITY);
   const dueDateMatch = input.match(SIMPLE_PATTERNS.DUE_DATE);
 
   // Build parsed result
   const parsed = {
-    operation: 'CREATE',
-    type: 'TASK',
-    subject: taskDescription.replace(/@\w+/g, '').replace(/#\w+/g, '').trim(),
+    operation: "CREATE",
+    type: "TASK",
+    subject: taskDescription.replace(/@\w+/g, "").replace(/#\w+/g, "").trim(),
     assignees: assignees.length > 0 ? assignees : undefined,
     projects: projects.length > 0 ? projects : undefined,
-    priority: priorityMatch ? normalizePriority(priorityMatch[1]) : 'normal',
+    priority: priorityMatch ? normalizePriority(priorityMatch[1]) : "normal",
     dueDate: dueDateMatch ? parseDueDate(dueDateMatch[2]) : undefined,
     confidence: calculateConfidence(input, assignees.length, projects.length),
-    raw: input
+    raw: input,
   };
 
   // Only return if we have reasonable confidence
@@ -156,9 +161,9 @@ function attemptQuickParse(input: string): any | null {
 // Normalize priority values
 function normalizePriority(priority: string): string {
   const p = priority.toLowerCase();
-  if (p === 'urgent' || p === 'critical') return 'high';
-  if (p === 'low') return 'low';
-  return 'normal';
+  if (p === "urgent" || p === "critical") return "high";
+  if (p === "low") return "low";
+  return "normal";
 }
 
 // Parse relative date strings
@@ -168,12 +173,20 @@ function parseDueDate(dateStr: string): string {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const dateMap: Record<string, Date> = {
-    'today': today,
-    'tomorrow': tomorrow,
+    today: today,
+    tomorrow: tomorrow,
   };
 
   // Add weekdays
-  const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const weekdays = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
   const currentDay = today.getDay();
 
   weekdays.forEach((day, index) => {
@@ -184,11 +197,15 @@ function parseDueDate(dateStr: string): string {
   });
 
   const targetDate = dateMap[dateStr.toLowerCase()];
-  return targetDate ? targetDate.toISOString().split('T')[0] : dateStr;
+  return targetDate ? targetDate.toISOString().split("T")[0] : dateStr;
 }
 
 // Calculate parsing confidence
-function calculateConfidence(input: string, assigneeCount: number, projectCount: number): number {
+function calculateConfidence(
+  input: string,
+  assigneeCount: number,
+  projectCount: number,
+): number {
   let confidence = 0.5; // Base confidence for pattern match
 
   // Boost for specific elements
@@ -205,7 +222,11 @@ function calculateConfidence(input: string, assigneeCount: number, projectCount:
 }
 
 // Queue complex parsing to n8n
-async function queueComplexParse(input: string, context: any, authHeader: string): Promise<string> {
+async function queueComplexParse(
+  input: string,
+  context: any,
+  authHeader: string,
+): Promise<string> {
   const queueId = crypto.randomUUID();
 
   const queueData = {
@@ -213,8 +234,8 @@ async function queueComplexParse(input: string, context: any, authHeader: string
     timestamp: new Date().toISOString(),
     input,
     context,
-    source: 'parse-edge-function',
-    authHeader: authHeader.substring(0, 20) + '...', // Truncate for security
+    source: "parse-edge-function",
+    authHeader: authHeader.substring(0, 20) + "...", // Truncate for security
   };
 
   // Send to n8n webhook
@@ -222,24 +243,29 @@ async function queueComplexParse(input: string, context: any, authHeader: string
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Queue-Type": "complex-parse"
+      "X-Queue-Type": "complex-parse",
     },
-    body: JSON.stringify(queueData)
-  }).catch(err => console.error("Failed to queue to n8n:", err));
+    body: JSON.stringify(queueData),
+  }).catch((err) => console.error("Failed to queue to n8n:", err));
 
   // Also store in Supabase for tracking
   await supabase.from("parse_queue").insert({
     queue_id: queueId,
     input: input.substring(0, 500),
-    status: 'queued',
-    created_at: new Date().toISOString()
+    status: "queued",
+    created_at: new Date().toISOString(),
   });
 
   return queueId;
 }
 
 // Log parse attempts for analytics
-async function logParse(input: string, result: any, parseType: string, success: boolean): Promise<void> {
+async function logParse(
+  input: string,
+  result: any,
+  parseType: string,
+  success: boolean,
+): Promise<void> {
   try {
     await supabase.from("parse_logs").insert({
       input: input.substring(0, 200),
@@ -247,7 +273,7 @@ async function logParse(input: string, result: any, parseType: string, success: 
       parse_type: parseType,
       success,
       confidence: result?.confidence,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Failed to log parse:", error);

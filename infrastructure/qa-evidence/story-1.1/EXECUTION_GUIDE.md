@@ -3,11 +3,13 @@
 ## Critical Pre-Execution Requirements
 
 ### VM Access Requirements
+
 - SSH access to Digital Ocean VM: `165.227.216.172`
 - Root or sudo privileges on VM
 - Ability to reboot VM (for Test 2)
 
 ### Local Requirements
+
 - Docker installed and running
 - Apache Bench (ab) installed for load testing
 - curl for API testing
@@ -20,21 +22,25 @@ Tests MUST be executed in this exact order as specified by QA:
 ### Phase 1: Immediate Mandatory Tests
 
 #### 1. Container Health Monitoring (test-1)
+
 ```bash
 cd /root/infrastructure/qa-evidence/story-1.1
 ./test-1-container-health-monitoring.sh
 ```
 
 **Expected Output:**
+
 - Container killed and auto-restarted within 30 seconds
 - Health check endpoint returns 200
 - Full recovery logs captured
 
 **Evidence Files:**
+
 - test-1-evidence.log
 - Container restart timestamps
 
 #### 2. Database Persistence (test-2) - REQUIRES VM REBOOT
+
 ```bash
 # Step 1: Create test data
 ./test-2-database-persistence.sh
@@ -54,45 +60,54 @@ cd /root/infrastructure/qa-evidence/story-1.1
 ```
 
 **Expected Output:**
+
 - Test data persisted across reboot
 - Database auto-started
 - No corruption warnings
 
 **Evidence Files:**
+
 - test-2-evidence.log
 - Pre/post reboot database snapshots
 
 #### 3. Database Error Handling (test-3)
+
 ```bash
 ./test-3-database-error-handling.sh
 ```
 
 **Expected Output:**
+
 - Clear error messages during DB outage
 - Automatic reconnection within 60 seconds
 - Graceful degradation demonstrated
 
 **Evidence Files:**
+
 - test-3-evidence.log
 - Error messages and recovery logs
 
 #### 4. Cloudflare Tunnel Recovery (test-4)
+
 ```bash
 ./test-4-cloudflare-tunnel-recovery.sh
 ```
 
 **Expected Output:**
+
 - HTTPS becomes inaccessible when tunnel stops
 - Recovery within 30 seconds after restart
 - Cloudflare headers verified
 
 **Evidence Files:**
+
 - test-4-evidence.log
 - curl output showing failure and recovery
 
 ### Phase 2: Performance Validation Tests
 
 #### 5. Load Testing (test-5)
+
 ```bash
 # Install Apache Bench if needed
 apt-get update && apt-get install -y apache2-utils
@@ -102,16 +117,19 @@ apt-get update && apt-get install -y apache2-utils
 ```
 
 **Expected Output:**
+
 - 1000 requests completed
 - Zero failed requests
 - 95th percentile < 200ms
 
 **Evidence Files:**
+
 - test-5-evidence.log
 - test-5-ab-results.txt
 - test-5-performance-report.md
 
 #### 6. Resource Monitoring (test-6)
+
 ```bash
 # This test runs for 30 minutes
 ./test-6-resource-monitoring.sh
@@ -122,12 +140,14 @@ ssh root@165.227.216.172
 ```
 
 **Expected Output:**
+
 - 30 minutes of monitoring data
 - CPU < 80% average
 - Memory < 80% average
 - Disk space adequate
 
 **Evidence Files:**
+
 - test-6-evidence.log
 - test-6-monitoring-report.md
 - Resource graphs over time
@@ -135,16 +155,19 @@ ssh root@165.227.216.172
 ### Phase 3: Integration Validation Tests
 
 #### 7. Health Endpoints (test-7)
+
 ```bash
 ./test-7-health-endpoints.sh
 ```
 
 **Expected Output:**
+
 - All endpoints return HTTP 200
 - Response content indicates healthy
 - Stress test successful
 
 **Evidence Files:**
+
 - test-7-evidence.log
 - test-7-health-report.md
 
@@ -158,6 +181,7 @@ cd /root/infrastructure/qa-evidence/story-1.1
 ```
 
 This will:
+
 1. Run pre-flight checks
 2. Execute each test in order
 3. Prompt for manual intervention at Test 2
@@ -178,36 +202,44 @@ After all tests complete, verify:
 ## Troubleshooting Common Issues
 
 ### Test 1 Fails: Container doesn't restart
-- Check Docker restart policy: `docker inspect flrts-openproject | grep -A5 RestartPolicy`
+
+- Check Docker restart policy:
+  `docker inspect flrts-openproject | grep -A5 RestartPolicy`
 - Verify container health check configured
 - Check Docker daemon is running
 
 ### Test 2 Fails: Data doesn't persist
+
 - Verify PostgreSQL volume mounts
 - Check volume driver is 'local' not 'tmpfs'
 - Ensure proper shutdown before reboot
 
 ### Test 3 Fails: No clear error messages
+
 - Check OpenProject logs during DB outage
 - Verify error handling middleware configured
 - Ensure connection pool settings correct
 
 ### Test 4 Fails: Tunnel doesn't recover
+
 - Check Cloudflare token validity
 - Verify tunnel container restart policy
 - Check network connectivity
 
 ### Test 5 Fails: Response time > 200ms
+
 - Check VM resource allocation
 - Verify no other services consuming resources
 - Consider performance tuning parameters
 
 ### Test 6 Fails: High resource usage
+
 - Check for memory leaks
 - Verify container resource limits
 - Review application logs for errors
 
 ### Test 7 Fails: Health endpoints return errors
+
 - Verify all services running
 - Check database connectivity
 - Review OpenProject configuration
@@ -225,6 +257,7 @@ If any test fails:
 ## QA Validation Requirements
 
 QA will independently verify:
+
 - All tests were executed (not simulated)
 - Evidence shows real failures and recovery
 - Timestamps prove actual execution
@@ -241,9 +274,11 @@ QA will independently verify:
 ## Support
 
 For test execution issues:
+
 1. Review this guide and README.md
 2. Check individual test script comments
 3. Verify VM and Docker status
 4. Review QA gate requirements in original YAML
 
-Remember: **NO HAPPY PATH TESTING** - Every test must demonstrate real failure and real recovery!
+Remember: **NO HAPPY PATH TESTING** - Every test must demonstrate real failure
+and real recovery!

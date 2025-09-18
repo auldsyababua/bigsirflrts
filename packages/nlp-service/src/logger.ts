@@ -1,9 +1,9 @@
 // logger.ts
-import winston from 'winston';
-import { trace } from '@opentelemetry/api';
+import winston from "winston";
+import { trace } from "@opentelemetry/api";
 
 export const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
@@ -17,20 +17,20 @@ export const logger = winston.createLogger({
         info.spanId = context.spanId;
       }
       return JSON.stringify(info);
-    })
+    }),
   ),
   defaultMeta: {
-    service: process.env.OTEL_SERVICE_NAME || 'flrts',
-    environment: process.env.NODE_ENV || 'development',
+    service: process.env.OTEL_SERVICE_NAME || "flrts",
+    environment: process.env.NODE_ENV || "development",
   },
   transports: [
     new winston.transports.Console(),
     new winston.transports.File({
-      filename: 'logs/error.log',
-      level: 'error'
+      filename: "logs/error.log",
+      level: "error",
     }),
     new winston.transports.File({
-      filename: 'logs/combined.log'
+      filename: "logs/combined.log",
     }),
   ],
 });
@@ -38,22 +38,22 @@ export const logger = winston.createLogger({
 // Express.js middleware for request logging
 export function requestLogger(req: any, res: any, next: any) {
   const startTime = Date.now();
-  const requestId = req.headers['x-request-id'] || crypto.randomUUID();
+  const requestId = req.headers["x-request-id"] || crypto.randomUUID();
 
   req.requestId = requestId;
 
-  logger.info('Request started', {
+  logger.info("Request started", {
     requestId,
     method: req.method,
     url: req.url,
-    userAgent: req.get('User-Agent'),
+    userAgent: req.get("User-Agent"),
     ip: req.ip,
   });
 
-  res.on('finish', () => {
+  res.on("finish", () => {
     const duration = Date.now() - startTime;
 
-    logger.info('Request completed', {
+    logger.info("Request completed", {
       requestId,
       method: req.method,
       url: req.url,

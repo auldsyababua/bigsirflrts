@@ -2,7 +2,9 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for deploying OpenProject Community Edition on Digital Ocean using Docker Compose with Cloudflare Tunnel for secure access and R2 for file storage.
+This guide provides step-by-step instructions for deploying OpenProject
+Community Edition on Digital Ocean using Docker Compose with Cloudflare Tunnel
+for secure access and R2 for file storage.
 
 ## Architecture
 
@@ -252,12 +254,12 @@ docker compose restart cloudflared
 
 ## Resource Allocation
 
-| Service | Memory Limit | CPU Limit | Actual Usage (typical) |
-|---------|-------------|-----------|------------------------|
-| OpenProject | 4GB | 2.0 cores | 2-3GB / 0.5-1.0 cores |
-| Memcached | 384MB | 0.25 cores | 256MB / 0.05 cores |
-| Cloudflared | 256MB | 0.25 cores | 50MB / 0.01 cores |
-| **Total** | **4.6GB** | **2.5 cores** | **2.5-3.5GB / 0.6-1.1 cores** |
+| Service     | Memory Limit | CPU Limit     | Actual Usage (typical)        |
+| ----------- | ------------ | ------------- | ----------------------------- |
+| OpenProject | 4GB          | 2.0 cores     | 2-3GB / 0.5-1.0 cores         |
+| Memcached   | 384MB        | 0.25 cores    | 256MB / 0.05 cores            |
+| Cloudflared | 256MB        | 0.25 cores    | 50MB / 0.01 cores             |
+| **Total**   | **4.6GB**    | **2.5 cores** | **2.5-3.5GB / 0.6-1.1 cores** |
 
 ## Security Checklist
 
@@ -272,12 +274,12 @@ docker compose restart cloudflared
 
 ## Cost Breakdown
 
-| Service | Monthly Cost |
-|---------|-------------|
-| Digital Ocean Droplet (s-4vcpu-8gb) | $48.00 |
-| Cloudflare R2 (100GB storage) | ~$2.00 |
-| Cloudflare Tunnel | Free |
-| **Total** | **~$50/month** |
+| Service                             | Monthly Cost   |
+| ----------------------------------- | -------------- |
+| Digital Ocean Droplet (s-4vcpu-8gb) | $48.00         |
+| Cloudflare R2 (100GB storage)       | ~$2.00         |
+| Cloudflare Tunnel                   | Free           |
+| **Total**                           | **~$50/month** |
 
 ## Emergency Procedures
 
@@ -348,4 +350,5 @@ SMTP_AUTH=plain                       # SMTP authentication method
 
 ---
 
-**Deployment Status**: ✅ Server Provisioned | ⏳ Configuration Pending | ⏳ Services Pending
+**Deployment Status**: ✅ Server Provisioned | ⏳ Configuration Pending | ⏳
+Services Pending

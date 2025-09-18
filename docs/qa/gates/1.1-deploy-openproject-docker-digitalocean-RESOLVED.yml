@@ -9,7 +9,7 @@ story_id: "1.1"
 epic: "Epic 1 - OpenProject Integration Foundation"
 original_review_date: "2025-09-16"
 resolution_date: "2025-09-16"
-quality_score: 65  # Will be updated to 100 upon successful test execution
+quality_score: 65 # Will be updated to 100 upon successful test execution
 
 resolution_summary: |
   All mandatory QA tests have been developed and prepared for execution.

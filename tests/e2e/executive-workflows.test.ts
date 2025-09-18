@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
 // Configure tests to run in Chromium only via Playwright config defaults (no config file needed if CI uses default chromium)
 
@@ -59,39 +59,39 @@ const homepageHtml = `
 // 1.1-E2E-001: Homepage loads < 3 seconds
 // Tag as P0
 
-test('1.1-E2E-001 @P0 Given a user When opening the homepage Then it loads under 3s', async ({
+test("1.1-E2E-001 @P0 Given a user When opening the homepage Then it loads under 3s", async ({
   page,
 }) => {
   const start = Date.now();
   await page.goto(`data:text/html,${encodeURIComponent(homepageHtml)}`);
-  await expect(page.locator('h1')).toHaveText('OpenProject on Cloudflare');
+  await expect(page.locator("h1")).toHaveText("OpenProject on Cloudflare");
   const elapsed = Date.now() - start;
   expect(elapsed).toBeLessThan(3000);
 });
 
 // 1.1-E2E-002: Admin login via UI
 
-test('1.1-E2E-002 @P0 Given admin credentials When logging in Then dashboard is visible', async ({
+test("1.1-E2E-002 @P0 Given admin credentials When logging in Then dashboard is visible", async ({
   page,
 }) => {
   await page.goto(`data:text/html,${encodeURIComponent(homepageHtml)}`);
-  await page.fill('#username', 'admin');
-  await page.fill('#password', 'admin');
-  await page.click('#login-btn');
-  await expect(page.locator('#app')).toBeVisible();
+  await page.fill("#username", "admin");
+  await page.fill("#password", "admin");
+  await page.click("#login-btn");
+  await expect(page.locator("#app")).toBeVisible();
 });
 
 // 1.1-E2E-003: Create task in UI
 
-test('1.1-E2E-003 @P0 Given logged-in admin When creating a task Then it appears in the list', async ({
+test("1.1-E2E-003 @P0 Given logged-in admin When creating a task Then it appears in the list", async ({
   page,
 }) => {
   await page.goto(`data:text/html,${encodeURIComponent(homepageHtml)}`);
-  await page.fill('#username', 'admin');
-  await page.fill('#password', 'admin');
-  await page.click('#login-btn');
-  await expect(page.locator('#app')).toBeVisible();
-  await page.fill('#task-title', 'Executive Demo Task');
-  await page.click('#create-task');
-  await expect(page.locator('#tasks li')).toHaveText('Executive Demo Task');
+  await page.fill("#username", "admin");
+  await page.fill("#password", "admin");
+  await page.click("#login-btn");
+  await expect(page.locator("#app")).toBeVisible();
+  await page.fill("#task-title", "Executive Demo Task");
+  await page.click("#create-task");
+  await expect(page.locator("#tasks li")).toHaveText("Executive Demo Task");
 });

@@ -1,16 +1,19 @@
 FLRTS stands for 'Field Reports, Lists, Reminders, Tasks, and Sub-Tasks.'
 
 ## NEVER READ THESE FILES:
-  - package-lock.json (45k tokens!)
+
+- package-lock.json (45k tokens!)
 
 ## Search Performance
-  - Use ripgrep (rg) not grep
-  - Check .rgignore if searches are slow
-  - Archives live in ~/Desktop/flrts-archives
+
+- Use ripgrep (rg) not grep
+- Check .rgignore if searches are slow
+- Archives live in ~/Desktop/flrts-archives
 
 ## CRITICAL: Search Commands That Preserve Context
 
 ### ❌ NEVER DO THIS:
+
 ```bash
 grep -r "pattern" .                    # Searches EVERYTHING including archives
 find . -name "*.js"                    # Includes all node_modules
@@ -20,6 +23,7 @@ ls -R                                   # Lists entire tree
 ### ✅ ALWAYS DO THIS:
 
 #### For Code Searches:
+
 ```bash
 # Use ripgrep with exclusions
 rg "pattern" --type js --type ts -g '!node_modules' -g '!archive' -g '!*.min.js'
@@ -33,6 +37,7 @@ grep -r "pattern" . \
 ```
 
 #### For File Finding:
+
 ```bash
 # Find with exclusions
 find . -name "*.ts" \
@@ -45,6 +50,7 @@ fd "\.ts$" --exclude node_modules --exclude archive
 ```
 
 #### For Directory Listing:
+
 ```bash
 # List only relevant directories
 ls -la --ignore=node_modules --ignore=archive
@@ -56,12 +62,14 @@ tree -L 2 -I 'node_modules|archive|*.git'
 ## Project Structure Reference
 
 ### Active Code Locations:
+
 - `/infrastructure` - Docker, scripts, tests
 - `/database` - Schema and migrations
 - `/tests` - Test files (not archives)
 - `/packages` - Active packages (check if node_modules needed)
 
 ### Ignore These Completely:
+
 - `/ARCHIVE(DEPRECATED)` - Old UI code
 - `/docs/archive` - Old documentation
 - `/.bmad-core` - Template system (rarely needed)
@@ -71,16 +79,19 @@ tree -L 2 -I 'node_modules|archive|*.git'
 ## Context-Saving Tips:
 
 1. **Use specific paths when possible:**
+
    ```bash
    grep "pattern" ./infrastructure/*.sh  # Search only shell scripts
    ```
 
 2. **Limit search depth:**
+
    ```bash
    find . -maxdepth 2 -name "*.config.js"
    ```
 
 3. **Use file type filters:**
+
    ```bash
    rg "TODO" --type ts --type js  # Only TypeScript and JavaScript
    ```
@@ -93,10 +104,10 @@ tree -L 2 -I 'node_modules|archive|*.git'
 
 ## Quick Reference:
 
-| Task | Command |
-|------|---------|
-| Find TypeScript files | `fd "\.ts$" -E node_modules -E archive` |
-| Search code for pattern | `rg "pattern" -t ts -t js -g '!node_modules'` |
-| List project structure | `tree -L 2 -I 'node_modules\|archive'` |
-| Check recent changes | `git status --short` |
-| Find config files | `find . -maxdepth 3 -name "*.config.*" -not -path "*/node_modules/*"` |
+| Task                    | Command                                                               |
+| ----------------------- | --------------------------------------------------------------------- |
+| Find TypeScript files   | `fd "\.ts$" -E node_modules -E archive`                               |
+| Search code for pattern | `rg "pattern" -t ts -t js -g '!node_modules'`                         |
+| List project structure  | `tree -L 2 -I 'node_modules\|archive'`                                |
+| Check recent changes    | `git status --short`                                                  |
+| Find config files       | `find . -maxdepth 3 -name "*.config.*" -not -path "*/node_modules/*"` |

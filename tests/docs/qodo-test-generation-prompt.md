@@ -2,37 +2,49 @@
 
 ## Context
 
-We're building an MVP for 5-10 C-suite users that needs a pragmatic test suite focused on critical paths only. This is NOT enterprise-grade testing - we need just enough confidence to demo reliably.
+We're building an MVP for 5-10 C-suite users that needs a pragmatic test suite
+focused on critical paths only. This is NOT enterprise-grade testing - we need
+just enough confidence to demo reliably.
 
 ## Project Files to Analyze
 
 ### Story & Requirements
 
-- **Story File**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/stories/1.1.deploy-openproject-cloudflare.md`
-- **QA Gate**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/gates/1.1-deploy-openproject-cloudflare.yml`
-- **Test Design**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/assessments/1.1-test-design-mvp-20250109.md`
-- **Test Scenarios**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/test-scenarios/1.1-mvp-scenarios.md`
+- **Story File**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/stories/1.1.deploy-openproject-cloudflare.md`
+- **QA Gate**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/gates/1.1-deploy-openproject-cloudflare.yml`
+- **Test Design**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/assessments/1.1-test-design-mvp-20250109.md`
+- **Test Scenarios**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/test-scenarios/1.1-mvp-scenarios.md`
 
 ### Architecture & Standards
 
-- **Tech Stack**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/architecture/tech-stack.md`
-- **Coding Standards**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/architecture/coding-standards.md`
-- **Source Tree**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/architecture/source-tree.md`
+- **Tech Stack**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/architecture/tech-stack.md`
+- **Coding Standards**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/architecture/coding-standards.md`
+- **Source Tree**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/architecture/source-tree.md`
 
 ### Implementation Guide
 
-- **MVP Test Guide**: `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/implementation/mvp-test-implementation-guide.md`
+- **MVP Test Guide**:
+  `/Users/colinaulds/Desktop/projects/bigsirflrts/docs/qa/implementation/mvp-test-implementation-guide.md`
 
 ## Your Task
 
-Generate a complete MVP test suite for Story 1.1 (Deploy OpenProject to Cloudflare) with these specific requirements:
+Generate a complete MVP test suite for Story 1.1 (Deploy OpenProject to
+Cloudflare) with these specific requirements:
 
 ### 1. Test Structure Creation
 
 Create the following test files:
 
 - `tests/unit/api-validation.test.ts` - 2 unit tests for API key validation
-- `tests/integration/deployment.test.ts` - 6 integration tests for deployment and API
+- `tests/integration/deployment.test.ts` - 6 integration tests for deployment
+  and API
 - `tests/e2e/executive-workflows.test.ts` - 4 E2E tests for C-suite workflows
 - `tests/mvp-smoke-test.sh` - Bash script for quick validation
 
@@ -121,11 +133,9 @@ Generate:
 
 ## Success Criteria
 
-✅ Tests can run in 5 minutes
-✅ All 8 P0 tests pass reliably
-✅ Executives can demo without errors
-✅ No complex setup required
-✅ Uses mocks to avoid external dependencies
+✅ Tests can run in 5 minutes ✅ All 8 P0 tests pass reliably ✅ Executives can
+demo without errors ✅ No complex setup required ✅ Uses mocks to avoid external
+dependencies
 
 ## Time Budget
 

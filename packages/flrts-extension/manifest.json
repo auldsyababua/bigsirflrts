@@ -3,11 +3,7 @@
   "name": "FLRTS for OpenProject",
   "version": "1.0.0",
   "description": "Natural language task creation for OpenProject",
-  "permissions": [
-    "activeTab",
-    "storage",
-    "scripting"
-  ],
+  "permissions": ["activeTab", "storage", "scripting"],
   "host_permissions": [
     "http://localhost:8080/*",
     "https://*.openproject.com/*",

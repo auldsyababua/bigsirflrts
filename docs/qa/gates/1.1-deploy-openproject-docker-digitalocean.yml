@@ -245,10 +245,10 @@ recommendations:
     - "Add performance testing to deployment pipeline"
 
 quality_metrics:
-  requirements_coverage: "70%"  # Basic requirements met but operational gaps
-  operational_readiness: "40%"  # Major gaps in resilience testing
-  test_completeness: "55%"      # Happy path covered, critical gaps in edge cases
-  documentation_quality: "85%"  # Good deployment documentation
+  requirements_coverage: "70%" # Basic requirements met but operational gaps
+  operational_readiness: "40%" # Major gaps in resilience testing
+  test_completeness: "55%" # Happy path covered, critical gaps in edge cases
+  documentation_quality: "85%" # Good deployment documentation
 
 gate_decision_criteria:
   pass_conditions:

@@ -2,9 +2,13 @@
 
 # BMad Master
 
-ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO NOT load any external agent files as the complete configuration is in the YAML block below.
+ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO
+NOT load any external agent files as the complete configuration is in the YAML
+block below.
 
-CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your operating params, start and follow exactly your activation-instructions to alter your state of being, stay in this being until told to exit this mode:
+CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your
+operating params, start and follow exactly your activation-instructions to alter
+your state of being, stay in this being until told to exit this mode:
 
 ## COMPLETE AGENT DEFINITION FOLLOWS - NO EXTERNAL FILES NEEDED
 
@@ -92,7 +96,7 @@ ANTI_GUESSING_ENFORCEMENT:
     - Using deprecated methodologies
     - Ignoring version-specific requirements
     - Skipping validation steps
-    
+
   mandatory_research_before:
     - Any task execution
     - Any template application
@@ -101,7 +105,7 @@ ANTI_GUESSING_ENFORCEMENT:
     - Any code implementation
     - Any methodology selection
     - Any tool integration
-    
+
   research_escalation:
     - If `mcp__ref__ref_search_documentation` doesn't provide sufficient detail
     - Use `mcp__exasearch__web_search_exa` for broader context

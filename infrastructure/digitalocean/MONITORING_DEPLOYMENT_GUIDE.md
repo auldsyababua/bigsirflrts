@@ -2,7 +2,10 @@
 
 ## Overview
 
-This guide deploys a comprehensive monitoring stack (Prometheus, Grafana, Jaeger, n8n-monitor) to the existing OpenProject DigitalOcean droplet. The monitoring services integrate with the existing Cloudflare Tunnel for secure HTTPS access.
+This guide deploys a comprehensive monitoring stack (Prometheus, Grafana,
+Jaeger, n8n-monitor) to the existing OpenProject DigitalOcean droplet. The
+monitoring services integrate with the existing Cloudflare Tunnel for secure
+HTTPS access.
 
 ## Architecture
 
@@ -73,14 +76,14 @@ docker-compose ps
 
 ### Resource Allocation
 
-| Service | CPU Limit | Memory Limit | Purpose |
-|---------|-----------|--------------|---------|
-| Prometheus | 0.15 vCPU | 320MB | Metrics collection |
-| Grafana | 0.15 vCPU | 320MB | Visualization |
-| Jaeger | 0.1 vCPU | 192MB | Distributed tracing |
-| Node Exporter | 0.05 vCPU | 64MB | System metrics |
-| cAdvisor | 0.1 vCPU | 128MB | Container metrics |
-| n8n Monitor | 0.1 vCPU | 128MB | Webhook monitoring |
+| Service       | CPU Limit | Memory Limit | Purpose             |
+| ------------- | --------- | ------------ | ------------------- |
+| Prometheus    | 0.15 vCPU | 320MB        | Metrics collection  |
+| Grafana       | 0.15 vCPU | 320MB        | Visualization       |
+| Jaeger        | 0.1 vCPU  | 192MB        | Distributed tracing |
+| Node Exporter | 0.05 vCPU | 64MB         | System metrics      |
+| cAdvisor      | 0.1 vCPU  | 128MB        | Container metrics   |
+| n8n Monitor   | 0.1 vCPU  | 128MB        | Webhook monitoring  |
 
 **Total Added**: 0.65 vCPU, 1.152GB RAM
 
@@ -158,6 +161,7 @@ docker stats
 ### Common Issues
 
 1. **Services not starting**
+
    ```bash
    # Check available resources
    free -h
@@ -168,6 +172,7 @@ docker stats
    ```
 
 2. **Can't access monitoring URLs**
+
    ```bash
    # Verify Cloudflare Tunnel
    docker-compose logs cloudflared
