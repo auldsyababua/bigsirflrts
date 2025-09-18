@@ -2,13 +2,11 @@
 // Handles direct parse requests from web UI and other clients
 // Provides immediate response for simple parsing tasks
 
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 // Environment variables
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 const N8N_WEBHOOK_URL = Deno.env.get("N8N_WEBHOOK_URL")!;
 
 // Initialize Supabase client
@@ -123,7 +121,6 @@ Deno.serve(async (req: Request) => {
 
 // Attempt quick parsing for simple patterns
 function attemptQuickParse(input: string): any | null {
-  const normalized = input.toLowerCase().trim();
 
   // Check for simple task creation
   const createMatch = input.match(SIMPLE_PATTERNS.CREATE_TASK);

@@ -1,8 +1,9 @@
 // Enhanced n8n Webhook Monitor for FLRTS Story 1.7
 // Collects metrics from n8n webhooks following best practices from .bmad-core/references/n8n-best-practices.md
 
-const express = require("express");
-const winston = require("winston");
+import express from "express";
+import winston from "winston";
+import { randomUUID } from "node:crypto";
 
 const app = express();
 const PORT = process.env.N8N_MONITOR_PORT || 3002;
@@ -191,7 +192,7 @@ app.post("/metrics/n8n/errors", (req, res) => {
     } = req.body;
 
     const errorRecord = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       workflowId: workflow_id,
       workflowName: workflow_name,
       executionId: execution_id,

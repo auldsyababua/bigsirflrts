@@ -1,8 +1,7 @@
-const express = require("express");
-const fetch = require("node-fetch");
-const client = require("prom-client");
-const fs = require("fs").promises;
-const path = require("path");
+import express from "express";
+import client from "prom-client";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 
 const app = express();
 const port = process.env.N8N_MONITOR_PORT || 3002;
