@@ -1,6 +1,7 @@
 # FLRTS Setup Documentation
 
-This directory contains all setup and configuration guides for the FLRTS (Field Reports, Lists, Reminders, Tasks, and Sub-Tasks) system.
+This directory contains all setup and configuration guides for the FLRTS (Field
+Reports, Lists, Reminders, Tasks, and Sub-Tasks) system.
 
 ## 🏗️ Current Architecture (2025)
 
@@ -19,8 +20,10 @@ OpenProject + PostgreSQL
 Follow these guides in sequence for initial system setup:
 
 1. **[OpenProject Setup](./openproject.md)** - Core task management system
-2. **[Webhook Integration](./webhook-integration.md)** - Supabase Edge Functions → n8n → OpenProject sync
-3. **[Telegram Bot](./telegram-bot.md)** - Bot configuration for field communication
+2. **[Webhook Integration](./webhook-integration.md)** - Supabase Edge Functions
+   → n8n → OpenProject sync
+3. **[Telegram Bot](./telegram-bot.md)** - Bot configuration for field
+   communication
 
 ## 🔧 Component Setup Guides
 
@@ -34,8 +37,10 @@ Follow these guides in sequence for initial system setup:
 
 ### Integration Layer
 
-- **[Webhook Integration](./webhook-integration.md)** - Event-driven sync architecture
-  - Supabase Edge Functions (telegram-webhook, database-webhook, openproject-sync)
+- **[Webhook Integration](./webhook-integration.md)** - Event-driven sync
+  architecture
+  - Supabase Edge Functions (telegram-webhook, database-webhook,
+    openproject-sync)
   - Self-hosted n8n workflow configuration
   - Database triggers and change notifications
   - Bidirectional OpenProject API integration
@@ -59,10 +64,12 @@ For a minimal working system:
 
 ## 📝 Environment Variables
 
-Each component requires specific environment variables. See individual setup guides for details:
+Each component requires specific environment variables. See individual setup
+guides for details:
 
 - **OpenProject**: API tokens, base URLs, work package configurations
-- **Supabase Edge Functions**: Bot tokens, webhook secrets, n8n URLs, OpenProject API keys
+- **Supabase Edge Functions**: Bot tokens, webhook secrets, n8n URLs,
+  OpenProject API keys
 - **n8n**: Webhook paths, OpenProject API endpoints
 - **Telegram Bot**: Bot tokens (via BotFather), webhook verification secrets
 
@@ -80,4 +87,6 @@ Each component requires specific environment variables. See individual setup gui
 - [PRD Documentation](../prd/)
 
 ---
-*Last Updated: January 2025 - Updated for current Supabase Edge Functions + self-hosted n8n architecture*
+
+_Last Updated: January 2025 - Updated for current Supabase Edge Functions +
+self-hosted n8n architecture_

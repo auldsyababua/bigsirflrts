@@ -4,9 +4,11 @@ This directory contains multiple test suites for the FLRTS project:
 
 ## 🔐 **Secure API Testing Infrastructure** (New)
 
-**Status: ✅ WORKING** - Complete testing infrastructure with 1Password Service Account integration and Node.js native test runner.
+**Status: ✅ WORKING** - Complete testing infrastructure with 1Password Service
+Account integration and Node.js native test runner.
 
 ### **Quick Start**
+
 ```bash
 # Run API tests with 1Password secret injection
 npm run test:api
@@ -24,22 +26,24 @@ npm run test:performance
 npm run test:api:watch
 ```
 
-
 ### **Architecture**
 
 #### **Security Features**
+
 - ✅ **No secrets in code** - All secrets via 1Password references
 - ✅ **Git-safe** - Environment files excluded from version control
 - ✅ **Service Account** - Works in CI/CD environments
 - ✅ **Secure injection** - Secrets only available during test execution
 
 #### **Testing Stack**
+
 - **Node.js Native Test Runner** - Zero dependencies, fast execution
 - **1Password CLI** - Secure secret management
 - **Native fetch()** - Built-in HTTP client (Node.js 22)
 - **Native assert** - No external assertion libraries
 
 ### **Directory Structure**
+
 ```
 tests/
 ├── README.md                                # This file
@@ -59,9 +63,11 @@ tests/
 ### **1Password Configuration**
 
 #### **Required Vault Setup**
+
 Your "MCP Secrets" vault needs these items:
 
 **Item: "FLRTS SECRETS"**
+
 ```
 SUPABASE_PROJECT_ID: thnwlykidzhrsagyjncc
 SUPABASE_URL: https://thnwlykidzhrsagyjncc.supabase.co
@@ -74,6 +80,7 @@ TELEGRAM_WEBHOOK_SECRET: [your-webhook-secret] (optional)
 ```
 
 #### **Service Account Setup**
+
 ```bash
 # Set your Service Account token
 export OP_SERVICE_ACCOUNT_TOKEN="ops_your_token_here"
@@ -85,6 +92,7 @@ op vault list
 ### **Troubleshooting**
 
 #### **Common 1Password Issues**
+
 ```bash
 # Clear conflicting sessions
 op signout --all
@@ -97,7 +105,9 @@ echo $OP_SERVICE_ACCOUNT_TOKEN | head -c 10  # Should show "ops_"
 ```
 
 #### **"Signin credentials are not compatible"**
-**Solution:** Clear all OP_ environment variables and sessions:
+
+**Solution:** Clear all OP\_ environment variables and sessions:
+
 ```bash
 op signout --all
 unset OP_SESSION_my
@@ -108,10 +118,13 @@ export OP_SERVICE_ACCOUNT_TOKEN="your_token"
 
 ## 🔄 **Webhook Retry and Backoff Testing** (Story 1.5)
 
-**Status: ✅ COMPLETE** - Comprehensive testing suite for webhook retry mechanisms with exponential backoff.
+**Status: ✅ COMPLETE** - Comprehensive testing suite for webhook retry
+mechanisms with exponential backoff.
 
 ### **What's Tested**
-- ✅ Exponential backoff pattern validation (1s → 2s → 4s → 8s → 16s → 32s capped)
+
+- ✅ Exponential backoff pattern validation (1s → 2s → 4s → 8s → 16s → 32s
+  capped)
 - ✅ Circuit breaker behavior (max retry attempts enforcement)
 - ✅ Recovery after temporary failures
 - ✅ Performance impact during retry scenarios
@@ -119,6 +132,7 @@ export OP_SERVICE_ACCOUNT_TOKEN="your_token"
 - ✅ Configuration parameter validation
 
 ### **Quick Commands**
+
 ```bash
 # Run all retry tests
 op run --env-file=tests/.env.test -- node tests/run-retry-tests.js
@@ -133,17 +147,21 @@ op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webh
 ```
 
 ### **Documentation**
-- 📖 **[Complete Retry Testing Guide](../docs/misc/webhook-retry-testing.md)** - Detailed documentation, configuration, and troubleshooting
+
+- 📖 **[Complete Retry Testing Guide](../docs/misc/webhook-retry-testing.md)** -
+  Detailed documentation, configuration, and troubleshooting
 
 ---
 
 ## 🔗 **Edge Function → n8n Webhook Integration Tests** (Story 1.4)
 
-**Status: ✅ NEW** - Automated testing for the "Reflex + Brain" architecture pattern.
+**Status: ✅ NEW** - Automated testing for the "Reflex + Brain" architecture
+pattern.
 
 ### **What's Tested**
 
 **Integration Tests:**
+
 - ✅ Complete Edge Function → n8n webhook flow
 - ✅ "Reflex + Brain" architecture pattern validation
 - ✅ Telegram payload processing end-to-end
@@ -151,6 +169,7 @@ op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webh
 - ✅ Webhook endpoint health monitoring
 
 **Performance Tests:**
+
 - ✅ Edge Function response time <200ms requirement
 - ✅ n8n webhook response time <200ms requirement
 - ✅ Performance regression detection
@@ -158,6 +177,7 @@ op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webh
 - ✅ Recovery testing after load spikes
 
 ### **Quick Commands**
+
 ```bash
 # Run integration tests
 npm run test:integration:webhook
@@ -173,6 +193,7 @@ node tests/run-integration-tests.js --verbose
 ```
 
 ### **CI/CD Integration**
+
 - GitHub Actions workflow at `.github/workflows/integration-tests.yml`
 - Runs on push/PR and daily at 6 AM UTC
 - Uses 1Password Service Account for secure secret injection
@@ -183,7 +204,9 @@ node tests/run-integration-tests.js --verbose
 
 ## 📋 **MVP P0 Test Suite** (Story 1.1)
 
-This is a pragmatic test suite for Story 1.1 (Deploy OpenProject to Cloudflare) targeting 5–10 C‑suite users. It focuses on P0 paths only and runs in <5 minutes.
+This is a pragmatic test suite for Story 1.1 (Deploy OpenProject to Cloudflare)
+targeting 5–10 C‑suite users. It focuses on P0 paths only and runs in <5
+minutes.
 
 What's covered (P0):
 
@@ -248,7 +271,10 @@ npm run test:smoke
 
 ## CI/CD
 
-GitHub Actions workflow at `.github/workflows/mvp-tests.yml` runs on push/PR to `main`, executes the smoke test, unit/integration, a mocked wrangler deploy validation, then E2E. Slack notification triggers on failure only (requires `SLACK_WEBHOOK_URL` secret).
+GitHub Actions workflow at `.github/workflows/mvp-tests.yml` runs on push/PR to
+`main`, executes the smoke test, unit/integration, a mocked wrangler deploy
+validation, then E2E. Slack notification triggers on failure only (requires
+`SLACK_WEBHOOK_URL` secret).
 
 ## Notes
 

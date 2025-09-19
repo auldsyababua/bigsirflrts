@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document defines the OpenAI GPT-4o integration architecture for the FLRTS NLP service, focusing on Story 2.2 requirements for timezone-aware natural language parsing of task management commands.
+This document defines the OpenAI GPT-4o integration architecture for the FLRTS
+NLP service, focusing on Story 2.2 requirements for timezone-aware natural
+language parsing of task management commands.
 
 ## Architecture Flow
 
@@ -22,20 +24,21 @@ User → Telegram → FLRTS NLP → OpenAI GPT-4o → FLRTS NLP → OpenProject 
 
 ```typescript
 interface OpenAIConfig {
-  apiKey: string;                    // From environment variable
-  model: 'gpt-4o' | 'gpt-4o-mini';  // Use gpt-4o for production
-  temperature: 0.3;                   // Low for deterministic parsing
-  maxTokens: 2000;                   // Sufficient for response
-  topP: 0.9;                         // Slight variability allowed
-  frequencyPenalty: 0;               // No penalty needed
-  presencePenalty: 0;                // No penalty needed
-  responseFormat: { type: 'json_object' };  // Enforce JSON response
+  apiKey: string; // From environment variable
+  model: 'gpt-4o' | 'gpt-4o-mini'; // Use gpt-4o for production
+  temperature: 0.3; // Low for deterministic parsing
+  maxTokens: 2000; // Sufficient for response
+  topP: 0.9; // Slight variability allowed
+  frequencyPenalty: 0; // No penalty needed
+  presencePenalty: 0; // No penalty needed
+  responseFormat: { type: 'json_object' }; // Enforce JSON response
 }
 ```
 
 ### Request Payload Structure
 
-The FLRTS NLP service MUST send the following structured data to OpenAI for every parsing request:
+The FLRTS NLP service MUST send the following structured data to OpenAI for
+every parsing request:
 
 ```typescript
 interface OpenAIRequestPayload {
@@ -43,12 +46,12 @@ interface OpenAIRequestPayload {
   messages: [
     {
       role: 'system';
-      content: string;  // System prompt with instructions
+      content: string; // System prompt with instructions
     },
     {
       role: 'user';
-      content: string;  // Structured context + user message
-    }
+      content: string; // Structured context + user message
+    },
   ];
   temperature: 0.3;
   response_format: { type: 'json_object' };
@@ -113,21 +116,21 @@ function buildUserMessage(rawInput: string, sender: TeamMember): string {
       sender: {
         name: sender.name,
         timezone: sender.timezone,
-        current_time: new Date().toISOString()
+        current_time: new Date().toISOString(),
       },
       team_members: {
-        "Joel": { timezone: "America/New_York", role: "CEO" },
-        "Bryan": { timezone: "America/New_York", role: "CFO" },
-        "Taylor": { timezone: "America/Chicago", role: "Operator" },
-        "Colin": { timezone: "America/Los_Angeles", role: "CTO" },
-        "Bernie": { timezone: "America/Los_Angeles", role: "Investor" },
-        "Ari": { timezone: "America/Los_Angeles", role: "Investor" }
+        Joel: { timezone: 'America/New_York', role: 'CEO' },
+        Bryan: { timezone: 'America/New_York', role: 'CFO' },
+        Taylor: { timezone: 'America/Chicago', role: 'Operator' },
+        Colin: { timezone: 'America/Los_Angeles', role: 'CTO' },
+        Bernie: { timezone: 'America/Los_Angeles', role: 'Investor' },
+        Ari: { timezone: 'America/Los_Angeles', role: 'Investor' },
       },
-      available_projects: ["Site A", "Site B", "Site C"],
-      supported_operations: ["CREATE", "READ", "UPDATE", "ARCHIVE"]
-    }
+      available_projects: ['Site A', 'Site B', 'Site C'],
+      supported_operations: ['CREATE', 'READ', 'UPDATE', 'ARCHIVE'],
+    },
   };
-  
+
   return JSON.stringify(context);
 }
 ```
@@ -168,12 +171,12 @@ import moment from 'moment-timezone';
 
 class TimezoneConverter {
   private teamTimezones = {
-    'Joel': 'America/New_York',
-    'Bryan': 'America/New_York', 
-    'Taylor': 'America/Chicago',
-    'Colin': 'America/Los_Angeles',
-    'Bernie': 'America/Los_Angeles',
-    'Ari': 'America/Los_Angeles'
+    Joel: 'America/New_York',
+    Bryan: 'America/New_York',
+    Taylor: 'America/Chicago',
+    Colin: 'America/Los_Angeles',
+    Bernie: 'America/Los_Angeles',
+    Ari: 'America/Los_Angeles',
   };
 
   convertToAssigneeTime(
@@ -185,8 +188,8 @@ class TimezoneConverter {
     if (!timestamp) return null;
 
     let sourceTz: string;
-    
-    switch(timeContext) {
+
+    switch (timeContext) {
       case 'sender_time':
         sourceTz = senderTimezone;
         break;
@@ -204,7 +207,7 @@ class TimezoneConverter {
     // Convert from source to assignee timezone
     const sourceTime = moment.tz(timestamp, sourceTz);
     const assigneeTime = sourceTime.clone().tz(assigneeTimezone);
-    
+
     return assigneeTime.format();
   }
 
@@ -214,14 +217,14 @@ class TimezoneConverter {
     timezone: string
   ): string {
     const base = moment.tz(baseTime, timezone);
-    
+
     // Handle common patterns
     const patterns = {
-      'tomorrow': () => base.add(1, 'day').hour(9).minute(0),
+      tomorrow: () => base.add(1, 'day').hour(9).minute(0),
       'next week': () => base.add(1, 'week').startOf('week').hour(9).minute(0),
       'next Monday': () => base.day(8).hour(9).minute(0), // Next Monday
-      'EOD': () => base.hour(17).minute(0),
-      'COB': () => base.hour(18).minute(0),
+      EOD: () => base.hour(17).minute(0),
+      COB: () => base.hour(18).minute(0),
       'in (\\d+) hours?': (match) => base.add(parseInt(match[1]), 'hours'),
       'in (\\d+) days?': (match) => base.add(parseInt(match[1]), 'days'),
     };
@@ -247,29 +250,33 @@ class TimezoneConverter {
 
 ```typescript
 enum ConfidenceAction {
-  AUTO_EXECUTE = 0.95,   // Proceed without confirmation
-  CONFIRM = 0.80,        // Show for confirmation
-  CLARIFY = 0.60,        // Request clarification
-  REJECT = 0.0           // Cannot parse (< 0.60)
+  AUTO_EXECUTE = 0.95, // Proceed without confirmation
+  CONFIRM = 0.8, // Show for confirmation
+  CLARIFY = 0.6, // Request clarification
+  REJECT = 0.0, // Cannot parse (< 0.60)
 }
 
 function handleParsedResponse(response: OpenAIResponse): Action {
   if (response.parse_errors.length > 0) {
     return { type: 'ERROR', errors: response.parse_errors };
   }
-  
+
   if (response.confidence >= ConfidenceAction.AUTO_EXECUTE) {
     return { type: 'EXECUTE', data: response.data };
   }
-  
+
   if (response.confidence >= ConfidenceAction.CONFIRM) {
     return { type: 'CONFIRM', data: response.data };
   }
-  
+
   if (response.confidence >= ConfidenceAction.CLARIFY) {
-    return { type: 'CLARIFY', data: response.data, suggestions: generateSuggestions(response) };
+    return {
+      type: 'CLARIFY',
+      data: response.data,
+      suggestions: generateSuggestions(response),
+    };
   }
-  
+
   return { type: 'REJECT', reason: 'Low confidence parse' };
 }
 ```
@@ -284,14 +291,17 @@ class OpenAIClient {
   async callOpenAI(payload: OpenAIRequestPayload): Promise<OpenAIResponse> {
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-          },
-          body: JSON.stringify(payload)
-        });
+        const response = await fetch(
+          'https://api.openai.com/v1/chat/completions',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
 
         if (response.status === 429) {
           // Rate limited - exponential backoff
@@ -305,7 +315,6 @@ class OpenAIClient {
 
         const data = await response.json();
         return JSON.parse(data.choices[0].message.content);
-        
       } catch (error) {
         if (attempt === this.maxRetries) {
           throw new OpenAIError('Max retries exceeded', error);
@@ -316,7 +325,7 @@ class OpenAIClient {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 ```
@@ -331,12 +340,12 @@ interface NLPMetrics {
   openai_response_time_ms: Histogram;
   parsing_confidence_score: Histogram;
   timezone_conversion_success_rate: Counter;
-  
+
   // Business Metrics
-  operations_by_type: Counter;  // CREATE, READ, UPDATE, ARCHIVE
+  operations_by_type: Counter; // CREATE, READ, UPDATE, ARCHIVE
   tasks_by_assignee: Counter;
   tasks_by_project: Counter;
-  
+
   // Error Metrics
   openai_api_errors: Counter;
   parsing_failures: Counter;
@@ -382,11 +391,13 @@ class TokenEstimator {
 
   calculateCost(inputTokens: number, outputTokens: number): number {
     // GPT-4o pricing as of 2025
-    const INPUT_COST_PER_1M = 2.50;    // $2.50 per 1M input tokens
-    const OUTPUT_COST_PER_1M = 10.00;  // $10.00 per 1M output tokens
+    const INPUT_COST_PER_1M = 2.5; // $2.50 per 1M input tokens
+    const OUTPUT_COST_PER_1M = 10.0; // $10.00 per 1M output tokens
 
-    return (inputTokens / 1_000_000 * INPUT_COST_PER_1M) +
-           (outputTokens / 1_000_000 * OUTPUT_COST_PER_1M);
+    return (
+      (inputTokens / 1_000_000) * INPUT_COST_PER_1M +
+      (outputTokens / 1_000_000) * OUTPUT_COST_PER_1M
+    );
   }
 }
 ```

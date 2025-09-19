@@ -1,6 +1,11 @@
 # Enhanced IDE Development Workflow
 
-This is a simple step-by-step guide to help you efficiently manage your development workflow using the BMad Method. The workflow integrates the Test Architect (QA agent) throughout the development lifecycle to ensure quality, prevent regressions, and maintain high standards. Refer to the **[<ins>User Guide</ins>](user-guide.md)** for any scenario that is not covered here.
+This is a simple step-by-step guide to help you efficiently manage your
+development workflow using the BMad Method. The workflow integrates the Test
+Architect (QA agent) throughout the development lifecycle to ensure quality,
+prevent regressions, and maintain high standards. Refer to the
+**[<ins>User Guide</ins>](user-guide.md)** for any scenario that is not covered
+here.
 
 ## Create New Branch
 
@@ -23,9 +28,13 @@ This is a simple step-by-step guide to help you efficiently manage your developm
 
 ## Test Architect Integration Throughout Workflow
 
-The Test Architect (Quinn) provides comprehensive quality assurance throughout the development lifecycle. Here's how to leverage each capability at the right time.
+The Test Architect (Quinn) provides comprehensive quality assurance throughout
+the development lifecycle. Here's how to leverage each capability at the right
+time.
 
-**Command Aliases:** Documentation uses short forms (`*risk`, `*design`, `*nfr`, `*trace`) for the full commands (`*risk-profile`, `*test-design`, `*nfr-assess`, `*trace-requirements`).
+**Command Aliases:** Documentation uses short forms (`*risk`, `*design`, `*nfr`,
+`*trace`) for the full commands (`*risk-profile`, `*test-design`, `*nfr-assess`,
+`*trace-requirements`).
 
 ### Quick Command Reference
 
@@ -190,7 +199,8 @@ Quinn ensures all tests meet these standards:
 - **No Hard Waits**: Dynamic strategies only (polling, events)
 - **Stateless**: Tests run independently and in parallel
 - **Self-Cleaning**: Tests manage their own test data
-- **Appropriate Levels**: Unit for logic, integration for interactions, E2E for journeys
+- **Appropriate Levels**: Unit for logic, integration for interactions, E2E for
+  journeys
 - **Clear Assertions**: Keep assertions in tests, not buried in helpers
 
 ### Documentation & Audit Trail

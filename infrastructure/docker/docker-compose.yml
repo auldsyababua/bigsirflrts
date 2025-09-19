@@ -1,4 +1,6 @@
-# Docker Compose file for n8n Queue Mode
+# Docker Compose file for n8n Queue Mode (Local Dev / Testing)
+# PRODUCTION NOTE: Production uses single-instance n8n and a single Supabase PostgreSQL
+# (no local Postgres or Redis). This file is for local experiments only.
 # Note: 'version' field is deprecated in Docker Compose v2+
 # This configuration requires Docker Compose v2.0 or later
 

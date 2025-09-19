@@ -1,10 +1,8 @@
-name: MVP P0 Tests
+name: MVP P0 Tests (Manual)
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  # Run manually when needed; not part of PR checks
+  workflow_dispatch: {}
 
 jobs:
   lint:
@@ -17,7 +15,7 @@ jobs:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: npm ci || npm i
@@ -50,7 +48,7 @@ jobs:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
         run: |

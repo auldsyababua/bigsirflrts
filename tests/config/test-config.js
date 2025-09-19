@@ -32,7 +32,7 @@ export const testConfig = {
   // Test Settings
   test: {
     timeout: parseInt(process.env.TEST_TIMEOUT) || 30000,
-    environment: process.env.NODE_ENV || 'test',
+    environment: process.env.NODE_ENV || "test",
 
     // Retry Testing Configuration
     retry: {
@@ -46,9 +46,13 @@ export const testConfig = {
       // Mock server configuration for retry testing
       mockServer: {
         port: parseInt(process.env.MOCK_WEBHOOK_PORT) || 3001,
-        failingWebhookUrl: process.env.MOCK_FAILING_WEBHOOK_URL || 'http://localhost:3001/failing-webhook',
-        slowWebhookUrl: process.env.MOCK_SLOW_WEBHOOK_URL || 'http://localhost:3001/slow-webhook',
-      }
+        failingWebhookUrl:
+          process.env.MOCK_FAILING_WEBHOOK_URL ||
+          "http://localhost:3001/failing-webhook",
+        slowWebhookUrl:
+          process.env.MOCK_SLOW_WEBHOOK_URL ||
+          "http://localhost:3001/slow-webhook",
+      },
     },
   },
 
@@ -69,18 +73,14 @@ export const testConfig = {
  * @throws {Error} If required environment variables are missing
  */
 export function validateTestConfig() {
-  const required = [
-    'SUPABASE_PROJECT_ID',
-    'SUPABASE_URL',
-    'SUPABASE_ANON_KEY',
-  ];
+  const required = ["SUPABASE_PROJECT_ID", "SUPABASE_URL", "SUPABASE_ANON_KEY"];
 
-  const missing = required.filter(key => !process.env[key]);
+  const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-      'Make sure to run tests with: op run --env-file=tests/.env.test -- npm run test:api'
+      `Missing required environment variables: ${missing.join(", ")}\n` +
+        "Make sure to run tests with: op run --env-file=tests/.env.test -- npm run test:api",
     );
   }
 }
@@ -91,12 +91,14 @@ export function validateTestConfig() {
  * @returns {Object} Headers object
  */
 export function getSupabaseHeaders(useServiceRole = false) {
-  const key = useServiceRole ? testConfig.supabase.serviceRoleKey : testConfig.supabase.anonKey;
+  const key = useServiceRole
+    ? testConfig.supabase.serviceRoleKey
+    : testConfig.supabase.anonKey;
 
   return {
-    'Authorization': `Bearer ${key}`,
-    'Content-Type': 'application/json',
-    'apikey': key,
+    Authorization: `Bearer ${key}`,
+    "Content-Type": "application/json",
+    apikey: key,
   };
 }
 
@@ -107,9 +109,9 @@ export function getSupabaseHeaders(useServiceRole = false) {
  */
 export function getTelegramAuthHeaders() {
   const secret = testConfig.telegram.webhookSecret;
-  const headers = { 'Content-Type': 'application/json' };
+  const headers = { "Content-Type": "application/json" };
   if (secret) {
-    return { ...headers, 'X-Telegram-Bot-Api-Secret-Token': secret };
+    return { ...headers, "X-Telegram-Bot-Api-Secret-Token": secret };
   }
   return headers;
 }

@@ -1,0 +1,11 @@
+tunnel: 0db2b84d-306c-4577-9b77-38f145566ee4
+credentials-file: /root/.cloudflared/0db2b84d-306c-4577-9b77-38f145566ee4.json
+
+ingress:
+  - hostname: ops.10nz.tools
+    service: http://openproject:8080
+    originRequest:
+      noTLSVerify: true
+      connectTimeout: 30s
+      http2Origin: false
+  - service: http_status:404

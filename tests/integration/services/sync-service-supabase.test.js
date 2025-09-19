@@ -1,40 +1,47 @@
 /* eslint-disable no-console */
-import { describe, it, expect, beforeAll } from 'vitest';
-import { createClient } from '@supabase/supabase-js';
+import { describe, it, expect, beforeAll } from "vitest";
+import { createClient } from "@supabase/supabase-js";
 
-describe('Supabase Sync Service', () => {
+describe("Supabase Sync Service", () => {
   let supabase;
   let isConfigured = false;
 
   beforeAll(() => {
     // Check if Supabase is properly configured
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
     if (supabaseUrl && supabaseKey) {
       supabase = createClient(supabaseUrl, supabaseKey);
       isConfigured = true;
     } else {
-      console.warn('Supabase not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY in .env.test');
+      console.warn(
+        "Supabase not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY in .env.test",
+      );
     }
   });
 
-  describe('Connection', () => {
-    it('should connect to Supabase when configured @P0', async () => {
+  describe("Connection", () => {
+    it("should connect to Supabase when configured @P0", async () => {
       if (!isConfigured) {
-        console.warn('Test skipped: Supabase not configured');
+        console.warn("Test skipped: Supabase not configured");
         expect(isConfigured).toBe(false);
         return;
       }
 
       // Try a simple query to test connection
       const { data, error } = await supabase
-        .from('tasks')
-        .select('id, task_title')
+        .from("tasks")
+        .select("id, task_title")
         .limit(1);
 
       // If table doesn't exist, that's okay - we're just testing connection
-      if (error && !error.message.includes('relation') && !error.message.includes('does not exist')) {
+      if (
+        error &&
+        !error.message.includes("relation") &&
+        !error.message.includes("does not exist")
+      ) {
         throw error;
       }
 
@@ -42,21 +49,21 @@ describe('Supabase Sync Service', () => {
     });
   });
 
-  describe('Tasks Table Operations', () => {
-    it('should query tasks table when available @P0', async () => {
+  describe("Tasks Table Operations", () => {
+    it("should query tasks table when available @P0", async () => {
       if (!isConfigured) {
-        console.warn('Test skipped: Supabase not configured');
+        console.warn("Test skipped: Supabase not configured");
         return;
       }
 
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .limit(5);
+      const { data, error } = await supabase.from("tasks").select("*").limit(5);
 
       // If table doesn't exist, skip the test
-      if (error?.message?.includes('relation') || error?.message?.includes('does not exist')) {
-        console.warn('Tasks table not found, skipping test');
+      if (
+        error?.message?.includes("relation") ||
+        error?.message?.includes("does not exist")
+      ) {
+        console.warn("Tasks table not found, skipping test");
         return;
       }
 
@@ -65,8 +72,8 @@ describe('Supabase Sync Service', () => {
     });
   });
 
-  describe('Mock Mode', () => {
-    it('should work in mock mode when Supabase is not configured', () => {
+  describe("Mock Mode", () => {
+    it("should work in mock mode when Supabase is not configured", () => {
       if (isConfigured) {
         expect(supabase).toBeDefined();
       } else {
@@ -75,12 +82,12 @@ describe('Supabase Sync Service', () => {
 
         // Mock data for testing
         const mockData = [
-          { id: 1, task_title: 'Mock Task 1', assignee: 'Taylor' },
-          { id: 2, task_title: 'Mock Task 2', assignee: 'Bryan' },
+          { id: 1, task_title: "Mock Task 1", assignee: "Taylor" },
+          { id: 2, task_title: "Mock Task 2", assignee: "Bryan" },
         ];
 
         expect(mockData).toHaveLength(2);
-        expect(mockData[0]).toHaveProperty('task_title');
+        expect(mockData[0]).toHaveProperty("task_title");
       }
     });
   });

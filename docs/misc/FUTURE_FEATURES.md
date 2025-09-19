@@ -1,15 +1,23 @@
 # Future Features
 
-This document tracks features and enhancements that are planned for future development but not currently prioritized for the MVP or immediate sprints. This is the canonical location for recording post-MVP feature ideas and technical debt items.
+This document tracks features and enhancements that are planned for future
+development but not currently prioritized for the MVP or immediate sprints. This
+is the canonical location for recording post-MVP feature ideas and technical
+debt items.
 
 ## Security & Authentication
 
 ### Advanced Prompt Injection Protection with User Scoping
 
-**Priority:** High (Post-MVP)
-**Description:** Implement comprehensive prompt injection protection for the Telegram task creation workflow using LLMGuard or similar security framework, combined with a user scoping system that limits the blast radius of malicious content based on user privilege levels and data isolation boundaries.
+**Priority:** High (Post-MVP) **Description:** Implement comprehensive prompt
+injection protection for the Telegram task creation workflow using LLMGuard or
+similar security framework, combined with a user scoping system that limits the
+blast radius of malicious content based on user privilege levels and data
+isolation boundaries.
 
-**Current State:** Basic input validation only (length limits, basic content filtering). All users operate at same privilege level with access to shared data.
+**Current State:** Basic input validation only (length limits, basic content
+filtering). All users operate at same privilege level with access to shared
+data.
 
 **Requirements:**
 
@@ -22,10 +30,15 @@ This document tracks features and enhancements that are planned for future devel
 
 **User Scoping & Privilege System:**
 
-- **User Risk Levels**: Define user categories (Guest, Employee, Supervisor, Admin) with different UGC risk tolerances
-- **Data Isolation Boundaries**: Implement scoped access where certain user levels can only affect their own data or team-specific elements
-- **Privilege-Based Processing**: Different prompt processing strictness based on user level (e.g., Guests get maximum filtering, Admins get minimal filtering)
-- **Blast Radius Limitation**: Ensure malicious prompts can only affect the user's own tasks/data, not system-wide or other users' data
+- **User Risk Levels**: Define user categories (Guest, Employee, Supervisor,
+  Admin) with different UGC risk tolerances
+- **Data Isolation Boundaries**: Implement scoped access where certain user
+  levels can only affect their own data or team-specific elements
+- **Privilege-Based Processing**: Different prompt processing strictness based
+  on user level (e.g., Guests get maximum filtering, Admins get minimal
+  filtering)
+- **Blast Radius Limitation**: Ensure malicious prompts can only affect the
+  user's own tasks/data, not system-wide or other users' data
 
 **Scoping Schema Design (Future Planning):**
 
@@ -38,14 +51,18 @@ This document tracks features and enhancements that are planned for future devel
 **Security Isolation Examples:**
 
 - Guest users: Can only create/modify their own tasks, heavy prompt filtering
-- Field employees: Can affect team tasks but not other teams, moderate filtering  
+- Field employees: Can affect team tasks but not other teams, moderate filtering
 - Supervisors: Can affect department-wide tasks, light filtering
 - Admins: System-wide access with audit logging, minimal filtering
 
-**Context:** Identified during Story 1.3 security review. Current MVP approach uses trusted user base and basic validation, but production deployment requires comprehensive protection against prompt injection attacks AND a way to limit the damage scope based on user privilege levels and data ownership boundaries.
+**Context:** Identified during Story 1.3 security review. Current MVP approach
+uses trusted user base and basic validation, but production deployment requires
+comprehensive protection against prompt injection attacks AND a way to limit the
+damage scope based on user privilege levels and data ownership boundaries.
 
-**Estimated Effort:** 3-4 sprints (2 for security framework, 1-2 for scoping system)
-**Dependencies:** LLMGuard integration, monitoring infrastructure, user management system redesign, database schema updates for data isolation
+**Estimated Effort:** 3-4 sprints (2 for security framework, 1-2 for scoping
+system) **Dependencies:** LLMGuard integration, monitoring infrastructure, user
+management system redesign, database schema updates for data isolation
 
 ---
 
@@ -53,10 +70,12 @@ This document tracks features and enhancements that are planned for future devel
 
 ### Telegram Bot Integration
 
-**Priority:** Medium (Post-MVP)
-**Description:** Implement native Telegram bot integration for task creation, updates, and notifications without requiring the Mini App interface.
+**Priority:** Medium (Post-MVP) **Description:** Implement native Telegram bot
+integration for task creation, updates, and notifications without requiring the
+Mini App interface.
 
-**Current State:** Telegram Mini App integration planned for MVP (web-based interface)
+**Current State:** Telegram Mini App integration planned for MVP (web-based
+interface)
 
 **Requirements:**
 
@@ -72,15 +91,18 @@ This document tracks features and enhancements that are planned for future devel
 - Group chat support for team task management
 - Direct message support for personal task lists
 
-**Context:** While the MVP uses a Telegram Mini App, many users prefer native bot interactions for speed and simplicity. Native bot commands provide faster task creation and management without opening a web interface.
+**Context:** While the MVP uses a Telegram Mini App, many users prefer native
+bot interactions for speed and simplicity. Native bot commands provide faster
+task creation and management without opening a web interface.
 
-**Estimated Effort:** 2-3 sprints
-**Dependencies:** Telegram Bot API, webhook infrastructure, notification queue system
+**Estimated Effort:** 2-3 sprints **Dependencies:** Telegram Bot API, webhook
+infrastructure, notification queue system
 
 ### Slack App Integration
 
-**Priority:** Medium (Post-MVP)
-**Description:** Create a comprehensive Slack app for task management within Slack workspaces, enabling natural language task creation and team collaboration.
+**Priority:** Medium (Post-MVP) **Description:** Create a comprehensive Slack
+app for task management within Slack workspaces, enabling natural language task
+creation and team collaboration.
 
 **Current State:** No Slack integration currently planned
 
@@ -101,15 +123,18 @@ This document tracks features and enhancements that are planned for future devel
 - Home tab with personal task dashboard
 - Workflow builder integration for automation
 
-**Context:** Many organizations use Slack as their primary communication platform. Native Slack integration would enable seamless task management without context switching, improving adoption and team collaboration.
+**Context:** Many organizations use Slack as their primary communication
+platform. Native Slack integration would enable seamless task management without
+context switching, improving adoption and team collaboration.
 
-**Estimated Effort:** 3-4 sprints
-**Dependencies:** Slack API, OAuth infrastructure, event subscription handling, Block Kit UI components
+**Estimated Effort:** 3-4 sprints **Dependencies:** Slack API, OAuth
+infrastructure, event subscription handling, Block Kit UI components
 
 ### Multi-Channel Notification System
 
-**Priority:** High (Post-MVP Phase 2)
-**Description:** Unified notification framework supporting multiple channels with user preferences and intelligent routing.
+**Priority:** High (Post-MVP Phase 2) **Description:** Unified notification
+framework supporting multiple channels with user preferences and intelligent
+routing.
 
 **Current State:** Basic email notifications planned for MVP
 
@@ -137,32 +162,50 @@ This document tracks features and enhancements that are planned for future devel
 - Delivery tracking and analytics
 - Webhook support for custom integrations
 
-**Context:** Different users prefer different notification channels based on their workflow and urgency. A unified system ensures reliable delivery while respecting user preferences and preventing notification overload.
+**Context:** Different users prefer different notification channels based on
+their workflow and urgency. A unified system ensures reliable delivery while
+respecting user preferences and preventing notification overload.
 
-**Estimated Effort:** 4-5 sprints
-**Dependencies:** Message queue system, template engine, third-party APIs (Twilio, SendGrid, etc.), user preference storage
+**Estimated Effort:** 4-5 sprints **Dependencies:** Message queue system,
+template engine, third-party APIs (Twilio, SendGrid, etc.), user preference
+storage
 
 ---
 
 ## Enhanced API Memory and Learning
 
-**Priority:** High (Post-MVP)
-**Description:** Implement an advanced memory architecture for the FLRTS API to enable continuous learning and improve output quality. This system will use a combination of in-memory databases, a vector database, and a dedicated memory store to retain context, learn from interactions, and correct mistakes over time.
+**Priority:** High (Post-MVP) **Description:** Implement an advanced memory
+architecture for the FLRTS API to enable continuous learning and improve output
+quality. This system will use a combination of in-memory databases, a vector
+database, and a dedicated memory store to retain context, learn from
+interactions, and correct mistakes over time.
 
-**Current State:** The API is stateless, processing each call independently without long-term memory of past interactions or feedback.
+**Current State:** The API is stateless, processing each call independently
+without long-term memory of past interactions or feedback.
 
 **Requirements:**
 
-- **Redis Integration:** Use Redis for fast caching of frequently accessed data and session information.
-- **Mem0 Implementation:** Integrate Mem0 as a specialized, intelligent memory layer to store and retrieve conversational context and user preferences.
-- **VectorDB for Semantic Memory:** Implement a vector database (e.g., Pinecone, Weaviate) to store embeddings of past interactions, enabling semantic search and retrieval of relevant historical context to inform new outputs.
-- **DragonflyDB for Performance:** Utilize Dragonfly as a high-performance, multi-threaded in-memory datastore to supercharge the caching and session management capabilities, ensuring low-latency responses.
-- **Learning Loop:** Develop a feedback mechanism where API outputs can be rated or corrected, and this feedback is used to update the memory stores, allowing the system to learn from its mistakes.
+- **Redis Integration:** Use Redis for fast caching of frequently accessed data
+  and session information.
+- **Mem0 Implementation:** Integrate Mem0 as a specialized, intelligent memory
+  layer to store and retrieve conversational context and user preferences.
+- **VectorDB for Semantic Memory:** Implement a vector database (e.g., Pinecone,
+  Weaviate) to store embeddings of past interactions, enabling semantic search
+  and retrieval of relevant historical context to inform new outputs.
+- **DragonflyDB for Performance:** Utilize Dragonfly as a high-performance,
+  multi-threaded in-memory datastore to supercharge the caching and session
+  management capabilities, ensuring low-latency responses.
+- **Learning Loop:** Develop a feedback mechanism where API outputs can be rated
+  or corrected, and this feedback is used to update the memory stores, allowing
+  the system to learn from its mistakes.
 
-**Context:** To significantly improve the quality and consistency of the FLRTS API, it needs to move from a stateless model to one that learns and adapts. This enhanced memory architecture will provide the foundation for a self-improving system, leading to more accurate, context-aware, and personalized outputs.
+**Context:** To significantly improve the quality and consistency of the FLRTS
+API, it needs to move from a stateless model to one that learns and adapts. This
+enhanced memory architecture will provide the foundation for a self-improving
+system, leading to more accurate, context-aware, and personalized outputs.
 
-**Estimated Effort:** 4-5 sprints
-**Dependencies:** Infrastructure for Redis, VectorDB, and Dragonfly; development of a feedback and learning pipeline.
+**Estimated Effort:** 4-5 sprints **Dependencies:** Infrastructure for Redis,
+VectorDB, and Dragonfly; development of a feedback and learning pipeline.
 
 ---
 
@@ -172,8 +215,8 @@ When adding new future features, use this template:
 
 ### [Feature Name]
 
-**Priority:** [High/Medium/Low] ([Timeline])
-**Description:** [Brief description of the feature]
+**Priority:** [High/Medium/Low] ([Timeline]) **Description:** [Brief description
+of the feature]
 
 **Current State:** [What exists now, if anything]
 
@@ -185,10 +228,9 @@ When adding new future features, use this template:
 
 **Context:** [Why this is needed, background information]
 
-**Estimated Effort:** [Time estimate]
-**Dependencies:** [Technical or business dependencies]
+**Estimated Effort:** [Time estimate] **Dependencies:** [Technical or business
+dependencies]
 
 ---
 
-*Last Updated: 2025-01-09*
-*Managed by: Development Team*
+_Last Updated: 2025-01-09_ _Managed by: Development Team_

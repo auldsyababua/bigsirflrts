@@ -12,9 +12,9 @@
  *   op run --env-file=tests/.env.test -- node tests/run-retry-tests.js
  */
 
-import { spawn } from 'child_process';
-import { testConfig } from './config/test-config.js';
-import { RetryTestSimulator } from './helpers/retry-test-simulator.js';
+import { spawn } from "child_process";
+import { testConfig } from "./config/test-config.js";
+import { RetryTestSimulator } from "./helpers/retry-test-simulator.js";
 
 class RetryTestRunner {
   constructor() {
@@ -23,33 +23,36 @@ class RetryTestRunner {
   }
 
   validateEnvironment() {
-    console.log('🔍 Validating environment for retry tests...');
+    console.log("🔍 Validating environment for retry tests...");
 
-    const required = [
-      'SUPABASE_URL',
-      'SUPABASE_ANON_KEY',
-    ];
+    const required = ["SUPABASE_URL", "SUPABASE_ANON_KEY"];
 
-    const missing = required.filter(key => !process.env[key]);
+    const missing = required.filter((key) => !process.env[key]);
     if (missing.length > 0) {
-      console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
-      console.error('💡 Run with: op run --env-file=tests/.env.test -- node tests/run-retry-tests.js');
+      console.error(
+        `❌ Missing required environment variables: ${missing.join(", ")}`,
+      );
+      console.error(
+        "💡 Run with: op run --env-file=tests/.env.test -- node tests/run-retry-tests.js",
+      );
       process.exit(1);
     }
 
-    console.log('✅ Environment validation passed');
+    console.log("✅ Environment validation passed");
 
     // Display retry configuration
-    console.log('\n📋 Retry Test Configuration:');
+    console.log("\n📋 Retry Test Configuration:");
     console.log(`   Max Attempts: ${testConfig.test.retry.maxAttempts}`);
     console.log(`   Base Delay: ${testConfig.test.retry.baseDelayMs}ms`);
     console.log(`   Max Delay: ${testConfig.test.retry.maxDelayMs}ms`);
-    console.log(`   Backoff Multiplier: ${testConfig.test.retry.backoffMultiplier}x`);
+    console.log(
+      `   Backoff Multiplier: ${testConfig.test.retry.backoffMultiplier}x`,
+    );
     console.log(`   Test Timeout: ${testConfig.test.retry.testTimeoutMs}ms`);
   }
 
   async startMockServer() {
-    console.log('\n🎭 Starting mock webhook server for failure simulation...');
+    console.log("\n🎭 Starting mock webhook server for failure simulation...");
 
     this.simulator = new RetryTestSimulator();
 
@@ -59,35 +62,42 @@ class RetryTestRunner {
     this.simulator.responseDelay = 100;
 
     return new Promise((resolve) => {
-      const server = this.simulator.createMockWebhookServer(testConfig.test.retry.mockServer.port);
+      const server = this.simulator.createMockWebhookServer(
+        testConfig.test.retry.mockServer.port,
+      );
 
-      server.on('listening', () => {
-        console.log(`✅ Mock server ready on port ${testConfig.test.retry.mockServer.port}`);
+      server.on("listening", () => {
+        console.log(
+          `✅ Mock server ready on port ${testConfig.test.retry.mockServer.port}`,
+        );
         resolve();
       });
     });
   }
 
   async runRetryTests() {
-    console.log('\n🧪 Running webhook retry and backoff tests...');
+    console.log("\n🧪 Running webhook retry and backoff tests...");
 
     return new Promise((resolve, reject) => {
-      const testFile = 'tests/integration/supabase-webhook-retry-backoff.test.js';
+      const testFile =
+        "tests/integration/supabase-webhook-retry-backoff.test.js";
 
       // Use the same Node.js test runner as other tests
-      this.testProcess = spawn('node', ['--test', testFile], {
-        stdio: 'inherit',
+      this.testProcess = spawn("node", ["--test", testFile], {
+        stdio: "inherit",
         env: {
           ...process.env,
           // Add mock server URLs to environment
-          MOCK_FAILING_WEBHOOK_URL: testConfig.test.retry.mockServer.failingWebhookUrl,
-          MOCK_SLOW_WEBHOOK_URL: testConfig.test.retry.mockServer.slowWebhookUrl,
-        }
+          MOCK_FAILING_WEBHOOK_URL:
+            testConfig.test.retry.mockServer.failingWebhookUrl,
+          MOCK_SLOW_WEBHOOK_URL:
+            testConfig.test.retry.mockServer.slowWebhookUrl,
+        },
       });
 
-      this.testProcess.on('close', (code) => {
+      this.testProcess.on("close", (code) => {
         if (code === 0) {
-          console.log('\n✅ Retry tests completed successfully');
+          console.log("\n✅ Retry tests completed successfully");
           resolve();
         } else {
           console.log(`\n❌ Retry tests failed with exit code ${code}`);
@@ -95,24 +105,24 @@ class RetryTestRunner {
         }
       });
 
-      this.testProcess.on('error', (error) => {
-        console.error('\n❌ Failed to start retry tests:', error.message);
+      this.testProcess.on("error", (error) => {
+        console.error("\n❌ Failed to start retry tests:", error.message);
         reject(error);
       });
     });
   }
 
   async cleanup() {
-    console.log('\n🧹 Cleaning up test environment...');
+    console.log("\n🧹 Cleaning up test environment...");
 
     if (this.testProcess) {
-      this.testProcess.kill('SIGTERM');
+      this.testProcess.kill("SIGTERM");
     }
 
     if (this.simulator && this.simulator.mockServer) {
       await new Promise((resolve) => {
         this.simulator.mockServer.close(() => {
-          console.log('✅ Mock server stopped');
+          console.log("✅ Mock server stopped");
           resolve();
         });
       });
@@ -126,8 +136,8 @@ class RetryTestRunner {
       process.exit(0);
     };
 
-    process.on('SIGINT', () => shutdown('SIGINT'));
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on("SIGINT", () => shutdown("SIGINT"));
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
   }
 
   async run() {
@@ -138,10 +148,9 @@ class RetryTestRunner {
       await this.startMockServer();
       await this.runRetryTests();
 
-      console.log('\n🎉 All retry tests completed successfully!');
-
+      console.log("\n🎉 All retry tests completed successfully!");
     } catch (error) {
-      console.error('\n💥 Retry test runner failed:', error.message);
+      console.error("\n💥 Retry test runner failed:", error.message);
       process.exit(1);
     } finally {
       await this.cleanup();
@@ -153,9 +162,9 @@ class RetryTestRunner {
 function parseArgs() {
   const args = process.argv.slice(2);
   return {
-    help: args.includes('--help') || args.includes('-h'),
-    verbose: args.includes('--verbose') || args.includes('-v'),
-    scenario: args.find(arg => arg.startsWith('--scenario='))?.split('=')[1],
+    help: args.includes("--help") || args.includes("-h"),
+    verbose: args.includes("--verbose") || args.includes("-v"),
+    scenario: args.find((arg) => arg.startsWith("--scenario="))?.split("=")[1],
   };
 }
 
@@ -198,7 +207,7 @@ async function main() {
     process.exit(0);
   }
 
-  console.log('🚀 Starting Webhook Retry Test Runner\n');
+  console.log("🚀 Starting Webhook Retry Test Runner\n");
 
   const runner = new RetryTestRunner();
   await runner.run();
@@ -207,7 +216,7 @@ async function main() {
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
-    console.error('💥 Fatal error:', error);
+    console.error("💥 Fatal error:", error);
     process.exit(1);
   });
 }

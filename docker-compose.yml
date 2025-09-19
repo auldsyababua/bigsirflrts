@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # OpenProject - Rails application with direct Supabase connection
@@ -9,23 +9,23 @@ services:
     environment:
       # Supabase Database Connection - Session Mode (Port 5432)
       DATABASE_URL: "postgres://${SUPABASE_DB_USER}.${SUPABASE_PROJECT_REF}:${SUPABASE_DB_PASSWORD}@${SUPABASE_HOST}:5432/${SUPABASE_DB_NAME}?sslmode=require&application_name=openproject"
-      
+
       # OpenProject Core Configuration
       SECRET_KEY_BASE: ${OPENPROJECT_SECRET_KEY_BASE}
       OPENPROJECT_HOST__NAME: ${OPENPROJECT_HOST_NAME:-localhost:8080}
       OPENPROJECT_HTTPS: ${OPENPROJECT_HTTPS:-false}
       OPENPROJECT_DEFAULT__LANGUAGE: en
-      
+
       # Rails Environment
       RAILS_ENV: production
       RAILS_CACHE_STORE: memcache
       RAILS_MIN_THREADS: 4
       RAILS_MAX_THREADS: 16
-      
+
       # Storage Configuration (R2 or Local)
       OPENPROJECT_ATTACHMENTS__STORAGE: ${STORAGE_TYPE:-file}
       OPENPROJECT_DIRECT__UPLOADS: ${DIRECT_UPLOADS:-false}
-      
+
       # R2 Configuration (if using R2)
       OPENPROJECT_FOG__CREDENTIALS__PROVIDER: ${R2_PROVIDER:-}
       OPENPROJECT_FOG__CREDENTIALS__AWS__ACCESS__KEY__ID: ${R2_ACCESS_KEY_ID:-}
@@ -33,7 +33,7 @@ services:
       OPENPROJECT_FOG__CREDENTIALS__ENDPOINT: ${R2_ENDPOINT:-}
       OPENPROJECT_FOG__CREDENTIALS__REGION: ${R2_REGION:-auto}
       OPENPROJECT_FOG__DIRECTORY: ${R2_BUCKET:-}
-      
+
       # Email Configuration (Optional)
       OPENPROJECT_EMAIL__DELIVERY__METHOD: ${EMAIL_DELIVERY_METHOD:-sendmail}
       OPENPROJECT_SMTP__ADDRESS: ${SMTP_ADDRESS:-}
@@ -41,11 +41,11 @@ services:
       OPENPROJECT_SMTP__DOMAIN: ${SMTP_DOMAIN:-}
       OPENPROJECT_SMTP__USER__NAME: ${SMTP_USERNAME:-}
       OPENPROJECT_SMTP__PASSWORD: ${SMTP_PASSWORD:-}
-      
+
       # Additional Settings
       OPENPROJECT_CACHE__MEMCACHE__SERVER: memcached:11211
       OPENPROJECT_RAILS__RELATIVE__URL__ROOT: ${OPENPROJECT_RELATIVE_URL_ROOT:-}
-      
+
     volumes:
       # Local storage volume (if not using R2)
       - openproject_data:/var/openproject/assets
@@ -75,31 +75,31 @@ services:
       # Service Configuration
       NODE_ENV: production
       PORT: 3000
-      
+
       # OpenAI Configuration
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
       OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.3}
       OPENAI_MAX_TOKENS: ${OPENAI_MAX_TOKENS:-2000}
-      
+
       # OpenProject API Configuration
       OPENPROJECT_API_URL: http://openproject/api/v3
       OPENPROJECT_API_KEY: ${OPENPROJECT_API_KEY}
-      
+
       # Supabase Connection (for FLRTS logs/metrics only)
       FLRTS_DB_URL: "postgres://${SUPABASE_DB_USER}.${SUPABASE_PROJECT_REF}:${SUPABASE_DB_PASSWORD}@${SUPABASE_HOST}:5432/${SUPABASE_DB_NAME}?sslmode=require&schema=flrts&application_name=flrts_nlp"
-      
+
       # Timezone Configuration
       TZ: UTC
       TEAM_TIMEZONES: '{"Joel":"America/New_York","Bryan":"America/New_York","Taylor":"America/Chicago","Colin":"America/Los_Angeles","Bernie":"America/Los_Angeles","Ari":"America/Los_Angeles"}'
-      
+
       # Service Discovery
       TELEGRAM_BOT_URL: http://telegram-bot:3001
-      
+
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_FORMAT: json
-      
+
     volumes:
       - ./packages/nlp-service:/app
       - /app/node_modules
@@ -115,54 +115,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-
-  # Telegram Bot Service
-  telegram-bot:
-    build:
-      context: ./packages/telegram-bot
-      dockerfile: Dockerfile
-    image: flrts-telegram-bot:latest
-    container_name: flrts-telegram-bot
-    restart: unless-stopped
-    environment:
-      # Service Configuration
-      NODE_ENV: production
-      PORT: 3001
-      
-      # Telegram Configuration
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-}
-      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
-      USE_WEBHOOK: ${USE_WEBHOOK:-false}
-      
-      # NLP Service Configuration
-      NLP_SERVICE_URL: http://flrts-nlp:3000
-      
-      # Supabase Connection (for bot state/logs only)
-      BOT_DB_URL: "postgres://${SUPABASE_DB_USER}.${SUPABASE_PROJECT_REF}:${SUPABASE_DB_PASSWORD}@${SUPABASE_HOST}:5432/${SUPABASE_DB_NAME}?sslmode=require&schema=flrts&application_name=telegram_bot"
-      
-      # Rate Limiting
-      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
-      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-20}
-      
-      # Logging
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-      
-    volumes:
-      - ./packages/telegram-bot:/app
-      - /app/node_modules
-    networks:
-      - flrts_network
-    ports:
-      - "3001:3001"
-    depends_on:
-      - flrts-nlp
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
 
   # Memcached for OpenProject
   memcached:
@@ -192,7 +144,7 @@ services:
       N8N_PORT: 5678
       N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
       WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://localhost:5678/}
-      
+
       # Database Configuration (using Supabase)
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: ${SUPABASE_HOST}
@@ -203,7 +155,7 @@ services:
       DB_POSTGRESDB_SCHEMA: n8n
       DB_POSTGRESDB_SSL_ENABLED: true
       DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED: false
-      
+
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
@@ -226,7 +178,6 @@ services:
     depends_on:
       - openproject
       - flrts-nlp
-      - telegram-bot
 
 networks:
   flrts_network:

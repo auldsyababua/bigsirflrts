@@ -2,7 +2,8 @@
 
 ## ✅ Status: OpenProject is Running
 
-Your OpenProject instance is now successfully running at: **http://localhost:8080**
+Your OpenProject instance is now successfully running at:
+**http://localhost:8080**
 
 ## 🔑 Login Credentials
 
@@ -197,4 +198,5 @@ User.find_by(login: 'admin').update(password: 'newpassword')
 
 ---
 
-**Remember**: We're using OpenProject as a backend service via API. No need to fork or modify OpenProject source code!
+**Remember**: We're using OpenProject as a backend service via API. No need to
+fork or modify OpenProject source code!

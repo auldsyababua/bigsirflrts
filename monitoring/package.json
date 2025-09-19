@@ -8,7 +8,12 @@
     "dev": "nodemon n8n-webhook-monitor.js",
     "test": "echo \"No tests specified\" && exit 0"
   },
-  "keywords": ["n8n", "monitoring", "webhooks", "metrics"],
+  "keywords": [
+    "n8n",
+    "monitoring",
+    "webhooks",
+    "metrics"
+  ],
   "author": "FLRTS Team",
   "license": "MIT",
   "dependencies": {

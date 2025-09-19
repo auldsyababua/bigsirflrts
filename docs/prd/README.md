@@ -2,7 +2,8 @@
 
 ## Document Structure
 
-This PRD is organized into modular sections for better maintainability and review:
+This PRD is organized into modular sections for better maintainability and
+review:
 
 ### 📋 [PRD Overview](./prd-overview.md)
 
@@ -36,17 +37,19 @@ This PRD is organized into modular sections for better maintainability and revie
 
 **Product**: FLRTS (Fast Low-friction Repeatable Task System)  
 **Purpose**: Natural language task management layer for OpenProject  
-**Key Innovation**: Conversational task creation with automatic timezone handling  
+**Key Innovation**: Conversational task creation with automatic timezone
+handling  
 **Target Users**: Distributed bitcoin mining operations team  
 **Timeline**: 12-week MVP across 4 epics  
-**Tech Stack**: TypeScript, OpenAI GPT-4o, OpenProject API v3  
+**Tech Stack**: TypeScript, OpenAI GPT-4o, OpenProject API v3
 
 ## Key Decision: OpenProject Integration
 
-This PRD reflects the strategic decision to build on **OpenProject** rather than tududi, providing:
+This PRD reflects the strategic decision to build on **OpenProject** rather than
+tududi, providing:
 
 - Enterprise-grade work package management
-- Custom fields for mining-specific metadata  
+- Custom fields for mining-specific metadata
 - Team collaboration features
 - Mature REST API v3
 - Self-hosted data sovereignty
@@ -54,18 +57,22 @@ This PRD reflects the strategic decision to build on **OpenProject** rather than
 ## Reading Order for Stakeholders
 
 1. **Executives**: Start with [PRD Overview](./prd-overview.md) Goals section
-2. **Technical Team**: Review [UI & Technical Design](./prd-ui-technical.md) Technical Assumptions
+2. **Technical Team**: Review [UI & Technical Design](./prd-ui-technical.md)
+   Technical Assumptions
 3. **Project Managers**: Focus on [Epics and User Stories](./prd-epics.md)
-4. **QA Team**: Reference acceptance criteria in [Epics and User Stories](./prd-epics.md)
-5. **UX Designers**: Begin with [UI & Technical Design](./prd-ui-technical.md) UI Goals
+4. **QA Team**: Reference acceptance criteria in
+   [Epics and User Stories](./prd-epics.md)
+5. **UX Designers**: Begin with [UI & Technical Design](./prd-ui-technical.md)
+   UI Goals
 
 ## Version Control
 
-| Version | Date | Changes | Author |
-|---------|------|---------|--------|
-| 1.0 | 2025-01-05 | Initial PRD creation | Product Owner |
-| 1.1 | 2025-01-05 | Updated to OpenProject from tududi | Product Owner |
+| Version | Date       | Changes                            | Author        |
+| ------- | ---------- | ---------------------------------- | ------------- |
+| 1.0     | 2025-01-05 | Initial PRD creation               | Product Owner |
+| 1.1     | 2025-01-05 | Updated to OpenProject from tududi | Product Owner |
 
 ## Contact
 
-For questions or clarifications about this PRD, please reference the [Next Steps](./prd-completion.md) section for stakeholder actions.
+For questions or clarifications about this PRD, please reference the
+[Next Steps](./prd-completion.md) section for stakeholder actions.

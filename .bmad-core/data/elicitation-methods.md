@@ -6,7 +6,8 @@
 
 **Expand or Contract for Audience**
 
-- Ask whether to 'expand' (add detail, elaborate) or 'contract' (simplify, clarify)
+- Ask whether to 'expand' (add detail, elaborate) or 'contract' (simplify,
+  clarify)
 - Identify specific target audience if relevant
 - Tailor content complexity and depth accordingly
 

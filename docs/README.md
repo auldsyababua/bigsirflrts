@@ -2,7 +2,8 @@
 
 ## Project Documentation Organization
 
-This directory contains all project documentation following the BMAD (Business Management AI Development) framework.
+This directory contains all project documentation following the BMAD (Business
+Management AI Development) framework.
 
 ### Directory Structure
 
@@ -103,9 +104,12 @@ Current sprint goals, committed stories, and roadmap for upcoming sprints.
 ## Key Documents
 
 - **Sprint Planning**: `/docs/sprint-planning.md` - Current sprint and roadmap
-- **Technical Handoff**: `/docs/handoff-to-scrum-master.md` - System overview and current state
-- **Integration Plan**: `/docs/openproject-integration-plan.md` - Original planning document
-- **Future Features**: `/docs/prd/future/FUTURE_FEATURES.md` - Canonical location for post-MVP features and enhancements
+- **Technical Handoff**: `/docs/handoff-to-scrum-master.md` - System overview
+  and current state
+- **Integration Plan**: `/docs/openproject-integration-plan.md` - Original
+  planning document
+- **Future Features**: `/docs/prd/future/FUTURE_FEATURES.md` - Canonical
+  location for post-MVP features and enhancements
 
 ## Working with BMAD Agents
 
@@ -160,4 +164,4 @@ Current sprint goals, committed stories, and roadmap for upcoming sprints.
 
 ---
 
-*Documentation follows BMAD framework v4 standards*
+_Documentation follows BMAD framework v4 standards_

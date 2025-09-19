@@ -2,14 +2,14 @@
 
 ## Overview
 
-This guide provides complete instructions for agents to use Cloudflare Wrangler in the FLRTS project.
+This guide provides complete instructions for agents to use Cloudflare Wrangler
+in the FLRTS project.
 
 ## Setup Completed
 
-✅ Wrangler configuration files created
-✅ Authentication with Cloudflare API configured
-✅ Helper scripts for common operations
-✅ Environment variables properly set
+✅ Wrangler configuration files created ✅ Authentication with Cloudflare API
+configured ✅ Helper scripts for common operations ✅ Environment variables
+properly set
 
 ## Quick Start for Agents
 
@@ -67,7 +67,8 @@ Located in `/Users/colinaulds/Desktop/projects/bigsirflrts/.env`:
 
 - `CLOUDFLARE_API_TOKEN` - Authentication token
 - `CLOUDFLARE_ACCOUNT_ID` - Account ID: c4d6c050d2b25309d953d9968592f742
-- `CLOUDFLARE_ZONE_ID` - Zone ID for 10nz.tools: 26b8bc8be5ffa06c4850054639bdfbb0
+- `CLOUDFLARE_ZONE_ID` - Zone ID for 10nz.tools:
+  26b8bc8be5ffa06c4850054639bdfbb0
 
 ### Loading Credentials
 
@@ -112,7 +113,8 @@ ENVIRONMENT = "production"
 
 ### 1. `wrangler-setup.sh`
 
-Location: `/Users/colinaulds/Desktop/projects/bigsirflrts/scripts/wrangler-setup.sh`
+Location:
+`/Users/colinaulds/Desktop/projects/bigsirflrts/scripts/wrangler-setup.sh`
 
 Configures Wrangler with Cloudflare credentials from 1Password.
 
@@ -139,7 +141,8 @@ Checks DNS and SSL settings for ops.10nz.tools:
 
 ### 4. `setup-cf-redirect.sh`
 
-Location: `/Users/colinaulds/Desktop/projects/bigsirflrts/scripts/setup-cf-redirect.sh`
+Location:
+`/Users/colinaulds/Desktop/projects/bigsirflrts/scripts/setup-cf-redirect.sh`
 
 Attempts to set up HTTP->HTTPS redirect (requires additional permissions).
 
@@ -194,7 +197,8 @@ curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/s
 
 ### Permission Errors
 
-The current API token has limited permissions. For page rules and advanced settings, use the Cloudflare Dashboard or request an enhanced token.
+The current API token has limited permissions. For page rules and advanced
+settings, use the Cloudflare Dashboard or request an enhanced token.
 
 ### Wrangler Command Not Found
 
@@ -214,16 +218,18 @@ Current token permissions:
 - ❌ Page Rules (requires additional permissions)
 - ❌ Zone Settings Edit (requires additional permissions)
 
-For operations requiring additional permissions, use the Cloudflare Dashboard at:
-https://dash.cloudflare.com/c4d6c050d2b25309d953d9968592f742
+For operations requiring additional permissions, use the Cloudflare Dashboard
+at: https://dash.cloudflare.com/c4d6c050d2b25309d953d9968592f742
 
 ## Important Notes
 
-1. **Always source the environment file** before using Wrangler commands directly
+1. **Always source the environment file** before using Wrangler commands
+   directly
 2. **Use the wrapper script** (`cf-wrangler`) for automatic credential loading
 3. **The OpenProject instance** is accessible only via HTTPS at ops.10nz.tools
 4. **Port 8080 is intentionally blocked** by DigitalOcean firewall for security
-5. **HTTP->HTTPS redirect** needs to be configured in Cloudflare Dashboard (insufficient API permissions)
+5. **HTTP->HTTPS redirect** needs to be configured in Cloudflare Dashboard
+   (insufficient API permissions)
 
 ## Quick Reference
 

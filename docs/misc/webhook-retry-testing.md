@@ -1,10 +1,12 @@
 # Webhook Retry and Backoff Testing
 
-This document describes the comprehensive retry testing suite created to address the testing gap identified in Story 1.5 QA review.
+This document describes the comprehensive retry testing suite created to address
+the testing gap identified in Story 1.5 QA review.
 
 ## Overview
 
 The retry testing suite validates:
+
 - **Exponential Backoff**: Proper delay scaling between retry attempts
 - **Circuit Breaker**: System stops retrying after maximum attempts
 - **Recovery**: System recovers after temporary failures
@@ -14,17 +16,21 @@ The retry testing suite validates:
 ## Test Files
 
 ### Core Test Suite
-- `tests/integration/supabase-webhook-retry-backoff.test.js` - Main retry test suite
+
+- `tests/integration/supabase-webhook-retry-backoff.test.js` - Main retry test
+  suite
 - `tests/helpers/retry-test-simulator.js` - Mock server for failure simulation
 - `tests/run-retry-tests.js` - Test runner with environment setup
 
 ### Configuration
+
 - `tests/config/test-config.js` - Updated with retry testing configuration
 - `tests/.env.test` - Environment variables (use with 1Password)
 
 ## Running the Tests
 
 ### Option 1: Integrated Test Runner (Recommended)
+
 ```bash
 # With 1Password Service Account
 op run --env-file=tests/.env.test -- node tests/run-retry-tests.js
@@ -34,12 +40,14 @@ node tests/run-retry-tests.js
 ```
 
 ### Option 2: Direct Test Execution
+
 ```bash
 # Run the retry test suite directly
 op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webhook-retry-backoff.test.js
 ```
 
 ### Option 3: Specific Scenario Testing
+
 ```bash
 # Test exponential backoff with mock server
 node tests/helpers/retry-test-simulator.js --scenario=exponential-backoff
@@ -57,38 +65,52 @@ node tests/helpers/retry-test-simulator.js --scenario=slow-response
 ## Test Scenarios
 
 ### 1. Exponential Backoff Validation
+
 **Tests**: `should implement exponential backoff on webhook failures`
+
 - Simulates webhook failures
 - Validates delay progression: 1s → 2s → 4s → 8s → 16s → 32s (capped)
 - Allows 50% variance for jitter and processing time
 
 ### 2. Maximum Retry Attempts
+
 **Tests**: `should respect maximum retry attempts limit`
+
 - Ensures system doesn't retry indefinitely
 - Validates circuit breaker stops after configured maximum (default: 3 retries)
 
 ### 3. Maximum Delay Cap
+
 **Tests**: `should implement maximum delay cap for retries`
+
 - Validates delays don't exceed 32 seconds even with high attempt numbers
 - Tests mathematical retry calculation utilities
 
 ### 4. Recovery After Downtime
+
 **Tests**: `should recover after temporary n8n downtime`
+
 - Simulates n8n service recovery
 - Validates successful delivery after initial failures
 
 ### 5. Circuit Breaker Behavior
+
 **Tests**: `should handle circuit breaker behavior on persistent failures`
+
 - Ensures system doesn't hang on completely broken endpoints
 - Validates timeout and circuit breaker mechanisms
 
 ### 6. Performance Under Load
+
 **Tests**: `should maintain performance during retry scenarios`
+
 - Tests concurrent operations during retry scenarios
 - Validates normal operations aren't delayed by retry mechanisms
 
 ### 7. High-Frequency Operations
+
 **Tests**: `should handle high-frequency webhook triggers with retry backoff`
+
 - Tests rapid sequential database changes
 - Validates system handles high load gracefully
 
@@ -109,6 +131,7 @@ retry: {
 ```
 
 ### Environment Variables
+
 Set these in `tests/.env.test` or via 1Password:
 
 ```bash
@@ -131,34 +154,38 @@ MOCK_SLOW_WEBHOOK_URL=http://localhost:3001/slow-webhook
 For exponential backoff with base delay 1000ms and multiplier 2:
 
 | Attempt | Expected Delay | Cumulative Time |
-|---------|---------------|-----------------|
-| 1       | Immediate     | 0s              |
-| 2       | ~1s           | 1s              |
-| 3       | ~2s           | 3s              |
-| 4       | ~4s           | 7s              |
-| 5       | ~8s           | 15s             |
-| 6+      | 32s (capped)  | 47s+            |
+| ------- | -------------- | --------------- |
+| 1       | Immediate      | 0s              |
+| 2       | ~1s            | 1s              |
+| 3       | ~2s            | 3s              |
+| 4       | ~4s            | 7s              |
+| 5       | ~8s            | 15s             |
+| 6+      | 32s (capped)   | 47s+            |
 
 ## Mock Server Scenarios
 
 The retry test simulator supports these failure scenarios:
 
 ### Exponential Backoff (`--scenario=exponential-backoff`)
+
 - Fails first 3 attempts, then succeeds
 - Monitors actual vs expected delay patterns
 - Validates exponential progression
 
 ### Circuit Breaker (`--scenario=circuit-breaker`)
+
 - Always fails to test circuit breaker activation
 - Monitors for retry attempt limit enforcement
 - Validates system doesn't retry indefinitely
 
 ### Recovery (`--scenario=recovery`)
+
 - Fails first 2 attempts, then recovers
 - Tests system behavior during failure → recovery transition
 - Validates successful completion after temporary issues
 
 ### Slow Response (`--scenario=slow-response`)
+
 - Returns successful responses with 5s delay
 - Tests timeout handling and performance impact
 - Validates no unnecessary retries for slow but successful responses
@@ -183,6 +210,7 @@ op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webh
 ### Common Issues
 
 1. **Mock Server Port Conflicts**
+
    ```bash
    # Check if port 3001 is in use
    lsof -i :3001
@@ -192,12 +220,14 @@ op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webh
    ```
 
 2. **Environment Variables Missing**
+
    ```bash
    # Verify 1Password environment loading
    op run --env-file=tests/.env.test -- env | grep SUPABASE
    ```
 
 3. **Test Timeouts**
+
    ```bash
    # Increase timeout for slow environments
    RETRY_TEST_TIMEOUT_MS=60000 node tests/run-retry-tests.js
@@ -214,6 +244,7 @@ op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webh
 During retry tests, monitor these logs:
 
 ### Supabase Webhook Delivery Logs
+
 ```sql
 -- Check recent webhook attempts
 SELECT created_at, status_code, response_body,
@@ -225,12 +256,15 @@ ORDER BY created_at DESC;
 ```
 
 ### n8n Workflow Execution Logs
+
 - Monitor workflow executions in n8n dashboard
 - Check for retry-related errors or performance issues
 - Validate proper webhook payload processing
 
 ### Test Output Logs
+
 The retry tests provide detailed logging:
+
 ```
 ✅ Exponential backoff verified: 1000ms → 2000ms → 4000ms
 ✅ Retry limit respected: 4 total attempts
@@ -255,6 +289,7 @@ The retry tests pass when:
 ## Next Steps
 
 1. **Run Initial Test Suite**
+
    ```bash
    op run --env-file=tests/.env.test -- node tests/run-retry-tests.js
    ```
@@ -277,4 +312,5 @@ The retry tests pass when:
 ---
 
 **Status**: ✅ **COMPLETE** - Comprehensive retry testing infrastructure ready
-**Testing Gap Resolved**: Advanced retry system testing as identified in Story 1.5 QA review
+**Testing Gap Resolved**: Advanced retry system testing as identified in Story
+1.5 QA review

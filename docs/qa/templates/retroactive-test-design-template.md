@@ -1,6 +1,7 @@
 # Retroactive Test Design Template
 
-Use this template to create comprehensive test designs for stories that were implemented without proper QA test planning.
+Use this template to create comprehensive test designs for stories that were
+implemented without proper QA test planning.
 
 ## Command for QA Agent
 
@@ -13,6 +14,7 @@ Use this template to create comprehensive test designs for stories that were imp
 ## Manual Process (if needed)
 
 ### Step 1: Story Analysis
+
 ```bash
 # Read the story file
 Read: docs/stories/{epic}.{story}.*.md
@@ -29,17 +31,18 @@ Read: docs/stories/{epic}.{story}.*.md
 
 Use this decision matrix for each testable scenario:
 
-| Scenario Type | Test Level | Priority Logic |
-|---------------|------------|----------------|
-| Pure business logic, calculations | Unit | P0 if revenue/security critical, P1 otherwise |
-| API endpoints, data validation | Integration | P0 if user-facing, P1 if internal |
-| User workflows, critical paths | E2E | P0 if revenue-critical, P1 if core feature |
-| Configuration, setup | Integration | P1 typically |
-| Error handling | Unit + Integration | P0 for security/data, P1 otherwise |
+| Scenario Type                     | Test Level         | Priority Logic                                |
+| --------------------------------- | ------------------ | --------------------------------------------- |
+| Pure business logic, calculations | Unit               | P0 if revenue/security critical, P1 otherwise |
+| API endpoints, data validation    | Integration        | P0 if user-facing, P1 if internal             |
+| User workflows, critical paths    | E2E                | P0 if revenue-critical, P1 if core feature    |
+| Configuration, setup              | Integration        | P1 typically                                  |
+| Error handling                    | Unit + Integration | P0 for security/data, P1 otherwise            |
 
 ### Step 3: Risk-Based Prioritization
 
 **P0 (Critical - Must Test)**:
+
 - Revenue-impacting functionality
 - Authentication/authorization
 - Data persistence/integrity
@@ -47,12 +50,14 @@ Use this decision matrix for each testable scenario:
 - Previously broken functionality
 
 **P1 (High - Should Test)**:
+
 - Core user journeys
 - Frequently used features
 - Complex business logic
 - Integration points
 
 **P2 (Medium - Nice to Test)**:
+
 - Secondary features
 - Admin functionality
 - Configuration options

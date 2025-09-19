@@ -1,0 +1,12 @@
+{
+  "webhook_url": "https://n8n-rrrs.sliplane.app/webhook/supabase-tasks-webhook",
+  "webhook_name": "n8n Tasks Sync Webhook",
+  "table": "tasks",
+  "events": ["INSERT", "UPDATE", "DELETE"],
+  "config": {
+    "headers": {
+      "Content-Type": "application/json",
+      "X-Webhook-Source": "Supabase-FLRTS"
+    }
+  }
+}

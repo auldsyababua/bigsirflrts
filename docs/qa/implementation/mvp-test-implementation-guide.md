@@ -39,7 +39,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch: # Allow manual trigger
 
 env:
   OPENPROJECT_URL: ${{ secrets.OPENPROJECT_URL }}
@@ -49,67 +49,67 @@ env:
 jobs:
   quick-validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # MVP doesn't need long tests
-    
+    timeout-minutes: 10 # MVP doesn't need long tests
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install Dependencies
-      run: npm ci --prefer-offline
-    
-    - name: Run P0 Unit Tests (2 tests)
-      run: npm run test:unit -- --grep "@P0"
-      
-    - name: Run P0 Integration Tests (6 tests)
-      run: npm run test:integration -- --grep "@P0"
-      
-    - name: Setup Playwright (for 4 E2E tests only)
-      run: npx playwright install chromium  # Chrome only for MVP
-      
-    - name: Run P0 E2E Tests
-      run: npm run test:e2e -- --grep "@P0"
-      
-    - name: Quick Smoke Test
-      run: |
-        curl -f ${{ secrets.OPENPROJECT_URL }}/health || exit 1
-        echo "✅ Health check passed"
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --prefer-offline
+
+      - name: Run P0 Unit Tests (2 tests)
+        run: npm run test:unit -- --grep "@P0"
+
+      - name: Run P0 Integration Tests (6 tests)
+        run: npm run test:integration -- --grep "@P0"
+
+      - name: Setup Playwright (for 4 E2E tests only)
+        run: npx playwright install chromium # Chrome only for MVP
+
+      - name: Run P0 E2E Tests
+        run: npm run test:e2e -- --grep "@P0"
+
+      - name: Quick Smoke Test
+        run: |
+          curl -f ${{ secrets.OPENPROJECT_URL }}/health || exit 1
+          echo "✅ Health check passed"
 
   deploy-validation:
     needs: quick-validation
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Docker
-      run: |
-        docker --version
-        docker-compose --version
-    
-    - name: Validate Deployment
-      run: |
-        docker-compose -f docker/openproject/docker-compose.yml config
-        echo "✅ Docker deployment configuration valid"
+      - uses: actions/checkout@v3
+
+      - name: Setup Docker
+        run: |
+          docker --version
+          docker-compose --version
+
+      - name: Validate Deployment
+        run: |
+          docker-compose -f docker/openproject/docker-compose.yml config
+          echo "✅ Docker deployment configuration valid"
 
   notify-executives:
     needs: [quick-validation, deploy-validation]
     runs-on: ubuntu-latest
-    if: failure()  # Only notify on failures
-    
+    if: failure() # Only notify on failures
+
     steps:
-    - name: Send Slack Alert
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        text: '🚨 MVP Tests Failed - Executive Demo at Risk'
-        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Send Slack Alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: '🚨 MVP Tests Failed - Executive Demo at Risk'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
 ```
 
 ### Hour 4: Simplified Test Files
@@ -122,12 +122,11 @@ import { validateApiKey } from '../src/auth';
 
 // Tag all tests for easy filtering
 test.describe('MVP Critical Paths @P0', () => {
-  
   test('Executive can access system', async ({ page }) => {
     // Qodo will enhance this with better selectors
     await page.goto(process.env.OPENPROJECT_URL);
     await expect(page).toHaveTitle(/OpenProject/);
-    
+
     // Quick login check
     await page.fill('#username', 'admin@company.com');
     await page.fill('#password', process.env.ADMIN_PASSWORD);
@@ -136,23 +135,26 @@ test.describe('MVP Critical Paths @P0', () => {
   });
 
   test('API authentication works', async () => {
-    const response = await fetch(`${process.env.OPENPROJECT_URL}/api/v3/users/me`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.API_KEY}`
+    const response = await fetch(
+      `${process.env.OPENPROJECT_URL}/api/v3/users/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.API_KEY}`,
+        },
       }
-    });
+    );
     expect(response.status).toBe(200);
   });
 
   test('Can create a task', async ({ page }) => {
     // Reuse login from helper
     await loginAsAdmin(page);
-    
+
     await page.goto('/projects/tasks');
     await page.click('button:text("Create")');
     await page.fill('input[name="subject"]', 'Test Task');
     await page.click('button:text("Save")');
-    
+
     await expect(page.locator('text=Test Task')).toBeVisible();
   });
 });
@@ -216,12 +218,12 @@ Using the GitHub MCP tools:
 ```javascript
 // 1. Create the workflow file
 await mcp__github__create_or_update_file({
-  owner: "colinaulds",
-  repo: "bigsirflrts",
-  path: ".github/workflows/mvp-tests.yml",
+  owner: 'colinaulds',
+  repo: 'bigsirflrts',
+  path: '.github/workflows/mvp-tests.yml',
   content: workflowYamlContent,
-  message: "Add MVP test suite CI/CD",
-  branch: "main"
+  message: 'Add MVP test suite CI/CD',
+  branch: 'main',
 });
 
 // 2. Set up secrets
@@ -235,27 +237,27 @@ await mcp__github__create_or_update_file({
 
 // 3. Create test files
 await mcp__github__create_or_update_file({
-  owner: "colinaulds",
-  repo: "bigsirflrts",
-  path: "tests/mvp-critical-paths.test.js",
+  owner: 'colinaulds',
+  repo: 'bigsirflrts',
+  path: 'tests/mvp-critical-paths.test.js',
   content: testFileContent,
-  message: "Add MVP critical path tests",
-  branch: "main"
+  message: 'Add MVP critical path tests',
+  branch: 'main',
 });
 
 // 4. Trigger the workflow
 await mcp__github__run_workflow({
-  owner: "colinaulds",
-  repo: "bigsirflrts",
-  workflow_id: "mvp-tests.yml",
-  ref: "main"
+  owner: 'colinaulds',
+  repo: 'bigsirflrts',
+  workflow_id: 'mvp-tests.yml',
+  ref: 'main',
 });
 
 // 5. Monitor results
 await mcp__github__get_workflow_run({
-  owner: "colinaulds",
-  repo: "bigsirflrts",
-  run_id: runId
+  owner: 'colinaulds',
+  repo: 'bigsirflrts',
+  run_id: runId,
 });
 ```
 
@@ -361,4 +363,5 @@ For executive demos, also run through:
 - Not 4 weeks
 - Just 4 focused hours
 
-*This guide prioritizes shipping over perfection, appropriate for an MVP with 5-10 users.*
+_This guide prioritizes shipping over perfection, appropriate for an MVP with
+5-10 users._

@@ -1,5 +1,11 @@
 #!/bin/bash
-# health-check.sh - Monitor n8n queue mode health status
+# health-check.sh - LEGACY (DEPRECATED)
+# This script targeted n8n queue mode with local Postgres/Redis containers.
+# Production runs n8n single-instance and uses Supabase as the only database.
+# Retained for historical reference; exits without checks to avoid confusion.
+
+echo "[DEPRECATED] health-check.sh is not applicable (no local Postgres/Redis; Supabase + single-instance n8n)."
+exit 0
 
 # Colors for output
 RED='\033[0;31m'
@@ -7,8 +13,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo "n8n Queue Mode Health Check"
-echo "============================"
+echo "n8n Queue Mode Health Check (legacy)"
 
 # Check PostgreSQL
 echo -n "PostgreSQL: "

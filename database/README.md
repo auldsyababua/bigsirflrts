@@ -2,7 +2,8 @@
 
 ## Overview
 
-Single Supabase PostgreSQL 15.8 database with schema separation for FLRTS and OpenProject.
+Single Supabase PostgreSQL 15.8 database with schema separation for FLRTS and
+OpenProject.
 
 ## Directory Structure
 
@@ -33,7 +34,8 @@ database/
 ### Schema Separation
 
 - **public schema**: FLRTS tables (lists, reminders, tasks)
-- **openproject schema**: OpenProject tables with foreign key to public.personnel
+- **openproject schema**: OpenProject tables with foreign key to
+  public.personnel
 
 ### Key Tables
 
