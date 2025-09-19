@@ -7,15 +7,15 @@ containers are used in production.
 ## Current Topology (Production)
 
 - OpenProject → Supabase PostgreSQL
-  - Conn: `DATABASE_URL` via Supabase pooler (port 5432), `schema=openproject`
-  - Deploy: `infrastructure/digitalocean/docker-compose.supabase.yml`
+  - Conn: `DATABASE_URL` via Supabase pooler (port 5432)
+  - **Known Issue**: Currently using `public` schema instead of `openproject` schema
+  - Deploy: `/root/docker-compose.yml` on droplet (165.227.216.172)
   - Migrations: `openproject-migrate` init container (db:migrate db:seed)
-  - Health: `curl -f http://localhost:8080/health_checks/default` → 200
-  - Attachments: Cloudflare R2 bucket `10netzero-docs` (prefix `uploads/`); fog
-    path-style S3
+  - Health: `curl -f http://localhost:8080` → 302 (redirects to login)
+  - Attachments: Cloudflare R2 bucket `10netzero-docs`; fog adapter with path-style S3
 - OpenProject → Memcached
   - Conn: `OPENPROJECT_CACHE__MEMCACHE__SERVER=memcached:11211`
-  - Status: container running on droplet
+  - Status: **NOT running** (removed as orphaned container)
 - Cloudflare Tunnel → OpenProject
   - Exposes 127.0.0.1:8080 securely at `https://ops.10nz.tools`
   - Forwards `Host: openproject.10nz.tools`; allowed via
@@ -58,17 +58,21 @@ Tip: Use root `.env*` files (.env, .env.supabase, .env.n8n, .env.digitalocean,
 - DB sanity (Supabase):
   `psql "$DATABASE_URL" -t -c "select current_database(), current_schema();"`
 
-## Known Good State (snapshot)
+## Known Good State (as of Sept 18, 2025)
 
 - OpenProject: healthy, running on Supabase with migrations applied (init
   container)
-- Attachments confirmed in R2 (`10netzero-docs/uploads/attachment/...`)
-- Memcached: running
+- Task #38 created successfully in Supabase (in `public` schema)
+- Attachments: 2 PDFs uploaded (stored in R2 bucket `10netzero-docs`)
+- Memcached: NOT running (removed)
 - Cloudflared: running; ops.10nz.tools reachable
 - Local Postgres: none (removed)
 
 ## Gaps / Next Work
 
+- **Schema Issue**: Resolve data being in `public` schema instead of `openproject`
+- Verify R2 attachments are downloadable through OpenProject UI
+- Memcached not configured (may impact performance)
 - Supabase Telegram edge function deployment & webhook handshake outstanding
 - Monitoring stack containers (`flrts-*`) created but not running; bring up and
   validate ingress
