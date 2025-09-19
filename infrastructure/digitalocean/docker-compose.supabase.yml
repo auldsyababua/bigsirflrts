@@ -9,8 +9,8 @@ services:
     container_name: openproject-migrate
     restart: "no"
     environment:
-      # Supabase Session Pooler connection (5432)
-      DATABASE_URL: "postgresql://postgres.thnwlykidzhrsagyjncc:jda2NZG7czw0jau%40zxa@aws-0-us-east-2.pooler.supabase.com:5432/postgres?schema=openproject"
+      # Supabase Direct Connection (IPv4 add-on enabled)
+      DATABASE_URL: "postgresql://postgres:jda2NZG7czw0jau%40zxa@db.thnwlykidzhrsagyjncc.supabase.co:5432/postgres?schema=openproject"
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-kCB6E+/0HzxTR0yBkBCqNdcntXTpMkLZvpL7K28mZIkiHuDaRVKx1gPihP4VHp2o}
       RAILS_ENV: production
       OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: openproject
@@ -21,8 +21,8 @@ services:
     container_name: openproject
     restart: always
     environment:
-      # Supabase Session Pooler connection (port 5432 as per PRD NFR5)
-      DATABASE_URL: "postgresql://postgres.thnwlykidzhrsagyjncc:jda2NZG7czw0jau%40zxa@aws-0-us-east-2.pooler.supabase.com:5432/postgres?schema=openproject"
+      # Supabase Direct Connection (IPv4 add-on enabled)
+      DATABASE_URL: "postgresql://postgres:jda2NZG7czw0jau%40zxa@db.thnwlykidzhrsagyjncc.supabase.co:5432/postgres?schema=openproject"
 
       # OpenProject configuration
       OPENPROJECT_HOST__NAME: ops.10nz.tools
