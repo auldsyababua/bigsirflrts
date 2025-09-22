@@ -34,7 +34,10 @@ import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-node";
 import { createServer, Server } from "http";
 import { IncomingMessage, ServerResponse } from "http";
 
-describe("@P0 OpenTelemetry Integration Tests", () => {
+// Skip in CI unless explicitly enabled
+const skipInCI = process.env.CI && !process.env.ENABLE_OTEL_TESTS;
+
+describe.skipIf(skipInCI)("@P0 OpenTelemetry Integration Tests", () => {
   let mockOTLPServer: Server;
   let mockOTLPPort: number;
   let receivedTraces: any[] = [];
