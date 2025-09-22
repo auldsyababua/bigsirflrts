@@ -12,13 +12,13 @@
  * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/performance-regression.test.js
  */
 
-import { test, describe, before } from "node:test";
-import assert from "node:assert/strict";
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+
 import {
   testConfig,
   validateTestConfig,
   getSupabaseHeaders,
-} from "../config/test-config.js";
+} from '../config/test-config';
 
 // Performance test configuration
 const N8N_WEBHOOK_URL =
@@ -42,12 +42,12 @@ const PERFORMANCE_BASELINE = {
   },
 };
 
-before(() => {
+beforeAll(() => {
   validateTestConfig();
-  assert.ok(
+  expect(
     N8N_WEBHOOK_URL,
     "N8N_WEBHOOK_URL must be configured for performance tests",
-  );
+  ).toBeTruthy();
 });
 
 /**
@@ -83,7 +83,7 @@ function calculatePercentiles(values) {
 }
 
 describe("Edge Function Performance Regression Tests", () => {
-  test("should maintain baseline performance under normal load", async () => {
+  it("should maintain baseline performance under normal load", async () => {
     const telegramPayload = {
       update: {
         message: {
@@ -108,10 +108,10 @@ describe("Edge Function Performance Regression Tests", () => {
         },
       );
 
-      assert.ok(
+      expect(
         response.status === 200 || response.status === 202,
         `Request ${i + 1} failed with status ${response.status}`,
-      );
+      ).toBeTruthy();
 
       measurements.push(durationMs);
 
@@ -127,14 +127,14 @@ describe("Edge Function Performance Regression Tests", () => {
     });
 
     // Assert performance requirements
-    assert.ok(
+    expect(
       stats.p95 < PERFORMANCE_THRESHOLD_MS,
-      `95th percentile (${stats.p95}ms) exceeds threshold (${PERFORMANCE_THRESHOLD_MS}ms)`,
+      `95th percentile (${stats.p95}ms).toBeTruthy() exceeds threshold (${PERFORMANCE_THRESHOLD_MS}ms)`,
     );
 
-    assert.ok(
+    expect(
       stats.max < PERFORMANCE_THRESHOLD_MS * 1.5,
-      `Maximum response time (${stats.max}ms) exceeds 150% of threshold (${PERFORMANCE_THRESHOLD_MS * 1.5}ms)`,
+      `Maximum response time (${stats.max}ms).toBeTruthy() exceeds 150% of threshold (${PERFORMANCE_THRESHOLD_MS * 1.5}ms)`,
     );
 
     // Regression check against baseline (if this becomes a concern)
@@ -145,7 +145,7 @@ describe("Edge Function Performance Regression Tests", () => {
     }
   });
 
-  test("should handle typical 10-user concurrent load", async () => {
+  it("should handle typical 10-user concurrent load", async () => {
     const payload = {
       update: {
         message: {
@@ -175,10 +175,10 @@ describe("Edge Function Performance Regression Tests", () => {
 
       // Validate all requests succeeded
       for (const { response, durationMs } of results) {
-        assert.ok(
+        expect(
           response.status === 200 || response.status === 202,
           `Concurrent request failed with status ${response.status}`,
-        );
+        ).toBeTruthy();
         batchResults.push(durationMs);
       }
 
@@ -191,20 +191,20 @@ describe("Edge Function Performance Regression Tests", () => {
     console.log("Small Team Load Performance Stats:", concurrentStats);
 
     // Performance should easily handle small team load
-    assert.ok(
+    expect(
       concurrentStats.p95 < PERFORMANCE_THRESHOLD_MS,
-      `Small team load 95th percentile (${concurrentStats.p95}ms) should stay under threshold`,
+      `Small team load 95th percentile (${concurrentStats.p95}ms).toBeTruthy() should stay under threshold`,
     );
 
-    assert.ok(
+    expect(
       concurrentStats.avg < PERFORMANCE_THRESHOLD_MS * 0.6,
-      `Average response time (${concurrentStats.avg}ms) should be well under threshold for small team`,
+      `Average response time (${concurrentStats.avg}ms).toBeTruthy() should be well under threshold for small team`,
     );
   });
 });
 
 describe("n8n Webhook Performance Regression Tests", () => {
-  test("should maintain sub-200ms response times under load", async () => {
+  it("should maintain sub-200ms response times under load", async () => {
     const payload = {
       update: {
         message: {
@@ -225,10 +225,10 @@ describe("n8n Webhook Performance Regression Tests", () => {
         body: JSON.stringify(payload),
       });
 
-      assert.ok(
+      expect(
         response.status === 200 || response.status === 202,
         `n8n webhook request ${i + 1} failed with status ${response.status}`,
-      );
+      ).toBeTruthy();
 
       measurements.push(durationMs);
 
@@ -244,14 +244,14 @@ describe("n8n Webhook Performance Regression Tests", () => {
     });
 
     // Assert n8n webhook performance requirements
-    assert.ok(
+    expect(
       stats.p95 < PERFORMANCE_THRESHOLD_MS,
-      `n8n webhook 95th percentile (${stats.p95}ms) exceeds threshold (${PERFORMANCE_THRESHOLD_MS}ms)`,
+      `n8n webhook 95th percentile (${stats.p95}ms).toBeTruthy() exceeds threshold (${PERFORMANCE_THRESHOLD_MS}ms)`,
     );
 
-    assert.ok(
+    expect(
       stats.avg < PERFORMANCE_THRESHOLD_MS * 0.6,
-      `n8n webhook average response (${stats.avg}ms) should be under 60% of threshold for normal operations`,
+      `n8n webhook average response (${stats.avg}ms).toBeTruthy() should be under 60% of threshold for normal operations`,
     );
 
     // Check for regression
@@ -262,7 +262,7 @@ describe("n8n Webhook Performance Regression Tests", () => {
     }
   });
 
-  test("should handle occasional usage bursts (simulated team meetings)", async () => {
+  it("should handle occasional usage bursts (simulated team meetings)", async () => {
     const payload = {
       update: {
         message: {
@@ -298,10 +298,10 @@ describe("n8n Webhook Performance Regression Tests", () => {
         body: JSON.stringify(payload),
       });
 
-      assert.ok(
+      expect(
         response.status === 200 || response.status === 202,
         `Normal usage request ${i + 1} failed with status ${response.status}`,
-      );
+      ).toBeTruthy();
 
       normalUsageMeasurements.push(durationMs);
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -312,23 +312,23 @@ describe("n8n Webhook Performance Regression Tests", () => {
     console.log("Post-Burst Normal Usage Stats:", normalStats);
 
     // System should handle small bursts easily and return to normal
-    assert.ok(
+    expect(
       normalStats.avg < PERFORMANCE_THRESHOLD_MS * 0.7,
       `System should maintain good performance after small burst. Average: ${normalStats.avg}ms`,
-    );
+    ).toBeTruthy();
 
     // All burst requests should complete successfully
     for (const { response } of burstResults) {
-      assert.ok(
+      expect(
         response.status === 200 || response.status === 202,
         "All requests during team meeting burst should complete successfully",
-      );
+      ).toBeTruthy();
     }
   });
 });
 
 describe("End-to-End Performance Validation", () => {
-  test("should validate complete Reflex + Brain architecture performance", async () => {
+  it("should validate complete Reflex + Brain architecture performance", async () => {
     const testScenarios = [
       {
         name: "Simple task creation",
@@ -369,15 +369,15 @@ describe("End-to-End Performance Validation", () => {
           body: JSON.stringify(payload),
         });
 
-      assert.ok(
+      expect(
         edgeResponse.status === 200 || edgeResponse.status === 202,
         `Edge Function failed for scenario: ${scenario.name}`,
-      );
+      ).toBeTruthy();
 
-      assert.ok(
+      expect(
         edgeDuration < PERFORMANCE_THRESHOLD_MS,
         `Edge Function too slow for ${scenario.name}: ${edgeDuration}ms`,
-      );
+      ).toBeTruthy();
 
       console.log(`  Edge Function (Reflex): ${edgeDuration}ms`);
 
@@ -395,15 +395,15 @@ describe("End-to-End Performance Validation", () => {
           body: JSON.stringify(payload),
         });
 
-      assert.ok(
+      expect(
         webhookResponse.status === 200 || webhookResponse.status === 202,
         `n8n webhook failed for scenario: ${scenario.name}`,
-      );
+      ).toBeTruthy();
 
-      assert.ok(
+      expect(
         webhookDuration < PERFORMANCE_THRESHOLD_MS,
         `n8n webhook too slow for ${scenario.name}: ${webhookDuration}ms`,
-      );
+      ).toBeTruthy();
 
       console.log(`  n8n Webhook (Brain): ${webhookDuration}ms`);
       console.log(`  Total measured time: ${edgeDuration + webhookDuration}ms`);

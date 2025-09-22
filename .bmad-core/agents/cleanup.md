@@ -161,6 +161,12 @@ CLEANUP_TARGETS:
   - Temporary documentation files with unclear ownership
   - Debug logs and scratch files left in working directories
   - Documentation with conflicting or superseded information
+  - Duplicate/orphaned configuration files (*.config.*, *rc files)
+  - Multiple test runner configurations (vitest, jest, node:test)
+  - Hardcoded credentials or API keys in documentation
+  - Files with similar names but different extensions
+  - Unused dependencies in package.json
+  - Documentation that should be in Linear instead of files
 
 FILE_PRESERVATION_RULES:
   - ARCHIVE if: Historical value, contains decisions, represents significant work
