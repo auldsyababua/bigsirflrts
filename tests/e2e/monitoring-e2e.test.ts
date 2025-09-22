@@ -8,7 +8,10 @@
 
 import { test, expect, Page, BrowserContext } from "@playwright/test";
 
-test.describe("@P0 Monitoring End-to-End Tests", () => {
+// Skip in CI unless explicitly enabled
+const skipInCI = process.env.CI && !process.env.ENABLE_E2E_TESTS;
+
+test.describe.skipIf(skipInCI)("@P0 Monitoring End-to-End Tests", () => {
   let context: BrowserContext;
   let page: Page;
 
