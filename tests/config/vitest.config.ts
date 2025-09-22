@@ -1,3 +1,16 @@
+/**
+ * Main Vitest Configuration
+ *
+ * IMPORTANT: This is the SINGLE source of truth for vitest configuration.
+ * The root /vitest.config.ts file is just a pointer to this file.
+ *
+ * DO NOT CREATE additional vitest config files - use this one.
+ * If you need specialized test runs, use test filters or tags instead.
+ *
+ * Structure:
+ * - /vitest.config.ts -> points to this file (DO NOT EDIT)
+ * - /tests/config/vitest.config.ts -> THIS FILE (EDIT HERE)
+ */
 import { defineConfig } from "vitest/config";
 import path from "path";
 
