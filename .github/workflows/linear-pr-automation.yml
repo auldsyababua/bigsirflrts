@@ -1,0 +1,220 @@
+name: Linear PR Automation
+
+on:
+  pull_request:
+    types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to update'
+        required: false
+
+jobs:
+  update-pr-from-linear:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Update PR Description
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+        run: |
+          npm install @linear/sdk @actions/github @actions/core
+
+          node --input-type=module << 'EOF'
+          import { LinearClient } from '@linear/sdk';
+          import { context, getOctokit } from '@actions/github';
+          import { info, warning } from '@actions/core';
+
+          const linear = new LinearClient({
+            apiKey: process.env.LINEAR_API_KEY
+          });
+
+          const github = getOctokit(process.env.GITHUB_TOKEN);
+
+          async function updatePRDescription() {
+            const prNumber = process.env.PR_NUMBER || context.payload.pull_request?.number;
+
+            if (!prNumber) {
+              warning('No PR number found');
+              return;
+            }
+
+            // Get PR details
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: parseInt(prNumber)
+            });
+
+            info(`Processing PR #${prNumber}: ${pr.title}`);
+
+            // Extract Linear issue ID from branch name or PR title/body
+            let issueId = null;
+
+            // Try branch name first (e.g., linear/10n-86-some-feature)
+            const branchMatch = pr.head.ref.match(/(?:linear\/)?([A-Z0-9]+-\d+)/i);
+            if (branchMatch) {
+              issueId = branchMatch[1].toUpperCase();
+            }
+
+            // Try PR title/body as fallback
+            if (!issueId) {
+              const textToSearch = `${pr.title} ${pr.body || ''}`;
+              const textMatch = textToSearch.match(/([A-Z0-9]+-\d+)/);
+              if (textMatch) {
+                issueId = textMatch[1];
+              }
+            }
+
+            if (!issueId) {
+              info('No Linear issue ID found in PR');
+              return;
+            }
+
+            info(`Found Linear issue ID: ${issueId}`);
+
+            // Search for the issue in Linear
+            const searchResults = await linear.searchIssues(issueId);
+            const issue = searchResults.nodes.find(i => i.identifier === issueId);
+
+            if (!issue) {
+              warning(`Linear issue ${issueId} not found`);
+              return;
+            }
+
+            // Get issue details
+            const state = await issue.state;
+            const assignee = await issue.assignee;
+            const project = await issue.project;
+            const labels = await issue.labels();
+            const parent = await issue.parent;
+
+            // Build PR description
+            let description = pr.body || '';
+
+            // Add Linear metadata section if not present
+            if (!description.includes('## Linear Issue')) {
+              const linearSection = `
+## Linear Issue
+
+- **Issue**: [${issue.identifier}: ${issue.title}](${issue.url})
+- **Status**: ${state.name}
+- **Project**: ${project?.name || 'None'}
+- **Assignee**: ${assignee?.name || 'Unassigned'}
+${labels.nodes.length > 0 ? `- **Labels**: ${labels.nodes.map(l => l.name).join(', ')}` : ''}
+${parent ? `- **Parent**: [${parent.identifier}: ${parent.title}](${parent.url})` : ''}
+
+${issue.description ? `### Description\n\n${issue.description}\n` : ''}
+`;
+
+              // Prepend Linear section to existing description
+              description = linearSection + '\n---\n\n' + description;
+            }
+
+            // Update PR
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: parseInt(prNumber),
+              body: description
+            });
+
+            info(`Updated PR #${prNumber} with Linear issue ${issueId} details`);
+
+            // Update Linear issue status if needed
+            if (state.name !== 'In Review') {
+              const team = await linear.team(issue.teamId);
+              const states = await team.states();
+              const inReviewState = states.nodes.find(s => s.name === 'In Review');
+
+              if (inReviewState) {
+                await linear.updateIssue(issue.id, {
+                  stateId: inReviewState.id
+                });
+                info(`Updated Linear issue ${issueId} to "In Review" status`);
+              }
+            }
+
+            // Add PR link to Linear issue
+            const prUrl = pr.html_url;
+            const comments = await issue.comments();
+            const hasPRComment = comments.nodes.some(c =>
+              c.body.includes(prUrl)
+            );
+
+            if (!hasPRComment) {
+              await linear.createComment({
+                issueId: issue.id,
+                body: `🔗 Pull Request: [#${prNumber}](${prUrl})`
+              });
+              info(`Added PR link to Linear issue ${issueId}`);
+            }
+          }
+
+          updatePRDescription().catch((err) => {
+            console.error('Failed to update PR:', err);
+            process.exit(1);
+          });
+          EOF
+
+  auto-close-linear-issue:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Close Linear Issue
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        run: |
+          npm install @linear/sdk
+
+          node --input-type=module << 'EOF'
+          import { LinearClient } from '@linear/sdk';
+
+          const linear = new LinearClient({
+            apiKey: process.env.LINEAR_API_KEY
+          });
+
+          const pr = ${{ toJson(github.event.pull_request) }};
+
+          async function closeIssue() {
+            // Extract issue ID from PR
+            const match = pr.head.ref.match(/([A-Z0-9]+-\d+)/i);
+            if (!match) return;
+
+            const issueId = match[1].toUpperCase();
+
+            // Find and close the issue
+            const searchResults = await linear.searchIssues(issueId);
+            const issue = searchResults.nodes.find(i => i.identifier === issueId);
+
+            if (issue) {
+              const team = await linear.team(issue.teamId);
+              const states = await team.states();
+              const doneState = states.nodes.find(s => s.name === 'Done');
+
+              if (doneState) {
+                await linear.updateIssue(issue.id, {
+                  stateId: doneState.id
+                });
+
+                await linear.createComment({
+                  issueId: issue.id,
+                  body: `✅ Completed via PR #${pr.number}`
+                });
+              }
+            }
+          }
+
+          closeIssue().catch(console.error);
+          EOF
