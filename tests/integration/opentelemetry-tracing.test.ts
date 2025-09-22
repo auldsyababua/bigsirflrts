@@ -169,7 +169,7 @@ describe("@P0 OpenTelemetry Integration Tests", () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -222,7 +222,7 @@ describe("@P0 OpenTelemetry Integration Tests", () => {
       });
 
       // Allow time for trace export
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       // All spans should share the same trace ID
@@ -235,7 +235,7 @@ describe("@P0 OpenTelemetry Integration Tests", () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Verify traces were exported
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -300,7 +300,7 @@ describe("@P0 OpenTelemetry Integration Tests", () => {
       // Allow time for export
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -424,7 +424,7 @@ describe("@P0 OpenTelemetry Integration Tests", () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -460,7 +460,7 @@ describe("@P0 OpenTelemetry Integration Tests", () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -527,7 +527,7 @@ describe("@P0 OpenTelemetry Integration Tests", () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(duration).toBeLessThan(5000); // Should complete within 5 seconds

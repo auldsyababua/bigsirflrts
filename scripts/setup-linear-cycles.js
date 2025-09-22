@@ -17,7 +17,7 @@ const linear = new LinearClient({
   apiKey: process.env.LINEAR_API_KEY
 });
 
-const TEAM_ID = process.env.LINEAR_TEAM_ID || '2b0b568f-e5a6-40ac-866b-367a2564046a';
+const TEAM_ID = process.env.LINEAR_TEAM_ID || 'YOUR_LINEAR_PROJECT_ID';
 
 program
   .name('setup-cycles')

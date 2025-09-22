@@ -106,7 +106,7 @@ node scripts/linear-context.js --project BigSirFLRTS
 ```bash
 # Required in .env
 LINEAR_API_KEY=lin_api_xxxxx
-LINEAR_TEAM_ID=2b0b568f-e5a6-40ac-866b-367a2564046a
+LINEAR_TEAM_ID=YOUR_LINEAR_PROJECT_ID
 LINEAR_PROJECT_ID=9d089be4-a284-4879-9b67-f472abecf998
 ```
 

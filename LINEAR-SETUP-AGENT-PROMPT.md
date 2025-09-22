@@ -5,7 +5,7 @@ You are a BMAD Orchestrator agent tasked with completing the Linear integration 
 
 ## Environment Information
 - **Project**: BigSirFLRTS
-- **Team**: 10netzero (ID: 2b0b568f-e5a6-40ac-866b-367a2564046a)
+- **Team**: 10netzero (ID: YOUR_LINEAR_PROJECT_ID)
 - **Project ID**: 9d089be4-a284-4879-9b67-f472abecf998
 - **Linear API Key**: Already configured in .env file
 - **Repository**: Current working directory
@@ -176,7 +176,7 @@ node scripts/setup-linear-cycles.js current
 
    **Secret 2:**
    - Name: `LINEAR_TEAM_ID`
-   - Value: `2b0b568f-e5a6-40ac-866b-367a2564046a`
+   - Value: `YOUR_LINEAR_PROJECT_ID`
 
    **Secret 3:**
    - Name: `LINEAR_PROJECT_ID`
