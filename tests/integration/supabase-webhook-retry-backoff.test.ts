@@ -11,7 +11,7 @@
  * - Circuit breaker behavior
  * - Performance under retry load
  *
- * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webhook-retry-backoff.test.js
+ * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webhook-retry-backoff.test.ts
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';

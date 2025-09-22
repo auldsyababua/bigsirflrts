@@ -93,7 +93,7 @@ async function runTests() {
 
   const child = spawn(
     "op",
-    ["run", `--env-file=${envFile}`, "--", "node", ...nodeArgs],
+    ["run", `--env-file=${envFile}`, "--", "tsx", ...nodeArgs],
     {
       stdio: "inherit",
       cwd: projectRoot,

@@ -11,7 +11,7 @@
  * - Proper payload validation and error handling
  * - Monitoring and retry logic verification
  *
- * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webhook-n8n.test.js
+ * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webhook-n8n.test.ts
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';

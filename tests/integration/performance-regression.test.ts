@@ -9,7 +9,7 @@
  * - n8n webhook response: <200ms
  * - Architecture must not degrade under normal load
  *
- * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/performance-regression.test.js
+ * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/performance-regression.test.ts
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';

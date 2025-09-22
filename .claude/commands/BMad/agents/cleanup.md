@@ -167,6 +167,18 @@ FILE_PRESERVATION_RULES:
   - DELETE if: Truly temporary, debug output, clearly superseded with no historical value
   - UPDATE if: Core information correct but needs formatting/location standardization
 
+FILE_RENAMING_PROTOCOL:
+  - CRITICAL: When renaming or changing file extensions (e.g., .js to .ts):
+    - STEP 1: Identify ALL references to the file (scripts, imports, configs, CI/CD)
+    - STEP 2: Update package.json scripts that reference the file
+    - STEP 3: Update any CI/CD workflows (.github/workflows/*, etc.)
+    - STEP 4: Update import statements in other files
+    - STEP 5: Update documentation that references the file
+    - STEP 6: Test all affected scripts locally before committing
+  - MANDATORY: Use grep/ripgrep to find all references before renaming
+  - MANDATORY: Update test runners when converting test files
+  - NEVER: Rename files without updating all references
+
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection

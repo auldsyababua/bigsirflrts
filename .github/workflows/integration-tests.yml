@@ -37,10 +37,10 @@ jobs:
           - performance-regression
         include:
           - test-suite: edge-function-n8n-webhook
-            test-file: tests/integration/edge-function-n8n-webhook.test.js
+            test-file: tests/integration/edge-function-n8n-webhook.test.ts
             timeout: 60000
           - test-suite: performance-regression
-            test-file: tests/integration/performance-regression.test.js
+            test-file: tests/integration/performance-regression.test.ts
             timeout: 120000
 
     steps:

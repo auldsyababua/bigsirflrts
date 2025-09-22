@@ -24,12 +24,12 @@ import { resolve } from "node:path";
 // Test configuration
 const TEST_SUITES = {
   "edge-function-n8n-webhook": {
-    file: "tests/integration/edge-function-n8n-webhook.test.js",
+    file: "tests/integration/edge-function-n8n-webhook.test.ts",
     description: "Edge Function → n8n webhook integration tests",
     timeout: 60000,
   },
   "performance-regression": {
-    file: "tests/integration/performance-regression.test.js",
+    file: "tests/integration/performance-regression.test.ts",
     description: "Performance regression tests for <200ms requirements",
     timeout: 120000,
   },
@@ -149,13 +149,13 @@ function runTestSuite(suiteName, config, options) {
 
     // Prepare command
     const useOP = existsSync("op") || process.env.OP_SERVICE_ACCOUNT_TOKEN;
-    const command = useOP ? "op" : "node";
+    const command = useOP ? "op" : "tsx";
     const args = useOP
       ? [
           "run",
           `--env-file=${options.envFile}`,
           "--",
-          "node",
+          "tsx",
           "--test",
           config.file,
         ]

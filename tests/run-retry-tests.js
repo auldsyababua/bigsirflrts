@@ -80,7 +80,7 @@ class RetryTestRunner {
 
     return new Promise((resolve, reject) => {
       const testFile =
-        "tests/integration/supabase-webhook-retry-backoff.test.js";
+        "tests/integration/supabase-webhook-retry-backoff.test.ts";
 
       // Use the same Node.js test runner as other tests
       this.testProcess = spawn("node", ["--test", testFile], {

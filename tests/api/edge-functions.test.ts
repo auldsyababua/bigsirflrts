@@ -4,7 +4,7 @@
  * Tests Supabase Edge Functions using Node.js native test runner.
  * Secrets are injected via 1Password Service Account.
  *
- * Run with: op run --env-file=tests/.env.test -- node --test tests/api/edge-functions.test.js
+ * Run with: op run --env-file=tests/.env.test -- node --test tests/api/edge-functions.test.ts
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
