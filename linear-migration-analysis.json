@@ -1,0 +1,136 @@
+{
+  "summary": {
+    "story": 2,
+    "qa": 1,
+    "epic": 2,
+    "documentation": 2,
+    "task": 7
+  },
+  "items": [
+    {
+      "type": "story",
+      "title": "Story 1.1: Deploy OpenProject via Docker Compose on Digital Ocean (Legacy)",
+      "file": "docs/stories/1.1.deploy-openproject-docker-digitalocean.md",
+      "priority": 1,
+      "description": "# Story 1.1: Deploy OpenProject via Docker Compose on Digital Ocean (Legacy)\n\nNote: This story predates the Supabase single-database consolidation. Production\nnow uses a single Supabase PostgreSQL instance (no local Postgres container) per\nADR‑002. See infrastructure/digitalocean/docker-compose.supabase.yml for current\ndeployment.\n\n## Story Overview\n\n**Story ID**: 1.1 **Epic**: Epic 1 - OpenProject Integration Foundation"
+    },
+    {
+      "type": "qa",
+      "title": "QA Gate REVIEW Update: Story 1.1 - Deploy OpenProject via Docker Compose on Digital Ocean",
+      "file": "docs/qa/gates/1.1-deploy-openproject-docker-digitalocean-REVIEW-2025-09-19.yml",
+      "priority": 2,
+      "description": "---\n# QA Gate REVIEW Update: Story 1.1 - Deploy OpenProject via Docker Compose on Digital Ocean\n# REVIEW DATE: 2025-09-19T00:00:00Z\n# QA Architect: Quinn (Test Architect & Quality Advisor)\n\nschema: 1\nstory: \"1.1\"\nepic: \"Epic 1 - OpenProject Integration Foundation\"\ngate: FAIL\nupdated: \"2025-09-19T20:50:00Z\""
+    },
+    {
+      "type": "epic",
+      "title": "OpenProject Deployment Documentation",
+      "file": "OPENPROJECT_DEPLOYMENT.md",
+      "priority": 1,
+      "description": "# OpenProject Deployment Documentation\n\n## Overview\nOpenProject has been successfully deployed to DigitalOcean with Supabase PostgreSQL backend and Cloudflare R2 for file storage.\n\n**Live URL**: https://ops.10nz.tools\n\n## Infrastructure Components\n\n### DigitalOcean Droplet"
+    },
+    {
+      "type": "documentation",
+      "title": "Linear as Single Source of Truth (SSOT) Integration",
+      "file": "docs/linear-integration.md",
+      "priority": 3,
+      "description": "# Linear as Single Source of Truth (SSOT) Integration\n\n## Architecture Overview\n\nLinear serves as the authoritative source for all project planning, task management, and development workflow orchestration. This document outlines how Linear integrates with BMAD-Method and the BigSirFLRTS codebase.\n\n## Core Principles\n\n### 1. Linear Method Alignment\n- **Issues, Not Stories**: Write clear, actionable tasks in plain language"
+    },
+    {
+      "type": "documentation",
+      "title": "Contributing",
+      "file": "CONTRIBUTING.md",
+      "priority": 3,
+      "description": "# Contributing\n\nPlease read AGENTS.md (Repository Guidelines) first — it defines structure,\nstyle, and commands used across this repo.\n\n## BMAD Method Workflow\n\n- Read `.bmad-core/core-config.yaml` and the devLoadAlwaysFiles it lists before\n  starting.\n- Follow BMAD tasks/checklists in `.bmad-core/tasks` and `.bmad-core/checklists`"
+    },
+    {
+      "type": "task",
+      "title": "<!-- Powered by BMAD™ Core -->",
+      "file": ".bmad-core/agents/analyst.md",
+      "priority": 3,
+      "labels": [
+        "agents"
+      ]
+    },
+    {
+      "type": "task",
+      "title": "<!-- Powered by BMAD™ Core -->",
+      "file": ".bmad-core/agents/architect.md",
+      "priority": 3,
+      "labels": [
+        "agents"
+      ]
+    },
+    {
+      "type": "task",
+      "title": "<!-- Powered by BMAD™ Core -->",
+      "file": ".bmad-core/agents/bmad-master.md",
+      "priority": 3,
+      "labels": [
+        "agents"
+      ]
+    },
+    {
+      "type": "task",
+      "title": "<!-- Powered by BMAD™ Core -->",
+      "file": ".bmad-core/agents/bmad-orchestrator.md",
+      "priority": 3,
+      "labels": [
+        "agents"
+      ]
+    },
+    {
+      "type": "task",
+      "title": "<!-- Powered by BMAD™ Core -->",
+      "file": ".bmad-core/agents/cleanup.md",
+      "priority": 3,
+      "labels": [
+        "agents"
+      ]
+    },
+    {
+      "title": "Linear integration setup",
+      "type": "epic",
+      "priority": 1,
+      "status": "in-progress"
+    },
+    {
+      "title": "OpenProject deployment on DigitalOcean",
+      "type": "story",
+      "priority": 1,
+      "status": "completed"
+    },
+    {
+      "title": "Supabase PostgreSQL migration",
+      "type": "task",
+      "priority": 2,
+      "status": "completed"
+    },
+    {
+      "title": "Cloudflare R2 storage configuration",
+      "type": "task",
+      "priority": 2,
+      "status": "completed"
+    }
+  ],
+  "recommendations": {
+    "epics": [
+      "OpenProject Deployment",
+      "Linear Integration",
+      "Infrastructure",
+      "Documentation"
+    ],
+    "labels": [
+      "infrastructure",
+      "integration",
+      "documentation",
+      "bmad:pm",
+      "bmad:architect"
+    ],
+    "currentPriorities": [
+      "Story 1.1: Deploy OpenProject via Docker Compose on Digital Ocean (Legacy)",
+      "OpenProject Deployment Documentation",
+      "Linear integration setup",
+      "OpenProject deployment on DigitalOcean"
+    ]
+  }
+}

@@ -120,12 +120,33 @@ UNIVERSAL_EXECUTION_PROTOCOL:
   - "NEVER execute blindly - understand context"
   - "Document research findings for traceability"
 
+LINEAR_INTEGRATION_PROTOCOL:
+  - "CRITICAL: Use Linear for ALL documentation and task tracking"
+  - "NEVER create files in /docs/stories, /docs/qa, /docs/processes, /docs/misc"
+  - "Use mcp__linear-server__create_issue for new tasks"
+  - "Use mcp__linear-server__create_document for documentation"
+  - "Reference Linear IDs (10N-XXX) in all commits"
+  - "Check Linear issues before starting ANY work"
+  - "Archived docs are in .archive/ - read-only reference"
+
+LINEAR_MCP_TOOLS:
+  - mcp__linear-server__create_issue: Create tasks/stories in Linear
+  - mcp__linear-server__list_issues: Find and list existing work
+  - mcp__linear-server__update_issue: Update status and details
+  - mcp__linear-server__create_comment: Add progress updates
+  - mcp__linear-server__list_documents: Search Linear documentation
+  - mcp__linear-server__get_document: Retrieve specific documents
+
 commands:
   - help: Show these listed commands in a numbered list
   - now: Execute bash command "date -Iseconds" to get current ISO timestamp for time-aware research queries
-  - create-doc {template}: execute task create-doc (no template = ONLY show available templates listed under dependencies/templates below)
+  - linear-create: Create new issue/task in Linear (replaces create-doc for stories)
+  - linear-list: List current work from Linear (use --assignee me)
+  - linear-update: Update Linear issue status
+  - linear-doc: Create documentation in Linear (replaces file-based docs)
+  - create-doc {template}: [DEPRECATED - Use linear-doc instead]
   - doc-out: Output full document to current destination file
-  - document-project: execute the task document-project.md
+  - document-project: [DEPRECATED - Use linear-doc for project docs]
   - execute-checklist {checklist}: Run task execute-checklist (no checklist = ONLY show available checklists listed under dependencies/checklist below)
   - kb: Toggle KB mode off (default) or on, when on will load and reference the .bmad-core/data/bmad-kb.md and converse with the user answering his questions with this informational resource
   - shard-doc {document} {destination}: run the task shard-doc against the optionally provided document to the specified destination

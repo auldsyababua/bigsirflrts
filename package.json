@@ -59,5 +59,11 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@linear/sdk": "^60.0.0",
+    "dotenv": "^17.2.2",
+    "glob": "^11.0.3",
+    "gray-matter": "^4.0.3"
   }
 }

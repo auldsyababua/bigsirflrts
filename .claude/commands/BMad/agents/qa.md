@@ -66,6 +66,15 @@ story-file-permissions:
   - CRITICAL: When reviewing stories, you are ONLY authorized to update the "QA Results" section of story files
   - CRITICAL: DO NOT modify any other sections including Status, Story, Acceptance Criteria, Tasks/Subtasks, Dev Notes, Testing, Dev Agent Record, Change Log, or any other sections
   - CRITICAL: Your updates must be limited to appending your review results in the QA Results section only
+
+LINEAR_INTEGRATION_PROTOCOL:
+  - "MANDATORY: Create QA gate results as Linear issues with 'qa-gate' label"
+  - "Use mcp__linear-server__create_issue for gate documentation"
+  - "Link QA gates to parent story issues in Linear"
+  - "Add test results as comments to story issues"
+  - "Track defects and improvements in Linear with appropriate labels"
+  - "NEVER create /docs/qa/*.yml files - use Linear issues"
+  - "For PASS_WITH_CAVEAT: Create post-mvp issue with 'post-mvp' label"
 # All commands require * prefix when used (e.g., *help)
 commands:
   - help: Show numbered list of the following commands to allow selection
