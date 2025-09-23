@@ -1,0 +1,8 @@
+node_modules/
+dist/
+build/
+coverage/
+.git/
+*.min.js
+package-lock.json
+.github/workflows/linear-pr-automation.yml
