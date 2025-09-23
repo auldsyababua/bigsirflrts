@@ -15,10 +15,7 @@ config();
 
 const linear = getLinearClient();
 
-program
-  .name('linear-cli')
-  .description('CLI for Linear integration with BMAD')
-  .version('1.0.0');
+program.name('linear-cli').description('CLI for Linear integration with BMAD').version('1.0.0');
 
 // List issues command
 program
@@ -34,7 +31,7 @@ program
       const issues = await linear.getProjectIssues({
         state: options.state,
         assignee: options.assignee,
-        limit: parseInt(options.limit)
+        limit: parseInt(options.limit),
       });
 
       if (issues.length === 0) {
@@ -42,7 +39,7 @@ program
         return;
       }
 
-      issues.forEach(issue => {
+      issues.forEach((issue) => {
         const state = chalk.gray(`[${issue.state.name}]`);
         const priority = issue.priority > 0 ? chalk.red(`P${issue.priority}`) : '';
         console.log(`${chalk.green(issue.identifier)} ${state} ${issue.title} ${priority}`);
@@ -72,7 +69,7 @@ program
       const result = await linear.createIssue({
         title,
         description: options.description,
-        priority: parseInt(options.priority)
+        priority: parseInt(options.priority),
       });
 
       // The create response includes the issue in the result
@@ -122,7 +119,7 @@ program
       const comments = await context.context.comments;
       if (comments && comments.nodes.length > 0) {
         console.log(chalk.gray('\n💬 Comments:'));
-        comments.nodes.forEach(comment => {
+        comments.nodes.forEach((comment) => {
           console.log(`  - ${comment.body.substring(0, 100)}...`);
         });
       }

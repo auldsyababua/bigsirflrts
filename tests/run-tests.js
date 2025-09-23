@@ -12,9 +12,9 @@
  *   node tests/run-tests.js --watch      # Run tests in watch mode
  */
 
-import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,19 +22,19 @@ const projectRoot = dirname(__dirname);
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const isWatchMode = args.includes("--watch");
-const isApiOnly = args.includes("--api");
+const isWatchMode = args.includes('--watch');
+const isApiOnly = args.includes('--api');
 
 /**
  * Check if 1Password CLI is available
  */
 function check1PasswordCLI() {
   return new Promise((resolve) => {
-    const child = spawn("op", ["--version"], { stdio: "ignore" });
-    child.on("close", (code) => {
+    const child = spawn('op', ['--version'], { stdio: 'ignore' });
+    child.on('close', (code) => {
       resolve(code === 0);
     });
-    child.on("error", () => {
+    child.on('error', () => {
       resolve(false);
     });
   });
@@ -44,73 +44,69 @@ function check1PasswordCLI() {
  * Run tests with 1Password secret injection
  */
 async function runTests() {
-  console.log("🔐 FLRTS Secure Test Runner");
-  console.log("============================");
+  console.log('🔐 FLRTS Secure Test Runner');
+  console.log('============================');
 
   // Check if 1Password CLI is available
   const hasOp = await check1PasswordCLI();
   if (!hasOp) {
-    console.error("❌ 1Password CLI not found!");
+    console.error('❌ 1Password CLI not found!');
     console.error(
-      "Please install 1Password CLI: https://developer.1password.com/docs/cli/get-started/",
+      'Please install 1Password CLI: https://developer.1password.com/docs/cli/get-started/'
     );
     process.exit(1);
   }
 
   // Check if service account is configured
   if (!process.env.OP_SERVICE_ACCOUNT_TOKEN) {
-    console.error("❌ 1Password Service Account not configured!");
-    console.error("Please set OP_SERVICE_ACCOUNT_TOKEN environment variable");
-    console.error("or run: op signin --service-account");
+    console.error('❌ 1Password Service Account not configured!');
+    console.error('Please set OP_SERVICE_ACCOUNT_TOKEN environment variable');
+    console.error('or run: op signin --service-account');
     process.exit(1);
   }
 
-  console.log("✅ 1Password CLI configured");
+  console.log('✅ 1Password CLI configured');
 
   // Determine test pattern
   let testPattern;
   if (isApiOnly) {
-    testPattern = "tests/api/";
-    console.log("🎯 Running API tests only");
+    testPattern = 'tests/api/';
+    console.log('🎯 Running API tests only');
   } else {
-    testPattern = "tests/";
-    console.log("🧪 Running all tests");
+    testPattern = 'tests/';
+    console.log('🧪 Running all tests');
   }
 
   // Build command
-  const envFile = join(__dirname, ".env.test");
-  const nodeArgs = ["--test"];
+  const envFile = join(__dirname, '.env.test');
+  const nodeArgs = ['--test'];
 
   if (isWatchMode) {
-    nodeArgs.push("--watch");
-    console.log("👀 Watch mode enabled");
+    nodeArgs.push('--watch');
+    console.log('👀 Watch mode enabled');
   }
 
   nodeArgs.push(testPattern);
 
   // Run with 1Password secret injection
-  console.log("🚀 Starting tests with secure environment...\n");
+  console.log('🚀 Starting tests with secure environment...\n');
 
-  const child = spawn(
-    "op",
-    ["run", `--env-file=${envFile}`, "--", "tsx", ...nodeArgs],
-    {
-      stdio: "inherit",
-      cwd: projectRoot,
-    },
-  );
+  const child = spawn('op', ['run', `--env-file=${envFile}`, '--', 'tsx', ...nodeArgs], {
+    stdio: 'inherit',
+    cwd: projectRoot,
+  });
 
-  child.on("close", (code) => {
+  child.on('close', (code) => {
     if (code === 0) {
-      console.log("\n✅ Tests completed successfully");
+      console.log('\n✅ Tests completed successfully');
     } else {
       console.log(`\n❌ Tests failed with exit code ${code}`);
     }
     process.exit(code);
   });
 
-  child.on("error", (error) => {
-    console.error("❌ Failed to start tests:", error.message);
+  child.on('error', (error) => {
+    console.error('❌ Failed to start tests:', error.message);
     process.exit(1);
   });
 }
@@ -150,13 +146,13 @@ Examples:
 }
 
 // Handle help flag
-if (args.includes("--help") || args.includes("-h")) {
+if (args.includes('--help') || args.includes('-h')) {
   showUsage();
   process.exit(0);
 }
 
 // Run tests
 runTests().catch((error) => {
-  console.error("❌ Test runner failed:", error);
+  console.error('❌ Test runner failed:', error);
   process.exit(1);
 });

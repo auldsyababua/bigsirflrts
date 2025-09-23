@@ -2,14 +2,23 @@
 
 ## Executive Summary
 
-FLRTS (Fast Low-friction Repeatable Task System) is a microservices-based natural language processing layer built on top of OpenProject. The architecture prioritizes modularity, scalability, and maintainability while delivering sub-200ms response times for task creation operations. The system leverages OpenAI's GPT-4o for intent parsing, OpenProject's REST API v3 for task management, and provides multiple interface channels including web, CLI, and Telegram.
+FLRTS (Fast Low-friction Repeatable Task System) is a microservices-based
+natural language processing layer built on top of OpenProject. The architecture
+prioritizes modularity, scalability, and maintainability while delivering
+sub-200ms response times for task creation operations. The system leverages
+OpenAI's GPT-4o for intent parsing, OpenProject's REST API v3 for task
+management, and provides multiple interface channels including web, CLI, and
+Telegram.
 
 ## Architecture Principles
 
-1. **Single Responsibility**: Each service handles one core concern (NLP, OpenProject integration, UI delivery)
-2. **API-First Design**: All functionality exposed through well-documented REST APIs
+1. **Single Responsibility**: Each service handles one core concern (NLP,
+   OpenProject integration, UI delivery)
+2. **API-First Design**: All functionality exposed through well-documented REST
+   APIs
 3. **Schema-Driven Development**: Zod schemas define contracts between services
-4. **Fail-Safe Defaults**: Graceful degradation when external services unavailable
+4. **Fail-Safe Defaults**: Graceful degradation when external services
+   unavailable
 5. **Observability**: Comprehensive logging, metrics, and distributed tracing
 6. **Security by Design**: Zero-trust architecture with encrypted communication
 
@@ -23,55 +32,57 @@ graph TB
         TG[Telegram Bot]
         VOICE[Voice Input]
     end
-    
+
     subgraph "API Gateway"
         GW[Kong/Nginx Gateway]
         AUTH[Auth Service]
     end
-    
+
     subgraph "Core Services"
         NLP[NLP Service]
         OPG[OpenProject Gateway]
         PREF[Preference Service]
     end
-    
+
     subgraph "External Services"
         OPENAI[OpenAI GPT-4o]
         OP[OpenProject API v3]
         GCS[Google Cloud Speech]
     end
-    
+
     subgraph "Data Layer"
         REDIS[Redis Cache]
         SQLITE[SQLite DB]
         S3[S3 Storage]
     end
-    
+
     UI --> GW
     CLI --> GW
     TG --> GW
     VOICE --> GCS
     GCS --> GW
-    
+
     GW --> AUTH
     AUTH --> NLP
     AUTH --> OPG
-    
+
     NLP --> OPENAI
     NLP --> PREF
     NLP --> REDIS
-    
+
     OPG --> OP
     OPG --> SQLITE
-    
+
     PREF --> SQLITE
 ```
 
 ## Service Architecture
 
 ### 1. NLP Service (Node.js/TypeScript)
+
 **Responsibility**: Natural language parsing and intent extraction  
 **Key Components**:
+
 - OpenAI client with retry logic and circuit breaker
 - Prompt template engine with version control
 - Entity recognition for team members and dates
@@ -79,13 +90,16 @@ graph TB
 - Response caching for repeated queries
 
 **API Endpoints**:
+
 - `POST /parse` - Parse natural language to structured task
 - `POST /validate` - Validate parsed structure before submission
 - `GET /suggestions` - Get autocomplete suggestions
 
 ### 2. OpenProject Gateway Service (Node.js/TypeScript)
+
 **Responsibility**: OpenProject API integration and data transformation  
 **Key Components**:
+
 - OpenProject API v3 client with pagination support
 - Work package CRUD operations
 - Custom field mapping for mining metadata
@@ -93,6 +107,7 @@ graph TB
 - WebSocket connection for real-time updates
 
 **API Endpoints**:
+
 - `POST /workpackages` - Create work package
 - `PUT /workpackages/:id` - Update work package
 - `DELETE /workpackages/:id` - Delete work package
@@ -101,8 +116,10 @@ graph TB
 - `GET /users` - Get team members
 
 ### 3. Preference Service (Node.js/TypeScript)
+
 **Responsibility**: User preferences and learning patterns  
 **Key Components**:
+
 - User timezone and locale management
 - Usage pattern analytics
 - Template storage and retrieval
@@ -110,14 +127,17 @@ graph TB
 - Privacy-compliant data handling
 
 **API Endpoints**:
+
 - `GET /users/:id/preferences` - Get user preferences
 - `PUT /users/:id/preferences` - Update preferences
 - `GET /templates` - Get saved templates
 - `POST /analytics/events` - Track usage patterns
 
 ### 4. Authentication Service (Node.js/TypeScript)
+
 **Responsibility**: Security and access control  
 **Key Components**:
+
 - OpenProject OAuth integration
 - API key management
 - Rate limiting per user/API key
@@ -140,14 +160,14 @@ const ParsedTaskSchema = z.object({
     type: z.enum(['Task', 'Bug', 'Feature', 'Epic', 'UserStory']),
     dueDate: z.string().datetime(),
     priority: z.enum(['Low', 'Normal', 'High', 'Immediate']),
-    customFields: z.record(z.any()).optional()
+    customFields: z.record(z.any()).optional(),
   }),
   metadata: z.object({
     confidence: z.number().min(0).max(1),
     timezone: z.string(),
     originalInput: z.string(),
-    parseTime: z.number()
-  })
+    parseTime: z.number(),
+  }),
 });
 
 // Team Member Schema
@@ -157,7 +177,7 @@ const TeamMemberSchema = z.object({
   aliases: z.array(z.string()),
   timezone: z.enum(['PST', 'CST', 'EST']),
   openProjectId: z.string(),
-  defaultProjects: z.array(z.string())
+  defaultProjects: z.array(z.string()),
 });
 
 // Mining Metadata Schema
@@ -166,7 +186,7 @@ const MiningMetadataSchema = z.object({
   equipmentType: z.enum(['ASIC', 'GPU', 'FPGA', 'Infrastructure']),
   maintenanceType: z.enum(['Preventive', 'Corrective', 'Emergency']),
   downtimeImpact: z.enum(['None', 'Partial', 'Full']),
-  estimatedDuration: z.number().optional()
+  estimatedDuration: z.number().optional(),
 });
 ```
 
@@ -193,12 +213,13 @@ Rate Limits:
 
 Error Format:
   {
-    "error": {
-      "code": "PARSE_FAILED",
-      "message": "Unable to parse input",
-      "details": {},
-      "requestId": "uuid"
-    }
+    'error':
+      {
+        'code': 'PARSE_FAILED',
+        'message': 'Unable to parse input',
+        'details': {},
+        'requestId': 'uuid',
+      },
   }
 ```
 
@@ -213,7 +234,7 @@ interface ClientMessage {
   payload: any;
 }
 
-// Server -> Client  
+// Server -> Client
 interface ServerMessage {
   type: 'task_created' | 'task_updated' | 'parse_result';
   payload: any;
@@ -235,7 +256,7 @@ services:
       limits:
         memory: 512M
         cpu: '0.5'
-    
+
   openproject-gateway:
     image: flrts/op-gateway:latest
     replicas: 2
@@ -243,12 +264,12 @@ services:
       limits:
         memory: 256M
         cpu: '0.25'
-  
+
   redis:
     image: redis:7-alpine
     volumes:
       - redis-data:/data
-  
+
   nginx:
     image: nginx:alpine
     configs:
@@ -259,12 +280,14 @@ services:
 ### Infrastructure Requirements
 
 **Minimum Production Setup**:
+
 - 2 vCPUs, 4GB RAM for application services
 - 1 vCPU, 2GB RAM for Redis/SQLite
 - 10GB SSD storage
 - 100Mbps network bandwidth
 
 **Recommended Production Setup**:
+
 - Kubernetes cluster with 3 nodes
 - Each node: 4 vCPUs, 8GB RAM
 - Persistent volume for databases
@@ -288,7 +311,7 @@ sequenceDiagram
     participant FLRTS
     participant Auth
     participant OpenProject
-    
+
     User->>FLRTS: Login Request
     FLRTS->>OpenProject: OAuth Redirect
     OpenProject->>User: Login Form
@@ -325,24 +348,28 @@ sequenceDiagram
 ## Monitoring & Observability
 
 ### Metrics (Prometheus)
+
 - Request rate, error rate, duration (RED metrics)
 - OpenAI token usage and costs
 - Queue depths and processing times
 - Cache hit rates
 
 ### Logging (ELK Stack)
+
 - Structured JSON logs
 - Correlation IDs across services
 - Log levels: ERROR, WARN, INFO, DEBUG
 - Sensitive data masking
 
 ### Tracing (OpenTelemetry)
+
 - End-to-end request tracing
 - Service dependency mapping
 - Performance bottleneck identification
 - Error propagation tracking
 
 ### Alerting Rules
+
 - API response time > 500ms
 - Error rate > 1%
 - OpenAI quota > 80%
@@ -350,17 +377,17 @@ sequenceDiagram
 
 ## Technology Stack Summary
 
-| Component | Technology | Justification |
-|-----------|------------|---------------|
-| Runtime | Node.js 20 LTS | TypeScript support, async performance |
-| Framework | Express.js | Mature, well-documented, middleware ecosystem |
-| Validation | Zod | Runtime type safety, schema generation |
-| Database | SQLite → PostgreSQL | Simple start, clear migration path |
-| Cache | Redis | Fast, supports pub/sub for real-time |
-| Queue | Bull | Redis-backed, reliable job processing |
-| API Docs | OpenAPI 3.0 | Industry standard, code generation |
-| Testing | Jest + Supertest | Comprehensive testing capabilities |
-| Container | Docker | Consistent deployment, easy scaling |
-| Orchestration | Kubernetes | Production-grade container management |
-| Monitoring | Prometheus + Grafana | Open-source, powerful visualization |
-| CI/CD | GitHub Actions | Integrated with repository, free tier |
+| Component     | Technology           | Justification                                 |
+| ------------- | -------------------- | --------------------------------------------- |
+| Runtime       | Node.js 20 LTS       | TypeScript support, async performance         |
+| Framework     | Express.js           | Mature, well-documented, middleware ecosystem |
+| Validation    | Zod                  | Runtime type safety, schema generation        |
+| Database      | SQLite → PostgreSQL  | Simple start, clear migration path            |
+| Cache         | Redis                | Fast, supports pub/sub for real-time          |
+| Queue         | Bull                 | Redis-backed, reliable job processing         |
+| API Docs      | OpenAPI 3.0          | Industry standard, code generation            |
+| Testing       | Jest + Supertest     | Comprehensive testing capabilities            |
+| Container     | Docker               | Consistent deployment, easy scaling           |
+| Orchestration | Kubernetes           | Production-grade container management         |
+| Monitoring    | Prometheus + Grafana | Open-source, powerful visualization           |
+| CI/CD         | GitHub Actions       | Integrated with repository, free tier         |

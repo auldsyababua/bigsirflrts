@@ -1,6 +1,7 @@
 # Linear Context Integration for BMAD Agents
 
-This file configures BMAD agents to read context from Linear as the Single Source of Truth.
+This file configures BMAD agents to read context from Linear as the Single
+Source of Truth.
 
 ## How BMAD Agents Use Linear
 
@@ -40,7 +41,7 @@ async function getPMContext(issueId) {
     requirements: context.issue.description,
     epics: context.context.parentIssues,
     userStories: context.context.subIssues,
-    feedback: context.context.comments
+    feedback: context.context.comments,
   };
 }
 ```
@@ -48,17 +49,20 @@ async function getPMContext(issueId) {
 ## Workflow Triggers
 
 ### Issue Created in Linear
+
 1. If labeled "needs-prd" → Trigger PM Agent
 2. If labeled "needs-architecture" → Trigger Architect Agent
 3. If assigned to developer → Trigger Dev Agent
 
 ### Issue Status Changed
+
 - **Backlog → Todo**: Prepare BMAD context
 - **Todo → In Progress**: Create feature branch
 - **In Progress → In Review**: Create PR
 - **In Review → Done**: Merge and deploy
 
 ### Comment Added
+
 - If mentions "@bmad" → Trigger appropriate agent
 - If contains "??" → Trigger QA Agent
 - If contains "ship it" → Trigger deployment
@@ -66,6 +70,7 @@ async function getPMContext(issueId) {
 ## Linear Data Mapping
 
 ### Linear → BMAD PRD
+
 - Project Description → Product Vision
 - Project Milestones → Release Plan
 - Epic Issues → Major Features
@@ -73,12 +78,14 @@ async function getPMContext(issueId) {
 - Comments → Stakeholder Feedback
 
 ### Linear → BMAD Architecture
+
 - Project Tech Labels → Tech Stack
 - Issue Attachments → Design Docs
 - Related Issues → System Dependencies
 - Custom Fields → Non-functional Requirements
 
 ### Linear → BMAD Stories
+
 - Issue Title → Story Title
 - Issue Description → Acceptance Criteria
 - Issue Estimate → Story Points

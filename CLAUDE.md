@@ -3,12 +3,14 @@ FLRTS stands for 'Field Reports, Lists, Reminders, Tasks, and Sub-Tasks.'
 ## Important Production Services
 
 ### OpenProject (Live at https://ops.10nz.tools)
+
 - **SSH Access**: `ssh do-openproject` or `ssh root@165.227.216.172`
-- **Admin Login**: admin / mqsgyCQNQ2q*NCMT8QARXKJqz
+- **Admin Login**: admin / mqsgyCQNQ2q\*NCMT8QARXKJqz
 - **Docker Config**: `/root/docker-compose.yml` on droplet
 - **Database**: Supabase PostgreSQL (project: thnwlykidzhrsagyjncc)
 - **File Storage**: Cloudflare R2 (bucket: 10netzero-docs)
-- **Known Issue**: Data currently in `public` schema instead of `openproject` schema
+- **Known Issue**: Data currently in `public` schema instead of `openproject`
+  schema
 
 ## NEVER READ THESE FILES:
 

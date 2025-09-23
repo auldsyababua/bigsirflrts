@@ -13,16 +13,11 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import {
-  testConfig,
-  validateTestConfig,
-  getSupabaseHeaders,
-} from '../config/test-config';
+import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
 
 // Test configuration
 const N8N_WEBHOOK_URL =
-  process.env.N8N_WEBHOOK_URL ||
-  'https://n8n-rrrs.sliplane.app/webhook/telegram-task-creation';
+  process.env.N8N_WEBHOOK_URL || 'https://n8n-rrrs.sliplane.app/webhook/telegram-task-creation';
 const PERFORMANCE_THRESHOLD_MS = 200;
 const E2E_THRESHOLD_MS = 5000;
 
@@ -52,14 +47,11 @@ describe('Edge Function → n8n Webhook Integration', () => {
       const startTime = Date.now();
 
       // Step 1: Edge Function should provide quick reply (Reflex)
-      const edgeFunctionResponse = await fetch(
-        testConfig.endpoints.telegramWebhook,
-        {
-          method: 'POST',
-          headers: getSupabaseHeaders(false),
-          body: JSON.stringify(telegramPayload),
-        }
-      );
+      const edgeFunctionResponse = await fetch(testConfig.endpoints.telegramWebhook, {
+        method: 'POST',
+        headers: getSupabaseHeaders(false),
+        body: JSON.stringify(telegramPayload),
+      });
 
       const edgeFunctionTime = Date.now() - startTime;
 
@@ -155,8 +147,7 @@ describe('Edge Function → n8n Webhook Integration', () => {
 
       // Average response time should be well under threshold
       const avgResponseTime =
-        results.reduce((sum, result) => sum + result.responseTime, 0) /
-        results.length;
+        results.reduce((sum, result) => sum + result.responseTime, 0) / results.length;
       expect(avgResponseTime).toBeLessThan(PERFORMANCE_THRESHOLD_MS * 0.8);
     });
   });
@@ -242,9 +233,7 @@ describe('Edge Function → n8n Webhook Integration', () => {
         clearTimeout(timeoutId);
         if (error.name === 'AbortError') {
           // This means the webhook was slower than 100ms
-          console.warn(
-            'Webhook response slower than 100ms - investigate performance'
-          );
+          console.warn('Webhook response slower than 100ms - investigate performance');
         } else {
           throw error; // Re-throw unexpected errors
         }

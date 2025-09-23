@@ -8,11 +8,13 @@ containers are used in production.
 
 - OpenProject → Supabase PostgreSQL
   - Conn: `DATABASE_URL` via Supabase pooler (port 5432)
-  - **Known Issue**: Currently using `public` schema instead of `openproject` schema
+  - **Known Issue**: Currently using `public` schema instead of `openproject`
+    schema
   - Deploy: `/root/docker-compose.yml` on droplet (165.227.216.172)
   - Migrations: `openproject-migrate` init container (db:migrate db:seed)
   - Health: `curl -f http://localhost:8080` → 302 (redirects to login)
-  - Attachments: Cloudflare R2 bucket `10netzero-docs`; fog adapter with path-style S3
+  - Attachments: Cloudflare R2 bucket `10netzero-docs`; fog adapter with
+    path-style S3
 - OpenProject → Memcached
   - Conn: `OPENPROJECT_CACHE__MEMCACHE__SERVER=memcached:11211`
   - Status: **NOT running** (removed as orphaned container)
@@ -70,7 +72,8 @@ Tip: Use root `.env*` files (.env, .env.supabase, .env.n8n, .env.digitalocean,
 
 ## Gaps / Next Work
 
-- **Schema Issue**: Resolve data being in `public` schema instead of `openproject`
+- **Schema Issue**: Resolve data being in `public` schema instead of
+  `openproject`
 - Verify R2 attachments are downloadable through OpenProject UI
 - Memcached not configured (may impact performance)
 - Supabase Telegram edge function deployment & webhook handshake outstanding

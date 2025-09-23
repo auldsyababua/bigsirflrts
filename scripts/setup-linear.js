@@ -15,7 +15,7 @@ const envPath = path.join(__dirname, '..', '.env');
 
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 const question = (prompt) => new Promise((resolve) => rl.question(prompt, resolve));
@@ -43,8 +43,9 @@ async function setup() {
       return;
     }
     // Remove old LINEAR_* variables
-    envContent = envContent.split('\n')
-      .filter(line => !line.startsWith('LINEAR_'))
+    envContent = envContent
+      .split('\n')
+      .filter((line) => !line.startsWith('LINEAR_'))
       .join('\n');
   }
 
@@ -99,7 +100,6 @@ LINEAR_PROJECT_ID=9d089be4-a284-4879-9b67-f472abecf998
     console.log('  node scripts/linear-cli.js list       # List issues');
     console.log('  node scripts/linear-cli.js create     # Create issue');
     console.log('  node scripts/linear-cli.js cycle      # View current cycle');
-
   } catch (error) {
     console.error('❌ Failed to connect to Linear:', error.message);
     console.error('Please check your API key and try again.');
@@ -108,7 +108,7 @@ LINEAR_PROJECT_ID=9d089be4-a284-4879-9b67-f472abecf998
   rl.close();
 }
 
-setup().catch(error => {
+setup().catch((error) => {
   console.error('Setup failed:', error);
   rl.close();
   process.exit(1);

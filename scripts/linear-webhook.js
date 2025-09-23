@@ -23,10 +23,7 @@ function verifyWebhookSignature(payload, signature, secret) {
   const hmac = crypto.createHmac('sha256', secret);
   hmac.update(payload);
   const expectedSignature = hmac.digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
 }
 
 /**
@@ -71,12 +68,12 @@ async function handleIssueCreated(issue) {
   }
 
   // Trigger BMAD agent based on issue labels
-  if (issue.labels?.some(label => label.name === 'needs-prd')) {
+  if (issue.labels?.some((label) => label.name === 'needs-prd')) {
     console.log('Triggering PM Agent for PRD generation...');
     // TODO: Implement BMAD PM agent trigger
   }
 
-  if (issue.labels?.some(label => label.name === 'needs-architecture')) {
+  if (issue.labels?.some((label) => label.name === 'needs-architecture')) {
     console.log('Triggering Architect Agent for design...');
     // TODO: Implement BMAD Architect agent trigger
   }
@@ -125,7 +122,8 @@ async function handleIssueDeleted(issue) {
  * Ensure feature branch exists for issue
  */
 function ensureFeatureBranch(issue) {
-  const branchName = issue.gitBranchName ||
+  const branchName =
+    issue.gitBranchName ||
     `${CONFIG.GIT_BRANCH_PREFIX}${issue.identifier.toLowerCase()}-${issue.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')

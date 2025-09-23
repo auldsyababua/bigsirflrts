@@ -6,8 +6,8 @@
  * and pg_stat_statements data collection works correctly.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { Client } from "pg";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
+import { Client } from 'pg';
 
 // Determine if we have database configuration available
 const hasDbConfig = !!(
@@ -17,7 +17,7 @@ const hasDbConfig = !!(
   !process.env.CI // Allow local development
 );
 
-describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () => {
+describe.skipIf(!hasDbConfig)('@P0 Database Monitoring Integration Tests', () => {
   let dbClient: Client;
   let testDatabaseUrl: string;
 
@@ -35,7 +35,7 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       testDatabaseUrl = process.env.DATABASE_URL;
     } else {
       // Fallback to local database for development
-      testDatabaseUrl = "postgresql://postgres:password@localhost:5432/flrts_test";
+      testDatabaseUrl = 'postgresql://postgres:password@localhost:5432/flrts_test';
     }
 
     dbClient = new Client({
@@ -44,9 +44,9 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
 
     try {
       await dbClient.connect();
-      console.log("Connected to test database for monitoring tests");
+      console.log('Connected to test database for monitoring tests');
     } catch (error) {
-      console.error("Failed to connect to test database:", error);
+      console.error('Failed to connect to test database:', error);
       throw error;
     }
   });
@@ -60,18 +60,15 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
   beforeEach(async () => {
     // Reset stats for clean test runs
     try {
-      await dbClient.query("SELECT pg_stat_reset();");
+      await dbClient.query('SELECT pg_stat_reset();');
     } catch (error) {
       // Ignore errors if pg_stat_reset requires superuser privileges
-      console.warn(
-        "Could not reset pg_stat (may require superuser):",
-        error.message,
-      );
+      console.warn('Could not reset pg_stat (may require superuser):', error.message);
     }
   });
 
-  describe("1.7-INT-003: pg_stat_statements Data Collection", () => {
-    it("should have pg_stat_statements extension enabled", async () => {
+  describe('1.7-INT-003: pg_stat_statements Data Collection', () => {
+    it('should have pg_stat_statements extension enabled', async () => {
       // Act
       const result = await dbClient.query(`
         SELECT
@@ -85,17 +82,17 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
 
       // Assert
       expect(result.rows.length).toBe(1);
-      expect(result.rows[0].extname).toBe("pg_stat_statements");
+      expect(result.rows[0].extname).toBe('pg_stat_statements');
       expect(result.rows[0].extversion).toBeDefined();
       console.log(`pg_stat_statements version: ${result.rows[0].extversion}`);
     });
 
-    it("should collect query statistics for executed statements", async () => {
+    it('should collect query statistics for executed statements', async () => {
       // Arrange - Execute some test queries to generate stats
       const testQueries = [
-        "SELECT 1 as test_query_1;",
-        "SELECT COUNT(*) FROM information_schema.tables;",
-        "SELECT current_timestamp;",
+        'SELECT 1 as test_query_1;',
+        'SELECT COUNT(*) FROM information_schema.tables;',
+        'SELECT current_timestamp;',
       ];
 
       // Act - Execute test queries
@@ -128,9 +125,9 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       const capturedQueries = statsResult.rows.map((row) => row.query);
       const hasTestQuery = capturedQueries.some(
         (query) =>
-          query.includes("test_query_1") ||
-          query.includes("information_schema.tables") ||
-          query.includes("current_timestamp"),
+          query.includes('test_query_1') ||
+          query.includes('information_schema.tables') ||
+          query.includes('current_timestamp')
       );
       expect(hasTestQuery).toBe(true);
 
@@ -142,9 +139,9 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       }
     });
 
-    it("should track query performance metrics", async () => {
+    it('should track query performance metrics', async () => {
       // Arrange - Execute a query multiple times to build stats
-      const testQuery = "SELECT pg_sleep(0.001);"; // 1ms sleep
+      const testQuery = 'SELECT pg_sleep(0.001);'; // 1ms sleep
       const iterations = 3;
 
       // Act
@@ -184,7 +181,7 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       expect(stats.mean_exec_time).toBeLessThan(100); // Less than 100ms
     });
 
-    it("should capture I/O statistics for queries", async () => {
+    it('should capture I/O statistics for queries', async () => {
       // Arrange - Execute query that involves disk I/O
       const ioQuery = `
         SELECT
@@ -231,8 +228,8 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
     });
   });
 
-  describe("1.7-INT-004: Monitoring Views Data Accuracy", () => {
-    it("should have monitoring schema and views created", async () => {
+  describe('1.7-INT-004: Monitoring Views Data Accuracy', () => {
+    it('should have monitoring schema and views created', async () => {
       // Act - Check if monitoring schema exists
       const schemaResult = await dbClient.query(`
         SELECT schema_name
@@ -242,7 +239,7 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
 
       // Assert monitoring schema
       expect(schemaResult.rows.length).toBe(1);
-      expect(schemaResult.rows[0].schema_name).toBe("monitoring");
+      expect(schemaResult.rows[0].schema_name).toBe('monitoring');
 
       // Act - Check if monitoring views exist
       const viewsResult = await dbClient.query(`
@@ -259,10 +256,10 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       expect(viewsResult.rows.length).toBeGreaterThan(0);
 
       const expectedViews = [
-        "active_connections",
-        "slow_queries",
-        "table_stats",
-        "performance_summary",
+        'active_connections',
+        'slow_queries',
+        'table_stats',
+        'performance_summary',
       ];
 
       const actualViews = viewsResult.rows.map((row) => row.table_name);
@@ -272,7 +269,7 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       }
     });
 
-    it("should provide accurate active connections data", async () => {
+    it('should provide accurate active connections data', async () => {
       // Act
       const result = await dbClient.query(`
         SELECT
@@ -295,20 +292,17 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       const ourConnection = result.rows.find(
         (row) =>
           row.database_name === dbClient.database &&
-          (row.application_name === "" ||
-            row.application_name === "node-postgres"),
+          (row.application_name === '' || row.application_name === 'node-postgres')
       );
 
       expect(ourConnection).toBeDefined();
-      expect(ourConnection.state).toMatch(
-        /^(active|idle|idle in transaction)$/,
-      );
+      expect(ourConnection.state).toMatch(/^(active|idle|idle in transaction)$/);
       expect(ourConnection.query_start).toBeDefined();
     });
 
-    it("should identify slow queries accurately", async () => {
+    it('should identify slow queries accurately', async () => {
       // Arrange - Execute a deliberately slow query
-      const slowQuery = "SELECT pg_sleep(0.1);"; // 100ms sleep
+      const slowQuery = 'SELECT pg_sleep(0.1);'; // 100ms sleep
 
       // Act
       await dbClient.query(slowQuery);
@@ -336,7 +330,7 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       }
     });
 
-    it("should provide table statistics with accurate data", async () => {
+    it('should provide table statistics with accurate data', async () => {
       // Act
       const result = await dbClient.query(`
         SELECT
@@ -366,11 +360,8 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
         expect(tableStats.table_size_mb).toBeGreaterThanOrEqual(0);
 
         // Total should be sum of table and index sizes (approximately)
-        const calculatedTotal =
-          tableStats.table_size_mb + tableStats.index_size_mb;
-        expect(
-          Math.abs(tableStats.total_size_mb - calculatedTotal),
-        ).toBeLessThan(0.1);
+        const calculatedTotal = tableStats.table_size_mb + tableStats.index_size_mb;
+        expect(Math.abs(tableStats.total_size_mb - calculatedTotal)).toBeLessThan(0.1);
 
         // Scan counts should be non-negative
         expect(tableStats.seq_scans).toBeGreaterThanOrEqual(0);
@@ -383,7 +374,7 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       }
     });
 
-    it("should generate performance summary with key metrics", async () => {
+    it('should generate performance summary with key metrics', async () => {
       // Act
       const result = await dbClient.query(`
         SELECT
@@ -399,11 +390,11 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
       expect(result.rows.length).toBeGreaterThan(0);
 
       const expectedMetrics = [
-        "active_connections",
-        "cache_hit_ratio",
-        "total_queries",
-        "slow_queries_count",
-        "database_size_mb",
+        'active_connections',
+        'cache_hit_ratio',
+        'total_queries',
+        'slow_queries_count',
+        'database_size_mb',
       ];
 
       const actualMetrics = result.rows.map((row) => row.metric_name);
@@ -419,44 +410,42 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
         expect(metric.description).toBeDefined();
 
         // Specific validations
-        if (metric.metric_name === "cache_hit_ratio") {
+        if (metric.metric_name === 'cache_hit_ratio') {
           expect(metric.metric_value).toBeGreaterThanOrEqual(0);
           expect(metric.metric_value).toBeLessThanOrEqual(100);
-          expect(metric.unit).toBe("percentage");
+          expect(metric.unit).toBe('percentage');
         }
 
-        if (metric.metric_name === "active_connections") {
+        if (metric.metric_name === 'active_connections') {
           expect(metric.metric_value).toBeGreaterThan(0); // At least our connection
-          expect(metric.unit).toBe("count");
+          expect(metric.unit).toBe('count');
         }
       }
     });
 
-    it("should handle monitoring view queries without errors", async () => {
+    it('should handle monitoring view queries without errors', async () => {
       // Arrange - List of all monitoring views to test
       const monitoringViews = [
-        "monitoring.active_connections",
-        "monitoring.slow_queries",
-        "monitoring.table_stats",
-        "monitoring.performance_summary",
+        'monitoring.active_connections',
+        'monitoring.slow_queries',
+        'monitoring.table_stats',
+        'monitoring.performance_summary',
       ];
 
       // Act & Assert - Each view should be queryable
       for (const viewName of monitoringViews) {
         await expect(async () => {
-          const result = await dbClient.query(
-            `SELECT * FROM ${viewName} LIMIT 1;`,
-          );
+          const result = await dbClient.query(`SELECT * FROM ${viewName} LIMIT 1;`);
           expect(result).toBeDefined();
         }).not.toThrow();
       }
     });
   });
 
-  describe("Database Performance Impact", () => {
-    it("should not significantly impact query performance", async () => {
+  describe('Database Performance Impact', () => {
+    it('should not significantly impact query performance', async () => {
       // Arrange
-      const testQuery = "SELECT COUNT(*) FROM information_schema.columns;";
+      const testQuery = 'SELECT COUNT(*) FROM information_schema.columns;';
       const iterations = 5;
 
       // Measure baseline performance
@@ -469,12 +458,10 @@ describe.skipIf(!hasDbConfig)("@P0 Database Monitoring Integration Tests", () =>
 
       // Assert
       expect(avgQueryTime).toBeLessThan(1000); // Should be < 1 second per query
-      console.log(
-        `Average query time with monitoring: ${avgQueryTime.toFixed(2)}ms`,
-      );
+      console.log(`Average query time with monitoring: ${avgQueryTime.toFixed(2)}ms`);
     });
 
-    it("should maintain reasonable memory usage", async () => {
+    it('should maintain reasonable memory usage', async () => {
       // Act - Check current memory settings and usage
       const memoryResult = await dbClient.query(`
         SELECT

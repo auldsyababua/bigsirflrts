@@ -18,7 +18,7 @@ import { program } from 'commander';
 config();
 
 const linear = new LinearClient({
-  apiKey: process.env.LINEAR_API_KEY
+  apiKey: process.env.LINEAR_API_KEY,
 });
 
 const TEAM_ID = process.env.LINEAR_TEAM_ID;
@@ -43,7 +43,7 @@ program
     // 1. Scan for TODO comments in code
     console.log(chalk.yellow('Scanning for TODOs in code...'));
     const codeFiles = await glob('**/*.{js,ts,jsx,tsx,py,go,java}', {
-      ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**']
+      ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
     });
 
     for (const file of codeFiles) {
@@ -58,7 +58,7 @@ program
           title: match[1].trim(),
           file,
           line: lineNum,
-          priority: match[0].startsWith('BUG') ? 2 : 3
+          priority: match[0].startsWith('BUG') ? 2 : 3,
         });
       }
     }
@@ -66,7 +66,7 @@ program
     // 2. Scan documentation files
     console.log(chalk.yellow('Scanning documentation files...'));
     const docFiles = await glob('**/*.{md,mdx}', {
-      ignore: ['node_modules/**', '.git/**', 'README.md']
+      ignore: ['node_modules/**', '.git/**', 'README.md'],
     });
 
     for (const file of docFiles) {
@@ -82,19 +82,20 @@ program
           description: body.substring(0, 500),
           file,
           labels: frontmatter.tags || [],
-          priority: frontmatter.priority || 3
+          priority: frontmatter.priority || 3,
         });
       }
 
       // Find task lists in markdown
-      const taskListMatches = body.matchAll(/^[-*]\s*\[([ x])\]\s*(.+)/gmi);
+      const taskListMatches = body.matchAll(/^[-*]\s*\[([ x])\]\s*(.+)/gim);
       for (const match of taskListMatches) {
-        if (match[1] === ' ') { // Uncompleted tasks
+        if (match[1] === ' ') {
+          // Uncompleted tasks
           migrationItems.push({
             type: 'task',
             title: match[2].trim(),
             file,
-            completed: false
+            completed: false,
           });
         }
       }
@@ -130,7 +131,7 @@ program
           description: body,
           file,
           labels: [path.dirname(file).split('/').pop()],
-          estimate: frontmatter.estimate
+          estimate: frontmatter.estimate,
         });
       }
     }
@@ -142,7 +143,7 @@ program
       'BACKLOG.md',
       'CONTRIBUTING.md',
       'docs/tasks.md',
-      'docs/features.md'
+      'docs/features.md',
     ];
 
     for (const file of projectFiles) {
@@ -159,7 +160,7 @@ program
               type: 'epic',
               title: title,
               file,
-              description: `Migrated from ${file}`
+              description: `Migrated from ${file}`,
             });
           }
         }
@@ -180,7 +181,7 @@ program
 
     console.log(chalk.blue('\nTop Priority Items:\n'));
     const priorityItems = migrationItems
-      .filter(item => item.priority && item.priority <= 2)
+      .filter((item) => item.priority && item.priority <= 2)
       .slice(0, 10);
 
     for (const item of priorityItems) {
@@ -222,13 +223,13 @@ program
     // Get team states
     const team = await linear.team(TEAM_ID);
     const states = await team.states();
-    const backlogState = states.nodes.find(s => s.name === 'Backlog');
-    const todoState = states.nodes.find(s => s.name === 'Todo');
+    const backlogState = states.nodes.find((s) => s.name === 'Backlog');
+    const todoState = states.nodes.find((s) => s.name === 'Todo');
 
     // Group items by type
-    const epics = items.filter(i => i.type === 'epic');
-    const stories = items.filter(i => i.type === 'story');
-    const tasks = items.filter(i => i.type === 'task' || i.type === 'todo');
+    const epics = items.filter((i) => i.type === 'epic');
+    const stories = items.filter((i) => i.type === 'story');
+    const tasks = items.filter((i) => i.type === 'task' || i.type === 'todo');
 
     // Create parent issues first (epics)
     const epicMap = {};
@@ -242,7 +243,7 @@ program
           title: `[EPIC] ${epic.title}`,
           description: epic.description || `Migrated from ${epic.file}`,
           priority: epic.priority || 3,
-          stateId: backlogState.id
+          stateId: backlogState.id,
         });
 
         epicMap[epic.title] = issue.issue.id;
@@ -257,7 +258,7 @@ program
       console.log(chalk.cyan(`Creating story: ${story.title}`));
 
       // Find parent epic if applicable
-      const parentEpic = Object.keys(epicMap).find(epicTitle =>
+      const parentEpic = Object.keys(epicMap).find((epicTitle) =>
         story.file?.includes(epicTitle.toLowerCase().replace(/\s+/g, '-'))
       );
 
@@ -270,7 +271,7 @@ program
           priority: story.priority || 3,
           stateId: backlogState.id,
           parentId: parentEpic ? epicMap[parentEpic] : undefined,
-          estimate: story.estimate
+          estimate: story.estimate,
         });
 
         console.log(chalk.green(`  ✅ Created ${issue.issue.identifier}`));
@@ -287,14 +288,14 @@ program
       const batch = tasks.slice(i, i + BATCH_SIZE);
 
       if (!options.dryRun) {
-        const promises = batch.map(task =>
+        const promises = batch.map((task) =>
           linear.createIssue({
             teamId: TEAM_ID,
             projectId: PROJECT_ID,
             title: task.title,
             description: `From ${task.file}${task.line ? `:${task.line}` : ''}`,
             priority: task.priority || 4,
-            stateId: todoState.id
+            stateId: todoState.id,
           })
         );
 
@@ -335,7 +336,7 @@ program
       { name: 'bmad:qa', color: '#10B981', description: 'QA Agent work' },
       { name: 'needs-prd', color: '#F59E0B', description: 'Requires PRD generation' },
       { name: 'needs-architecture', color: '#8B5CF6', description: 'Requires architecture design' },
-      { name: 'needs-tests', color: '#EF4444', description: 'Requires test coverage' }
+      { name: 'needs-tests', color: '#EF4444', description: 'Requires test coverage' },
     ];
 
     console.log(chalk.yellow('Creating BMAD labels...'));
@@ -343,7 +344,7 @@ program
       try {
         await linear.createIssueLabel({
           teamId: TEAM_ID,
-          ...label
+          ...label,
         });
         console.log(chalk.green(`  ✅ Created label: ${label.name}`));
       } catch (error) {
@@ -376,7 +377,7 @@ This template demonstrates the BMAD development flow:
 - [ ] Implementation complete
 - [ ] Tests passing
 - [ ] Documentation updated`,
-        labels: ['template']
+        labels: ['template'],
       },
       {
         title: '[Template] Sprint Planning',
@@ -392,8 +393,8 @@ This template demonstrates the BMAD development flow:
 - Available developers:
 - Sprint duration:
 - Focus areas:`,
-        labels: ['template', 'planning']
-      }
+        labels: ['template', 'planning'],
+      },
     ];
 
     for (const template of templates) {
@@ -401,7 +402,7 @@ This template demonstrates the BMAD development flow:
         teamId: TEAM_ID,
         projectId: PROJECT_ID,
         ...template,
-        priority: 0  // No priority for templates
+        priority: 0, // No priority for templates
       });
       console.log(chalk.green(`  ✅ Created template: ${template.title}`));
     }

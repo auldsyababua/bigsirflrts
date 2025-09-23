@@ -9,9 +9,9 @@
  *   node webhook-monitor.js --test    # Single health check
  */
 
-import { testConfig } from "../tests/config/test-config.js";
-import fetch from "node-fetch";
-import { createClient } from "@supabase/supabase-js";
+import { testConfig } from '../tests/config/test-config.js';
+import fetch from 'node-fetch';
+import { createClient } from '@supabase/supabase-js';
 
 class WebhookMonitor {
   constructor() {
@@ -28,10 +28,7 @@ class WebhookMonitor {
 
     // Initialize Supabase client for monitoring queries
     if (testConfig.supabase.url && testConfig.supabase.serviceRoleKey) {
-      this.supabase = createClient(
-        testConfig.supabase.url,
-        testConfig.supabase.serviceRoleKey,
-      );
+      this.supabase = createClient(testConfig.supabase.url, testConfig.supabase.serviceRoleKey);
     }
   }
 
@@ -41,14 +38,14 @@ class WebhookMonitor {
 
       // Test payload matching Story 1.5 webhook format
       const testPayload = {
-        type: "HEALTH_CHECK",
-        table: "tasks",
-        schema: "public",
+        type: 'HEALTH_CHECK',
+        table: 'tasks',
+        schema: 'public',
         record: {
           id: `health-check-${Date.now()}`,
-          title: "Health Check Task",
-          status: "pending",
-          priority: "low",
+          title: 'Health Check Task',
+          status: 'pending',
+          priority: 'low',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -56,8 +53,8 @@ class WebhookMonitor {
       };
 
       const response = await fetch(testConfig.n8n.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(testPayload),
         timeout: 5000,
       });
@@ -66,18 +63,18 @@ class WebhookMonitor {
 
       if (!response.ok) {
         await this.sendAlert(
-          "webhook_failure",
+          'webhook_failure',
           `🚨 Webhook health check failed: HTTP ${response.status}`,
-          "critical",
+          'critical'
         );
         return { success: false, duration, statusCode: response.status };
       }
 
       if (duration > this.alertThresholds.responseTime) {
         await this.sendAlert(
-          "performance_warning",
+          'performance_warning',
           `⚠️ Webhook response time ${duration.toFixed(2)}s exceeds ${this.alertThresholds.responseTime}s threshold`,
-          "warning",
+          'warning'
         );
       }
 
@@ -85,9 +82,9 @@ class WebhookMonitor {
       return { success: true, duration, statusCode: response.status };
     } catch (error) {
       await this.sendAlert(
-        "webhook_error",
+        'webhook_error',
         `🚨 Webhook health check error: ${error.message}`,
-        "critical",
+        'critical'
       );
       return { success: false, error: error.message };
     }
@@ -95,32 +92,27 @@ class WebhookMonitor {
 
   async checkWebhookDeliveryStats() {
     if (!this.supabase) {
-      this.log("Supabase client not available for delivery stats");
+      this.log('Supabase client not available for delivery stats');
       return null;
     }
 
     try {
       // Query webhook delivery success rate (last hour)
-      const { data, error } = await this.supabase.rpc("get_webhook_stats", {
+      const { data, error } = await this.supabase.rpc('get_webhook_stats', {
         hours_back: 1,
-        webhook_pattern: "%n8n-rrrs.sliplane.app%",
+        webhook_pattern: '%n8n-rrrs.sliplane.app%',
       });
 
       if (error) {
         // Fallback to direct table query if RPC not available
         const { data: deliveries, error: queryError } = await this.supabase
-          .from("net.http_request_queue")
-          .select("status_code, created_at, updated_at")
-          .like("url", "%n8n-rrrs.sliplane.app%")
-          .gte(
-            "created_at",
-            new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-          );
+          .from('net.http_request_queue')
+          .select('status_code, created_at, updated_at')
+          .like('url', '%n8n-rrrs.sliplane.app%')
+          .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString());
 
         if (queryError) {
-          this.log(
-            `Failed to query webhook delivery stats: ${queryError.message}`,
-          );
+          this.log(`Failed to query webhook delivery stats: ${queryError.message}`);
           return null;
         }
 
@@ -140,7 +132,7 @@ class WebhookMonitor {
     }
 
     const successful = deliveries.filter(
-      (d) => d.status_code && d.status_code >= 200 && d.status_code < 300,
+      (d) => d.status_code && d.status_code >= 200 && d.status_code < 300
     ).length;
 
     return {
@@ -157,7 +149,7 @@ class WebhookMonitor {
     };
   }
 
-  async sendAlert(alertType, message, severity = "warning") {
+  async sendAlert(alertType, message, severity = 'warning') {
     const now = Date.now();
     const lastAlert = this.lastAlerts.get(alertType);
 
@@ -180,15 +172,15 @@ class WebhookMonitor {
           text: logMessage,
           attachments: [
             {
-              color: severity === "critical" ? "danger" : "warning",
+              color: severity === 'critical' ? 'danger' : 'warning',
               fields: [
                 {
-                  title: "Alert Type",
+                  title: 'Alert Type',
                   value: alertType,
                   short: true,
                 },
                 {
-                  title: "Timestamp",
+                  title: 'Timestamp',
                   value: timestamp,
                   short: true,
                 },
@@ -198,8 +190,8 @@ class WebhookMonitor {
         };
 
         await fetch(process.env.SLACK_ALERT_WEBHOOK, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(slackPayload),
         });
       } catch (err) {
@@ -209,25 +201,23 @@ class WebhookMonitor {
   }
 
   async generateDailyReport() {
-    this.log("Generating daily webhook monitoring report...");
+    this.log('Generating daily webhook monitoring report...');
 
     const stats = await this.checkWebhookDeliveryStats();
     const healthCheck = await this.checkWebhookHealth();
 
     const report = {
       timestamp: new Date().toISOString(),
-      period: "24 hours",
+      period: '24 hours',
       webhook_health: {
-        current_status: healthCheck.success ? "healthy" : "failed",
-        response_time: healthCheck.duration
-          ? `${healthCheck.duration.toFixed(2)}s`
-          : "N/A",
-        status_code: healthCheck.statusCode || "N/A",
+        current_status: healthCheck.success ? 'healthy' : 'failed',
+        response_time: healthCheck.duration ? `${healthCheck.duration.toFixed(2)}s` : 'N/A',
+        status_code: healthCheck.statusCode || 'N/A',
       },
       delivery_stats: stats || {
-        total_deliveries: "Unable to fetch",
-        success_rate: "Unable to fetch",
-        avg_response_time: "Unable to fetch",
+        total_deliveries: 'Unable to fetch',
+        success_rate: 'Unable to fetch',
+        avg_response_time: 'Unable to fetch',
       },
       thresholds: {
         success_rate_minimum: `${this.alertThresholds.successRate}%`,
@@ -237,8 +227,8 @@ class WebhookMonitor {
       recommendations: this.generateRecommendations(healthCheck, stats),
     };
 
-    console.log("\n📊 DAILY WEBHOOK MONITORING REPORT");
-    console.log("=====================================");
+    console.log('\n📊 DAILY WEBHOOK MONITORING REPORT');
+    console.log('=====================================');
     console.log(JSON.stringify(report, null, 2));
 
     return report;
@@ -249,35 +239,30 @@ class WebhookMonitor {
 
     if (!healthCheck.success) {
       recommendations.push(
-        "🚨 CRITICAL: Webhook endpoint is not responding - investigate n8n workflow status",
+        '🚨 CRITICAL: Webhook endpoint is not responding - investigate n8n workflow status'
       );
     }
 
-    if (
-      healthCheck.duration &&
-      healthCheck.duration > this.alertThresholds.responseTime
-    ) {
+    if (healthCheck.duration && healthCheck.duration > this.alertThresholds.responseTime) {
       recommendations.push(
-        "⚠️ WARNING: Webhook response time exceeds threshold - check n8n performance",
+        '⚠️ WARNING: Webhook response time exceeds threshold - check n8n performance'
       );
     }
 
     if (stats && stats.success_rate < this.alertThresholds.successRate) {
       recommendations.push(
-        "⚠️ WARNING: Webhook success rate below threshold - review failed deliveries",
+        '⚠️ WARNING: Webhook success rate below threshold - review failed deliveries'
       );
     }
 
     if (stats && stats.total_deliveries === 0) {
       recommendations.push(
-        "⚠️ WARNING: No webhook deliveries detected - verify database triggers are active",
+        '⚠️ WARNING: No webhook deliveries detected - verify database triggers are active'
       );
     }
 
     if (recommendations.length === 0) {
-      recommendations.push(
-        "✅ All systems operating within acceptable parameters",
-      );
+      recommendations.push('✅ All systems operating within acceptable parameters');
     }
 
     return recommendations;
@@ -289,13 +274,13 @@ class WebhookMonitor {
   }
 
   async runSingleCheck() {
-    this.log("Running single webhook health check...");
+    this.log('Running single webhook health check...');
     const result = await this.checkWebhookHealth();
     const stats = await this.checkWebhookDeliveryStats();
 
     if (stats) {
       this.log(
-        `Delivery stats (last hour): ${stats.total_deliveries} total, ${stats.success_rate.toFixed(1)}% success rate`,
+        `Delivery stats (last hour): ${stats.total_deliveries} total, ${stats.success_rate.toFixed(1)}% success rate`
       );
     }
 
@@ -304,12 +289,12 @@ class WebhookMonitor {
 
   startMonitoring() {
     if (this.isRunning) {
-      this.log("Monitoring is already running");
+      this.log('Monitoring is already running');
       return;
     }
 
     this.isRunning = true;
-    this.log("Starting webhook monitoring...");
+    this.log('Starting webhook monitoring...');
     this.log(`Check interval: ${this.alertThresholds.checkInterval / 1000}s`);
     this.log(`Response time threshold: ${this.alertThresholds.responseTime}s`);
     this.log(`Success rate threshold: ${this.alertThresholds.successRate}%`);
@@ -331,23 +316,23 @@ class WebhookMonitor {
         const stats = await this.checkWebhookDeliveryStats();
         if (stats && stats.success_rate < this.alertThresholds.successRate) {
           await this.sendAlert(
-            "success_rate_low",
+            'success_rate_low',
             `⚠️ Webhook success rate ${stats.success_rate.toFixed(1)}% below ${this.alertThresholds.successRate}% threshold`,
-            "warning",
+            'warning'
           );
         }
       }
     }, this.alertThresholds.checkInterval);
 
     // Handle graceful shutdown
-    process.on("SIGINT", () => {
-      this.log("Received SIGINT, stopping monitoring...");
+    process.on('SIGINT', () => {
+      this.log('Received SIGINT, stopping monitoring...');
       this.isRunning = false;
       process.exit(0);
     });
 
-    process.on("SIGTERM", () => {
-      this.log("Received SIGTERM, stopping monitoring...");
+    process.on('SIGTERM', () => {
+      this.log('Received SIGTERM, stopping monitoring...');
       this.isRunning = false;
       process.exit(0);
     });
@@ -359,9 +344,9 @@ async function main() {
   const monitor = new WebhookMonitor();
   const args = process.argv.slice(2);
 
-  if (args.includes("--report")) {
+  if (args.includes('--report')) {
     await monitor.generateDailyReport();
-  } else if (args.includes("--test")) {
+  } else if (args.includes('--test')) {
     const success = await monitor.runSingleCheck();
     process.exit(success ? 0 : 1);
   } else {

@@ -2,40 +2,39 @@
 // Example implementation with Sentry error tracking and performance monitoring
 // Based on the original parse-request function with Sentry integration
 
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
-import * as Sentry from "https://deno.land/x/sentry/index.mjs";
+import { serve } from 'https://deno.land/std@0.208.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
+import * as Sentry from 'https://deno.land/x/sentry/index.mjs';
 
 // Initialize Sentry for error tracking and performance monitoring
 Sentry.init({
-  dsn: Deno.env.get("SENTRY_DSN"),
+  dsn: Deno.env.get('SENTRY_DSN'),
   defaultIntegrations: false, // Disabled due to Deno.serve scope issues
   tracesSampleRate: 1.0, // 100% of transactions for development/testing
   profilesSampleRate: 1.0, // Performance profiling
-  environment: Deno.env.get("SUPABASE_ENVIRONMENT") || "development",
-  release: Deno.env.get("SUPABASE_FUNCTION_VERSION") || "1.0.0",
+  environment: Deno.env.get('SUPABASE_ENVIRONMENT') || 'development',
+  release: Deno.env.get('SUPABASE_FUNCTION_VERSION') || '1.0.0',
 });
 
 // Set region and execution_id as custom tags for better tracking
-Sentry.setTag("region", Deno.env.get("SB_REGION") || "unknown");
-Sentry.setTag("execution_id", Deno.env.get("SB_EXECUTION_ID") || "unknown");
-Sentry.setTag("function_name", "parse-request");
+Sentry.setTag('region', Deno.env.get('SB_REGION') || 'unknown');
+Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID') || 'unknown');
+Sentry.setTag('function_name', 'parse-request');
 
 // Environment variables
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
-const N8N_WEBHOOK_URL = Deno.env.get("N8N_WEBHOOK_URL")!;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!;
+const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL')!;
 
 // Initialize Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 // CORS headers for browser requests
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 // Simple parse patterns for immediate response
@@ -50,8 +49,8 @@ const SIMPLE_PATTERNS = {
 
 serve(async (req: Request) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   // Use Sentry scope isolation for proper request tracking
@@ -59,9 +58,9 @@ serve(async (req: Request) => {
     const startTime = Date.now();
 
     // Set request context for this scope
-    scope.setTag("request_method", req.method);
-    scope.setTag("request_url", req.url);
-    scope.setContext("request", {
+    scope.setTag('request_method', req.method);
+    scope.setTag('request_url', req.url);
+    scope.setContext('request', {
       method: req.method,
       url: req.url,
       headers: Object.fromEntries(req.headers.entries()),
@@ -70,59 +69,56 @@ serve(async (req: Request) => {
     try {
       // Start performance transaction
       const transaction = Sentry.startTransaction({
-        name: "parse-request-handler",
-        op: "http.server",
+        name: 'parse-request-handler',
+        op: 'http.server',
       });
 
       scope.setSpan(transaction);
 
       // Authorization: Accept either Supabase JWT or custom PARSE_AUTH_TOKEN
-      const authHeader = req.headers.get("Authorization");
-      const PARSE_AUTH_TOKEN = Deno.env.get("PARSE_AUTH_TOKEN");
+      const authHeader = req.headers.get('Authorization');
+      const PARSE_AUTH_TOKEN = Deno.env.get('PARSE_AUTH_TOKEN');
 
       // Add authentication span
       const authSpan = transaction.startChild({
-        op: "auth.validate",
-        description: "Validate authentication",
+        op: 'auth.validate',
+        description: 'Validate authentication',
       });
 
       scope.setUser({
-        id: authHeader ? "authenticated" : "anonymous",
+        id: authHeader ? 'authenticated' : 'anonymous',
         authMethod:
           PARSE_AUTH_TOKEN && authHeader === `Bearer ${PARSE_AUTH_TOKEN}`
-            ? "custom_token"
-            : "supabase_jwt",
+            ? 'custom_token'
+            : 'supabase_jwt',
       });
 
       authSpan.finish();
 
       // Parse request body with error handling
       const parseSpan = transaction.startChild({
-        op: "request.parse",
-        description: "Parse request body",
+        op: 'request.parse',
+        description: 'Parse request body',
       });
 
       let requestData;
       try {
         requestData = await req.json();
       } catch (parseError) {
-        parseSpan.setStatus("invalid_argument");
+        parseSpan.setStatus('invalid_argument');
         parseSpan.finish();
         transaction.finish();
 
-        Sentry.captureException(new Error("Invalid JSON in request body"), {
+        Sentry.captureException(new Error('Invalid JSON in request body'), {
           extra: { originalError: parseError.message },
         });
 
         await Sentry.flush(2000);
 
-        return new Response(
-          JSON.stringify({ error: "Invalid JSON in request body" }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
+        return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       parseSpan.finish();
@@ -130,113 +126,110 @@ serve(async (req: Request) => {
       const { input, context } = requestData;
 
       if (!input) {
-        transaction.setStatus("invalid_argument");
+        transaction.setStatus('invalid_argument');
         transaction.finish();
 
-        scope.setContext("validation", { missingField: "input" });
-        Sentry.captureMessage("Missing required input field", "warning");
+        scope.setContext('validation', { missingField: 'input' });
+        Sentry.captureMessage('Missing required input field', 'warning');
 
         await Sentry.flush(2000);
 
-        return new Response(
-          JSON.stringify({ error: "Input text is required" }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
+        return new Response(JSON.stringify({ error: 'Input text is required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       console.log(`Parsing input: ${input.substring(0, 100)}`);
-      scope.setContext("parsing", {
+      scope.setContext('parsing', {
         inputLength: input.length,
         inputPreview: input.substring(0, 100),
       });
 
       // Quick parse attempt with performance tracking
       const quickParseSpan = transaction.startChild({
-        op: "parse.quick",
-        description: "Attempt quick pattern matching",
+        op: 'parse.quick',
+        description: 'Attempt quick pattern matching',
       });
 
       const quickParse = attemptQuickParse(input);
-      quickParseSpan.setData("found_quick_match", !!quickParse);
+      quickParseSpan.setData('found_quick_match', !!quickParse);
       quickParseSpan.finish();
 
       if (quickParse) {
         // Log successful quick parse
         const logSpan = transaction.startChild({
-          op: "database.insert",
-          description: "Log quick parse result",
+          op: 'database.insert',
+          description: 'Log quick parse result',
         });
 
-        await logParse(input, quickParse, "quick-parse", true);
+        await logParse(input, quickParse, 'quick-parse', true);
         logSpan.finish();
 
-        scope.setTag("parse_type", "quick");
-        scope.setTag("parse_confidence", quickParse.confidence.toString());
+        scope.setTag('parse_type', 'quick');
+        scope.setTag('parse_confidence', quickParse.confidence.toString());
 
-        transaction.setStatus("ok");
+        transaction.setStatus('ok');
         transaction.finish();
 
         const responseTime = Date.now() - startTime;
-        scope.setContext("performance", { responseTime });
+        scope.setContext('performance', { responseTime });
 
         return new Response(
           JSON.stringify({
             success: true,
             data: quickParse,
-            parseType: "quick",
+            parseType: 'quick',
             confidence: quickParse.confidence,
           }),
           {
             status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
         );
       }
 
       // Complex parsing queue
       const queueSpan = transaction.startChild({
-        op: "queue.submit",
-        description: "Queue complex parsing request",
+        op: 'queue.submit',
+        description: 'Queue complex parsing request',
       });
 
       const queueId = await queueComplexParse(input, context, authHeader);
-      queueSpan.setData("queue_id", queueId);
+      queueSpan.setData('queue_id', queueId);
       queueSpan.finish();
 
-      scope.setTag("parse_type", "complex");
-      scope.setContext("queue", { queueId });
+      scope.setTag('parse_type', 'complex');
+      scope.setContext('queue', { queueId });
 
-      transaction.setStatus("ok");
+      transaction.setStatus('ok');
       transaction.finish();
 
       const responseTime = Date.now() - startTime;
-      scope.setContext("performance", { responseTime });
+      scope.setContext('performance', { responseTime });
 
       return new Response(
         JSON.stringify({
           success: true,
           data: {
-            status: "pending",
+            status: 'pending',
             queueId: queueId,
-            message: "Complex parsing queued for processing",
-            estimatedTime: "2-5 seconds",
+            message: 'Complex parsing queued for processing',
+            estimatedTime: '2-5 seconds',
           },
-          parseType: "complex",
+          parseType: 'complex',
         }),
         {
           status: 202, // Accepted for processing
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     } catch (error) {
-      console.error("Parse request error:", error);
+      console.error('Parse request error:', error);
 
       // Capture detailed error context
-      scope.setLevel("error");
-      scope.setContext("error_details", {
+      scope.setLevel('error');
+      scope.setContext('error_details', {
         name: error.name,
         message: error.message,
         stack: error.stack,
@@ -248,14 +241,14 @@ serve(async (req: Request) => {
 
       return new Response(
         JSON.stringify({
-          error: "Failed to process parse request",
+          error: 'Failed to process parse request',
           message: error.message,
-          requestId: scope.getTag("execution_id"),
+          requestId: scope.getTag('execution_id'),
         }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
   });
@@ -269,22 +262,18 @@ function attemptQuickParse(input: string): any | null {
   if (!createMatch) return null;
 
   const taskDescription = createMatch[3];
-  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map(
-    (m) => m[1],
-  );
-  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map(
-    (m) => m[1],
-  );
+  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map((m) => m[1]);
+  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map((m) => m[1]);
   const priorityMatch = input.match(SIMPLE_PATTERNS.PRIORITY);
   const dueDateMatch = input.match(SIMPLE_PATTERNS.DUE_DATE);
 
   const parsed = {
-    operation: "CREATE",
-    type: "TASK",
-    subject: taskDescription.replace(/@\w+/g, "").replace(/#\w+/g, "").trim(),
+    operation: 'CREATE',
+    type: 'TASK',
+    subject: taskDescription.replace(/@\w+/g, '').replace(/#\w+/g, '').trim(),
     assignees: assignees.length > 0 ? assignees : undefined,
     projects: projects.length > 0 ? projects : undefined,
-    priority: priorityMatch ? normalizePriority(priorityMatch[1]) : "normal",
+    priority: priorityMatch ? normalizePriority(priorityMatch[1]) : 'normal',
     dueDate: dueDateMatch ? parseDueDate(dueDateMatch[2]) : undefined,
     confidence: calculateConfidence(input, assignees.length, projects.length),
     raw: input,
@@ -295,9 +284,9 @@ function attemptQuickParse(input: string): any | null {
 
 function normalizePriority(priority: string): string {
   const p = priority.toLowerCase();
-  if (p === "urgent" || p === "critical") return "high";
-  if (p === "low") return "low";
-  return "normal";
+  if (p === 'urgent' || p === 'critical') return 'high';
+  if (p === 'low') return 'low';
+  return 'normal';
 }
 
 function parseDueDate(dateStr: string): string {
@@ -310,15 +299,7 @@ function parseDueDate(dateStr: string): string {
     tomorrow: tomorrow,
   };
 
-  const weekdays = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ];
+  const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const currentDay = today.getDay();
 
   weekdays.forEach((day, index) => {
@@ -329,14 +310,10 @@ function parseDueDate(dateStr: string): string {
   });
 
   const targetDate = dateMap[dateStr.toLowerCase()];
-  return targetDate ? targetDate.toISOString().split("T")[0] : dateStr;
+  return targetDate ? targetDate.toISOString().split('T')[0] : dateStr;
 }
 
-function calculateConfidence(
-  input: string,
-  assigneeCount: number,
-  projectCount: number,
-): number {
+function calculateConfidence(input: string, assigneeCount: number, projectCount: number): number {
   let confidence = 0.5;
 
   if (assigneeCount > 0) confidence += 0.2;
@@ -350,11 +327,7 @@ function calculateConfidence(
   return Math.min(Math.max(confidence, 0), 1);
 }
 
-async function queueComplexParse(
-  input: string,
-  context: any,
-  authHeader: string,
-): Promise<string> {
+async function queueComplexParse(input: string, context: any, authHeader: string): Promise<string> {
   const queueId = crypto.randomUUID();
 
   const queueData = {
@@ -362,37 +335,37 @@ async function queueComplexParse(
     timestamp: new Date().toISOString(),
     input,
     context,
-    source: "parse-edge-function-sentry",
-    authHeader: authHeader.substring(0, 20) + "...",
+    source: 'parse-edge-function-sentry',
+    authHeader: authHeader.substring(0, 20) + '...',
   };
 
   try {
     await fetch(N8N_WEBHOOK_URL, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "X-Queue-Type": "complex-parse",
+        'Content-Type': 'application/json',
+        'X-Queue-Type': 'complex-parse',
       },
       body: JSON.stringify(queueData),
     });
   } catch (err) {
     Sentry.captureException(err, {
-      tags: { operation: "n8n_webhook_queue" },
+      tags: { operation: 'n8n_webhook_queue' },
       extra: { queueId, webhookUrl: N8N_WEBHOOK_URL },
     });
-    console.error("Failed to queue to n8n:", err);
+    console.error('Failed to queue to n8n:', err);
   }
 
   try {
-    await supabase.from("parse_queue").insert({
+    await supabase.from('parse_queue').insert({
       queue_id: queueId,
       input: input.substring(0, 500),
-      status: "queued",
+      status: 'queued',
       created_at: new Date().toISOString(),
     });
   } catch (err) {
     Sentry.captureException(err, {
-      tags: { operation: "supabase_queue_insert" },
+      tags: { operation: 'supabase_queue_insert' },
       extra: { queueId },
     });
   }
@@ -404,10 +377,10 @@ async function logParse(
   input: string,
   result: any,
   parseType: string,
-  success: boolean,
+  success: boolean
 ): Promise<void> {
   try {
-    await supabase.from("parse_logs").insert({
+    await supabase.from('parse_logs').insert({
       input: input.substring(0, 200),
       result: result,
       parse_type: parseType,
@@ -417,9 +390,9 @@ async function logParse(
     });
   } catch (error) {
     Sentry.captureException(error, {
-      tags: { operation: "parse_log_insert" },
+      tags: { operation: 'parse_log_insert' },
       extra: { parseType, success },
     });
-    console.error("Failed to log parse:", error);
+    console.error('Failed to log parse:', error);
   }
 }

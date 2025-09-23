@@ -14,11 +14,8 @@ console.log('Anon key exists:', !!process.env.SUPABASE_ANON_KEY);
 async function test() {
   try {
     // Try a simple query
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('id, task_title')
-      .limit(1);
-    
+    const { data, error } = await supabase.from('tasks').select('id, task_title').limit(1);
+
     console.log('Query result:', { data, error });
   } catch (err) {
     console.error('Error:', err);

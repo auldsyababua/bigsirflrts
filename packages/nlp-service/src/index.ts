@@ -1,15 +1,15 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import { createClient } from "@supabase/supabase-js";
-import { TaskParser } from "./parser";
-import { ParseRequestSchema } from "./schemas";
-import { parseExamples } from "./prompt";
-import { logger, requestLogger } from "./logger";
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
+import { TaskParser } from './parser';
+import { ParseRequestSchema } from './schemas';
+import { parseExamples } from './prompt';
+import { logger, requestLogger } from './logger';
 
 // Load environment variables
 dotenv.config();
-dotenv.config({ path: ".env.local", override: true });
+dotenv.config({ path: '.env.local', override: true });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,38 +20,35 @@ app.use(express.json());
 app.use(requestLogger);
 
 // Initialize services
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!,
-);
+const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
 
 // Debug: Check if API key is loaded
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) {
-  logger.error("❌ OPENAI_API_KEY not found in environment");
+  logger.error('❌ OPENAI_API_KEY not found in environment');
   process.exit(1);
 }
-logger.info("✅ OpenAI API key loaded", { keyLength: apiKey.length });
+logger.info('✅ OpenAI API key loaded', { keyLength: apiKey.length });
 
 const parser = new TaskParser(apiKey);
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+app.get('/health', (req, res) => {
   res.json({
-    status: "healthy",
-    service: "nlp-service",
+    status: 'healthy',
+    service: 'nlp-service',
     timestamp: new Date().toISOString(),
   });
 });
 
 // Main parsing endpoint
-app.post("/parse", async (req, res) => {
+app.post('/parse', async (req, res) => {
   try {
     // Validate request
     const validatedRequest = ParseRequestSchema.parse(req.body);
     const { input, userId, context } = validatedRequest;
 
-    logger.info("Parsing input", { input, userId });
+    logger.info('Parsing input', { input, userId });
 
     // Parse with OpenAI
     const startTime = Date.now();
@@ -70,16 +67,14 @@ app.post("/parse", async (req, res) => {
       parsed_output: parsed,
       reasoning: parsed.reasoning,
       success: validation.valid,
-      error_message: validation.valid ? null : validation.errors.join("; "),
+      error_message: validation.valid ? null : validation.errors.join('; '),
       user_id: userId || null,
     };
 
-    const { error: logError } = await supabase
-      .from("parsing_logs")
-      .insert(logEntry);
+    const { error: logError } = await supabase.from('parsing_logs').insert(logEntry);
 
     if (logError) {
-      logger.error("Failed to log to Supabase", { error: logError });
+      logger.error('Failed to log to Supabase', { error: logError });
     }
 
     // Return response
@@ -93,35 +88,35 @@ app.post("/parse", async (req, res) => {
       },
     });
   } catch (error) {
-    logger.error("Parse error", {
-      error: error instanceof Error ? error.message : "Unknown error",
+    logger.error('Parse error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
     });
 
     // Log error to Supabase
     try {
-      await supabase.from("parsing_logs").insert({
-        input_text: req.body.input || "INVALID_INPUT",
+      await supabase.from('parsing_logs').insert({
+        input_text: req.body.input || 'INVALID_INPUT',
         parsed_output: {},
-        reasoning: "Error during parsing",
+        reasoning: 'Error during parsing',
         success: false,
-        error_message: error instanceof Error ? error.message : "Unknown error",
+        error_message: error instanceof Error ? error.message : 'Unknown error',
         user_id: req.body.userId || null,
       });
     } catch (logError) {
-      logger.error("Failed to log error", { error: logError });
+      logger.error('Failed to log error', { error: logError });
     }
 
     res.status(400).json({
       success: false,
-      error: error instanceof Error ? error.message : "Failed to parse input",
-      hint: "Check that your input is a valid task request",
+      error: error instanceof Error ? error.message : 'Failed to parse input',
+      hint: 'Check that your input is a valid task request',
     });
   }
 });
 
 // Test endpoint with examples
-app.get("/examples", (req, res) => {
+app.get('/examples', (req, res) => {
   res.json({
     examples: parseExamples,
     usage: 'POST /parse with { "input": "your task here" }',
@@ -129,12 +124,12 @@ app.get("/examples", (req, res) => {
 });
 
 // Get parsing history (requires auth in production)
-app.get("/history", async (req, res) => {
+app.get('/history', async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from("parsing_logs")
-      .select("*")
-      .order("created_at", { ascending: false })
+      .from('parsing_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
       .limit(20);
 
     if (error) throw error;
@@ -145,23 +140,21 @@ app.get("/history", async (req, res) => {
       count: data?.length || 0,
     });
   } catch (error) {
-    logger.error("History error", {
-      error: error instanceof Error ? error.message : "Unknown error",
+    logger.error('History error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
     res.status(500).json({
       success: false,
-      error: "Failed to fetch history",
+      error: 'Failed to fetch history',
     });
   }
 });
 
 // Analytics endpoint
-app.get("/analytics", async (req, res) => {
+app.get('/analytics', async (req, res) => {
   try {
     // Get success rate
-    const { data: stats, error } = await supabase
-      .from("parsing_logs")
-      .select("success");
+    const { data: stats, error } = await supabase.from('parsing_logs').select('success');
 
     if (error) throw error;
 
@@ -173,23 +166,22 @@ app.get("/analytics", async (req, res) => {
       total,
       successful,
       failed,
-      successRate:
-        total > 0 ? ((successful / total) * 100).toFixed(1) + "%" : "N/A",
+      successRate: total > 0 ? ((successful / total) * 100).toFixed(1) + '%' : 'N/A',
     });
   } catch (error) {
-    logger.error("Analytics error", {
-      error: error instanceof Error ? error.message : "Unknown error",
+    logger.error('Analytics error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
     res.status(500).json({
       success: false,
-      error: "Failed to fetch analytics",
+      error: 'Failed to fetch analytics',
     });
   }
 });
 
 // Start server
 app.listen(PORT, () => {
-  logger.info("🚀 NLP Service started", {
+  logger.info('🚀 NLP Service started', {
     port: PORT,
     endpoints: {
       examples: `http://localhost:${PORT}/examples`,

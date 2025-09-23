@@ -16,11 +16,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
-import {
-  testConfig,
-  validateTestConfig,
-  getSupabaseHeaders,
-} from '../config/test-config';
+import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
 
 // Test configuration for retry scenarios
 const RETRY_TEST_CONFIG = {
@@ -37,20 +33,13 @@ const RETRY_TEST_CONFIG = {
 
   // Mock webhook endpoints for failure simulation
   mockFailingWebhook:
-    process.env.MOCK_FAILING_WEBHOOK_URL ||
-    "http://localhost:3001/failing-webhook",
-  mockSlowWebhook:
-    process.env.MOCK_SLOW_WEBHOOK_URL || "http://localhost:3001/slow-webhook",
+    process.env.MOCK_FAILING_WEBHOOK_URL || 'http://localhost:3001/failing-webhook',
+  mockSlowWebhook: process.env.MOCK_SLOW_WEBHOOK_URL || 'http://localhost:3001/slow-webhook',
 };
 
 // Utility functions for retry testing
 class RetryTestUtils {
-  static calculateExpectedDelay(
-    attempt,
-    baseDelay = 1000,
-    multiplier = 2,
-    maxDelay = 32000,
-  ) {
+  static calculateExpectedDelay(attempt, baseDelay = 1000, multiplier = 2, maxDelay = 32000) {
     const delay = Math.min(baseDelay * Math.pow(multiplier, attempt), maxDelay);
     return delay;
   }
@@ -69,17 +58,17 @@ class RetryTestUtils {
     const testTask = {
       title: `Retry Test Task ${suffix}`,
       description: `Task created for retry mechanism testing - ${new Date().toISOString()}`,
-      status: "open",
-      priority: "High",
-      assignee_id: "retry-test-user",
+      status: 'open',
+      priority: 'High',
+      assignee_id: 'retry-test-user',
       due_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     };
 
     const response = await fetch(`${testConfig.supabase.url}/rest/v1/tasks`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         ...getSupabaseHeaders(false),
-        Prefer: "return=representation",
+        Prefer: 'return=representation',
       },
       body: JSON.stringify(testTask),
     });
@@ -97,7 +86,7 @@ class RetryTestUtils {
 
     try {
       await fetch(`${testConfig.supabase.url}/rest/v1/tasks?id=eq.${taskId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         headers: getSupabaseHeaders(false),
       });
     } catch (error: any) {
@@ -122,23 +111,18 @@ class RetryTestUtils {
     `;
 
     try {
-      const response = await fetch(
-        `${testConfig.supabase.url}/rest/v1/rpc/sql_query`,
-        {
-          method: "POST",
-          headers: getSupabaseHeaders(false),
-          body: JSON.stringify({ query }),
-        },
-      );
+      const response = await fetch(`${testConfig.supabase.url}/rest/v1/rpc/sql_query`, {
+        method: 'POST',
+        headers: getSupabaseHeaders(false),
+        body: JSON.stringify({ query }),
+      });
 
       if (response.status === 404) {
         // RPC function doesn't exist, return mock data for testing
         return Array(expectedAttempts)
           .fill()
           .map((_, i) => ({
-            created_at: new Date(
-              Date.now() - (expectedAttempts - i) * 1000,
-            ).toISOString(),
+            created_at: new Date(Date.now() - (expectedAttempts - i) * 1000).toISOString(),
             status_code: i === expectedAttempts - 1 ? 200 : 500,
             duration_seconds: 1.5 + i * 0.5,
           }));
@@ -147,7 +131,7 @@ class RetryTestUtils {
       const logs = await response.json();
       return logs || [];
     } catch (error: any) {
-      console.warn("Could not query webhook logs:", error.message);
+      console.warn('Could not query webhook logs:', error.message);
       return [];
     }
   }
@@ -158,19 +142,17 @@ beforeAll(() => {
   validateTestConfig();
   expect(
     testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL,
-    "N8N webhook URL must be configured for retry tests",
+    'N8N webhook URL must be configured for retry tests'
   ).toBeTruthy();
 });
 
-describe("Supabase Webhook Retry Mechanisms", () => {
-  describe("Native Supabase Retry Behavior", () => {
-    it("should implement exponential backoff on webhook failures", async () => {
+describe('Supabase Webhook Retry Mechanisms', () => {
+  describe('Native Supabase Retry Behavior', () => {
+    it('should implement exponential backoff on webhook failures', async () => {
       // This test verifies that Supabase follows exponential backoff
       // when the n8n webhook returns failure status codes
 
-      const testTask = await RetryTestUtils.createTaskForRetryTest(
-        "exponential-backoff",
-      );
+      const testTask = await RetryTestUtils.createTaskForRetryTest('exponential-backoff');
       const taskId = testTask.id;
 
       try {
@@ -180,26 +162,19 @@ describe("Supabase Webhook Retry Mechanisms", () => {
         const startTime = Date.now();
 
         // Wait for initial attempt + retry attempts
-        await RetryTestUtils.waitForRetryAttempts(
-          3,
-          RETRY_TEST_CONFIG.baseDelayMs,
-        );
+        await RetryTestUtils.waitForRetryAttempts(3, RETRY_TEST_CONFIG.baseDelayMs);
 
         const totalTime = Date.now() - startTime;
 
         // Check webhook delivery logs for retry pattern
-        const deliveryLogs = await RetryTestUtils.checkWebhookDeliveryLogs(
-          taskId,
-          3,
-        );
+        const deliveryLogs = await RetryTestUtils.checkWebhookDeliveryLogs(taskId, 3);
 
         if (deliveryLogs.length >= 2) {
           // Calculate actual delays between attempts
           const delays = [];
           for (let i = 1; i < deliveryLogs.length; i++) {
             const delay =
-              new Date(deliveryLogs[i].created_at) -
-              new Date(deliveryLogs[i - 1].created_at);
+              new Date(deliveryLogs[i].created_at) - new Date(deliveryLogs[i - 1].created_at);
             delays.push(delay);
           }
 
@@ -207,7 +182,7 @@ describe("Supabase Webhook Retry Mechanisms", () => {
           for (let i = 0; i < delays.length; i++) {
             const expectedDelay = RetryTestUtils.calculateExpectedDelay(
               i,
-              RETRY_TEST_CONFIG.baseDelayMs,
+              RETRY_TEST_CONFIG.baseDelayMs
             );
             const actualDelay = delays[i];
 
@@ -215,63 +190,53 @@ describe("Supabase Webhook Retry Mechanisms", () => {
             const tolerance = expectedDelay * 0.5;
             expect(
               Math.abs(actualDelay - expectedDelay).toBeTruthy() <= tolerance,
-              `Retry delay ${i + 1} should follow exponential backoff: expected ~${expectedDelay}ms, got ${actualDelay}ms`,
+              `Retry delay ${i + 1} should follow exponential backoff: expected ~${expectedDelay}ms, got ${actualDelay}ms`
             );
           }
 
           console.log(
-            `✅ Exponential backoff verified: ${delays.map((d) => `${d}ms`).join(" → ")}`,
+            `✅ Exponential backoff verified: ${delays.map((d) => `${d}ms`).join(' → ')}`
           );
         } else {
-          console.warn(
-            "⚠️ Could not verify retry pattern - insufficient delivery logs",
-          );
+          console.warn('⚠️ Could not verify retry pattern - insufficient delivery logs');
         }
 
         // Verify total time is reasonable for retry scenario
         const expectedMinTime = RETRY_TEST_CONFIG.baseDelayMs * 3; // Minimum for 3 attempts
         expect(
           totalTime >= expectedMinTime,
-          `Retry scenario should take at least ${expectedMinTime}ms, took ${totalTime}ms`,
+          `Retry scenario should take at least ${expectedMinTime}ms, took ${totalTime}ms`
         ).toBeTruthy();
       } finally {
         await RetryTestUtils.cleanupTestTask(taskId);
       }
     });
 
-    it("should respect maximum retry attempts limit", async () => {
-      const testTask =
-        await RetryTestUtils.createTaskForRetryTest("max-retries");
+    it('should respect maximum retry attempts limit', async () => {
+      const testTask = await RetryTestUtils.createTaskForRetryTest('max-retries');
       const taskId = testTask.id;
 
       try {
         const startTime = Date.now();
 
         // Wait for all retry attempts to complete
-        await RetryTestUtils.waitForRetryAttempts(
-          RETRY_TEST_CONFIG.maxRetries + 1,
-        );
+        await RetryTestUtils.waitForRetryAttempts(RETRY_TEST_CONFIG.maxRetries + 1);
 
         // Check that retries stop after maximum attempts
-        const deliveryLogs = await RetryTestUtils.checkWebhookDeliveryLogs(
-          taskId,
-          4,
-        );
+        const deliveryLogs = await RetryTestUtils.checkWebhookDeliveryLogs(taskId, 4);
 
         expect(
           deliveryLogs.length <= RETRY_TEST_CONFIG.maxRetries + 1,
-          `Should not exceed ${RETRY_TEST_CONFIG.maxRetries + 1} total attempts (1 initial + ${RETRY_TEST_CONFIG.maxRetries} retries).toBeTruthy()`,
+          `Should not exceed ${RETRY_TEST_CONFIG.maxRetries + 1} total attempts (1 initial + ${RETRY_TEST_CONFIG.maxRetries} retries).toBeTruthy()`
         );
 
-        console.log(
-          `✅ Retry limit respected: ${deliveryLogs.length} total attempts`,
-        );
+        console.log(`✅ Retry limit respected: ${deliveryLogs.length} total attempts`);
       } finally {
         await RetryTestUtils.cleanupTestTask(taskId);
       }
     });
 
-    it("should implement maximum delay cap for retries", async () => {
+    it('should implement maximum delay cap for retries', async () => {
       // Test that delays don't exceed maximum even with many retries
       const maxDelay = RETRY_TEST_CONFIG.maxDelayMs;
 
@@ -281,12 +246,12 @@ describe("Supabase Webhook Retry Mechanisms", () => {
         highAttempt,
         RETRY_TEST_CONFIG.baseDelayMs,
         RETRY_TEST_CONFIG.backoffMultiplier,
-        maxDelay,
+        maxDelay
       );
 
-      expect(
-        calculatedDelay).toBe(maxDelay,
-        `High retry attempts should be capped at maximum delay of ${maxDelay}ms`,
+      expect(calculatedDelay).toBe(
+        maxDelay,
+        `High retry attempts should be capped at maximum delay of ${maxDelay}ms`
       );
 
       // Test progressive delay increase up to cap
@@ -295,23 +260,23 @@ describe("Supabase Webhook Retry Mechanisms", () => {
           attempt,
           RETRY_TEST_CONFIG.baseDelayMs,
           RETRY_TEST_CONFIG.backoffMultiplier,
-          maxDelay,
+          maxDelay
         );
 
         expect(
           delay <= maxDelay,
-          `Attempt ${attempt} delay ${delay}ms should not exceed maximum ${maxDelay}ms`,
+          `Attempt ${attempt} delay ${delay}ms should not exceed maximum ${maxDelay}ms`
         ).toBeTruthy();
       }
 
-      console.log("✅ Maximum delay cap verified for exponential backoff");
+      console.log('✅ Maximum delay cap verified for exponential backoff');
     });
   });
 
-  describe("Webhook Failure Recovery", () => {
-    it("should recover after temporary n8n downtime", async () => {
+  describe('Webhook Failure Recovery', () => {
+    it('should recover after temporary n8n downtime', async () => {
       // Simulate recovery scenario: webhook fails initially, then succeeds
-      const testTask = await RetryTestUtils.createTaskForRetryTest("recovery");
+      const testTask = await RetryTestUtils.createTaskForRetryTest('recovery');
       const taskId = testTask.id;
 
       try {
@@ -325,15 +290,14 @@ describe("Supabase Webhook Retry Mechanisms", () => {
         const healthCheckStart = Date.now();
 
         // Test webhook endpoint availability
-        const webhookUrl =
-          testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL;
+        const webhookUrl = testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL;
         const response = await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            type: "RECOVERY_TEST",
-            table: "tasks",
-            record: { id: taskId, title: "Recovery Test" },
+            type: 'RECOVERY_TEST',
+            table: 'tasks',
+            record: { id: taskId, title: 'Recovery Test' },
           }),
           timeout: 5000,
         });
@@ -342,26 +306,23 @@ describe("Supabase Webhook Retry Mechanisms", () => {
 
         expect(
           response.status >= 200 && response.status < 500,
-          `Webhook should be available for recovery testing, got ${response.status}`,
+          `Webhook should be available for recovery testing, got ${response.status}`
         ).toBeTruthy();
 
         expect(
           healthCheckTime < 5000,
-          `Recovery test should complete quickly, took ${healthCheckTime}ms`,
+          `Recovery test should complete quickly, took ${healthCheckTime}ms`
         ).toBeTruthy();
 
-        console.log(
-          `✅ Recovery capability verified: ${response.status} in ${healthCheckTime}ms`,
-        );
+        console.log(`✅ Recovery capability verified: ${response.status} in ${healthCheckTime}ms`);
       } finally {
         await RetryTestUtils.cleanupTestTask(taskId);
       }
     });
 
-    it("should handle circuit breaker behavior on persistent failures", async () => {
+    it('should handle circuit breaker behavior on persistent failures', async () => {
       // Test that the system doesn't infinitely retry completely broken endpoints
-      const testTask =
-        await RetryTestUtils.createTaskForRetryTest("circuit-breaker");
+      const testTask = await RetryTestUtils.createTaskForRetryTest('circuit-breaker');
       const taskId = testTask.id;
 
       try {
@@ -377,24 +338,17 @@ describe("Supabase Webhook Retry Mechanisms", () => {
         const maxReasonableTime = RETRY_TEST_CONFIG.singleRetryTimeout;
         expect(
           monitorTime < maxReasonableTime,
-          `Circuit breaker should prevent indefinite retries, took ${monitorTime}ms`,
+          `Circuit breaker should prevent indefinite retries, took ${monitorTime}ms`
         ).toBeTruthy();
 
         // Check that failures are properly logged
-        const deliveryLogs =
-          await RetryTestUtils.checkWebhookDeliveryLogs(taskId);
-        const failedAttempts = deliveryLogs.filter(
-          (log) => log.status_code >= 400,
-        );
+        const deliveryLogs = await RetryTestUtils.checkWebhookDeliveryLogs(taskId);
+        const failedAttempts = deliveryLogs.filter((log) => log.status_code >= 400);
 
         if (failedAttempts.length > 0) {
-          console.log(
-            `✅ Circuit breaker behavior: ${failedAttempts.length} failures logged`,
-          );
+          console.log(`✅ Circuit breaker behavior: ${failedAttempts.length} failures logged`);
         } else {
-          console.log(
-            "✅ Circuit breaker test: no failures detected (system healthy)",
-          );
+          console.log('✅ Circuit breaker test: no failures detected (system healthy)');
         }
       } finally {
         await RetryTestUtils.cleanupTestTask(taskId);
@@ -402,8 +356,8 @@ describe("Supabase Webhook Retry Mechanisms", () => {
     });
   });
 
-  describe("Performance Under Retry Load", () => {
-    it("should maintain performance during retry scenarios", async () => {
+  describe('Performance Under Retry Load', () => {
+    it('should maintain performance during retry scenarios', async () => {
       // Test multiple concurrent retry scenarios
       const concurrentTasks = 3;
       const testTasks = [];
@@ -412,9 +366,7 @@ describe("Supabase Webhook Retry Mechanisms", () => {
       try {
         // Create multiple tasks that may trigger retries
         for (let i = 0; i < concurrentTasks; i++) {
-          const task = await RetryTestUtils.createTaskForRetryTest(
-            `performance-${i}`,
-          );
+          const task = await RetryTestUtils.createTaskForRetryTest(`performance-${i}`);
           testTasks.push(task);
           taskIds.push(task.id);
         }
@@ -424,17 +376,17 @@ describe("Supabase Webhook Retry Mechanisms", () => {
         // Simulate load by updating all tasks simultaneously
         const updatePromises = testTasks.map((task) =>
           fetch(`${testConfig.supabase.url}/rest/v1/tasks?id=eq.${task.id}`, {
-            method: "PATCH",
+            method: 'PATCH',
             headers: {
               ...getSupabaseHeaders(false),
-              Prefer: "return=representation",
+              Prefer: 'return=representation',
             },
             body: JSON.stringify({
               title: `Updated ${task.title}`,
-              status: "in_progress",
-              priority: "High",
+              status: 'in_progress',
+              priority: 'High',
             }),
-          }),
+          })
         );
 
         const updateResults = await Promise.allSettled(updatePromises);
@@ -442,38 +394,35 @@ describe("Supabase Webhook Retry Mechanisms", () => {
 
         // Verify all updates succeeded
         const successfulUpdates = updateResults.filter(
-          (result) => result.status === "fulfilled" && result.value.ok,
+          (result) => result.status === 'fulfilled' && result.value.ok
         );
 
-        expect(
-          successfulUpdates.length).toBe(concurrentTasks,
-          `All ${concurrentTasks} concurrent updates should succeed during retry testing`,
+        expect(successfulUpdates.length).toBe(
+          concurrentTasks,
+          `All ${concurrentTasks} concurrent updates should succeed during retry testing`
         );
 
         // Verify performance is reasonable
         const maxReasonableTime = 10000; // 10 seconds for concurrent operations
         expect(
           performanceTime < maxReasonableTime,
-          `Concurrent retry scenarios should complete in reasonable time: ${performanceTime}ms`,
+          `Concurrent retry scenarios should complete in reasonable time: ${performanceTime}ms`
         ).toBeTruthy();
 
         console.log(
-          `✅ Performance test passed: ${concurrentTasks} tasks updated in ${performanceTime}ms`,
+          `✅ Performance test passed: ${concurrentTasks} tasks updated in ${performanceTime}ms`
         );
       } finally {
         // Cleanup all test tasks
-        const cleanupPromises = taskIds.map((id) =>
-          RetryTestUtils.cleanupTestTask(id),
-        );
+        const cleanupPromises = taskIds.map((id) => RetryTestUtils.cleanupTestTask(id));
         await Promise.allSettled(cleanupPromises);
       }
     });
 
-    it("should handle high-frequency webhook triggers with retry backoff", async () => {
+    it('should handle high-frequency webhook triggers with retry backoff', async () => {
       // Test system behavior under high load with potential retries
       const rapidUpdates = 5;
-      const testTask =
-        await RetryTestUtils.createTaskForRetryTest("high-frequency");
+      const testTask = await RetryTestUtils.createTaskForRetryTest('high-frequency');
       const taskId = testTask.id;
 
       try {
@@ -481,16 +430,13 @@ describe("Supabase Webhook Retry Mechanisms", () => {
 
         // Perform rapid sequential updates
         for (let i = 0; i < rapidUpdates; i++) {
-          await fetch(
-            `${testConfig.supabase.url}/rest/v1/tasks?id=eq.${taskId}`,
-            {
-              method: "PATCH",
-              headers: getSupabaseHeaders(false),
-              body: JSON.stringify({
-                description: `Rapid update ${i + 1} at ${new Date().toISOString()}`,
-              }),
-            },
-          );
+          await fetch(`${testConfig.supabase.url}/rest/v1/tasks?id=eq.${taskId}`, {
+            method: 'PATCH',
+            headers: getSupabaseHeaders(false),
+            body: JSON.stringify({
+              description: `Rapid update ${i + 1} at ${new Date().toISOString()}`,
+            }),
+          });
 
           // Small delay between updates
           await new Promise((resolve) => setTimeout(resolve, 100));
@@ -505,20 +451,18 @@ describe("Supabase Webhook Retry Mechanisms", () => {
         const maxLoadTime = 5000; // 5 seconds for rapid updates
         expect(
           loadTime < maxLoadTime,
-          `High-frequency updates should complete quickly: ${loadTime}ms`,
+          `High-frequency updates should complete quickly: ${loadTime}ms`
         ).toBeTruthy();
 
-        console.log(
-          `✅ High-frequency test passed: ${rapidUpdates} updates in ${loadTime}ms`,
-        );
+        console.log(`✅ High-frequency test passed: ${rapidUpdates} updates in ${loadTime}ms`);
       } finally {
         await RetryTestUtils.cleanupTestTask(taskId);
       }
     });
   });
 
-  describe("Retry Configuration Validation", () => {
-    it("should validate retry mechanism configuration", () => {
+  describe('Retry Configuration Validation', () => {
+    it('should validate retry mechanism configuration', () => {
       // Test the retry calculation utilities
       const testCases = [
         { attempt: 0, expected: 1000 }, // First retry: 1s
@@ -535,46 +479,44 @@ describe("Supabase Webhook Retry Mechanisms", () => {
           testCase.attempt,
           RETRY_TEST_CONFIG.baseDelayMs,
           RETRY_TEST_CONFIG.backoffMultiplier,
-          RETRY_TEST_CONFIG.maxDelayMs,
+          RETRY_TEST_CONFIG.maxDelayMs
         );
 
-        expect(
-          actualDelay).toBe(testCase.expected,
-          `Attempt ${testCase.attempt} should have delay ${testCase.expected}ms, got ${actualDelay}ms`,
+        expect(actualDelay).toBe(
+          testCase.expected,
+          `Attempt ${testCase.attempt} should have delay ${testCase.expected}ms, got ${actualDelay}ms`
         );
       }
 
-      console.log("✅ Retry configuration validation passed");
+      console.log('✅ Retry configuration validation passed');
     });
 
-    it("should have appropriate timeout configurations", () => {
+    it('should have appropriate timeout configurations', () => {
       // Verify test timeouts are reasonable for retry scenarios
       expect(
         RETRY_TEST_CONFIG.singleRetryTimeout > RETRY_TEST_CONFIG.maxDelayMs * 2,
-        "Single retry timeout should allow for multiple backoff attempts",
+        'Single retry timeout should allow for multiple backoff attempts'
       ).toBeTruthy();
 
       expect(
-        RETRY_TEST_CONFIG.multiRetryTimeout >
-          RETRY_TEST_CONFIG.singleRetryTimeout * 2,
-        "Multi-retry timeout should allow for complex scenarios",
+        RETRY_TEST_CONFIG.multiRetryTimeout > RETRY_TEST_CONFIG.singleRetryTimeout * 2,
+        'Multi-retry timeout should allow for complex scenarios'
       ).toBeTruthy();
 
       expect(
         RETRY_TEST_CONFIG.maxRetries >= 3,
-        "Should allow for reasonable number of retry attempts",
+        'Should allow for reasonable number of retry attempts'
       ).toBeTruthy();
 
-      console.log("✅ Timeout configuration validation passed");
+      console.log('✅ Timeout configuration validation passed');
     });
   });
 });
 
-describe("Integration with Existing Webhook Tests", () => {
-  it("should work alongside normal webhook operations", async () => {
+describe('Integration with Existing Webhook Tests', () => {
+  it('should work alongside normal webhook operations', async () => {
     // Verify retry mechanisms don't interfere with successful operations
-    const normalTask =
-      await RetryTestUtils.createTaskForRetryTest("integration");
+    const normalTask = await RetryTestUtils.createTaskForRetryTest('integration');
     const taskId = normalTask.id;
 
     try {
@@ -584,18 +526,18 @@ describe("Integration with Existing Webhook Tests", () => {
       const updateResponse = await fetch(
         `${testConfig.supabase.url}/rest/v1/tasks?id=eq.${taskId}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: getSupabaseHeaders(false),
           body: JSON.stringify({
-            status: "completed",
-            description: "Integration test with retry mechanisms",
+            status: 'completed',
+            description: 'Integration test with retry mechanisms',
           }),
-        },
+        }
       );
 
       expect(
         updateResponse.ok,
-        "Normal operations should succeed with retry system active",
+        'Normal operations should succeed with retry system active'
       ).toBeTruthy();
 
       const integrationTime = Date.now() - integrationStart;
@@ -603,12 +545,10 @@ describe("Integration with Existing Webhook Tests", () => {
       // Should complete quickly for successful operations
       expect(
         integrationTime < 3000,
-        `Normal operations should not be delayed by retry mechanisms: ${integrationTime}ms`,
+        `Normal operations should not be delayed by retry mechanisms: ${integrationTime}ms`
       ).toBeTruthy();
 
-      console.log(
-        `✅ Integration test passed: normal operation in ${integrationTime}ms`,
-      );
+      console.log(`✅ Integration test passed: normal operation in ${integrationTime}ms`);
     } finally {
       await RetryTestUtils.cleanupTestTask(taskId);
     }

@@ -5,6 +5,7 @@
 ALL BMAD agents MUST follow these Linear integration rules:
 
 ### Primary Rule
+
 **NEVER create documentation files in `/docs` directories**. Use Linear instead.
 
 ### Linear MCP Tools Available
@@ -48,15 +49,17 @@ command_mapping:
 ### Task Execution Flow
 
 1. **Before Starting Work**
+
    ```javascript
    // Check for existing issues
    await linearClient.list_issues({
-     assignee: "me",
-     state: "In Progress"
+     assignee: 'me',
+     state: 'In Progress',
    });
    ```
 
 2. **Create New Work**
+
    ```javascript
    // Create issue FIRST
    const issue = await linearClient.create_issue({
@@ -73,9 +76,9 @@ command_mapping:
    ```javascript
    // Instead of creating .md files
    await linearClient.create_document({
-     title: "Architecture Decision",
+     title: 'Architecture Decision',
      content: markdownContent,
-     projectId: PROJECT_ID
+     projectId: PROJECT_ID,
    });
    ```
 
@@ -104,6 +107,7 @@ search_hierarchy:
    - If task references old docs, check `.archive/` first
 
 2. **Git Commit Format**
+
    ```bash
    # ALWAYS include Linear ID
    git commit -m "10N-XXX: Description of change"
@@ -115,12 +119,12 @@ search_hierarchy:
 
 ### Quick Reference
 
-| Old BMAD Action | New Linear Action |
-|-----------------|-------------------|
-| Create story doc | `linear-cli create --type story` |
-| Update QA gate | `linear-cli update [ID] --label qa-gate` |
-| Find templates | `linear-cli list --type documents --label template` |
-| Track progress | `linear-cli list --assignee me --status in-progress` |
+| Old BMAD Action  | New Linear Action                                    |
+| ---------------- | ---------------------------------------------------- |
+| Create story doc | `linear-cli create --type story`                     |
+| Update QA gate   | `linear-cli update [ID] --label qa-gate`             |
+| Find templates   | `linear-cli list --type documents --label template`  |
+| Track progress   | `linear-cli list --assignee me --status in-progress` |
 
 ### Error Prevention
 
@@ -168,9 +172,11 @@ node scripts/linear-cli.js --help
 ## Summary
 
 The repository is now optimized for Linear integration:
+
 - 54 documents archived to `.archive/`
 - `.rgignore` excludes archived content
 - Linear MCP tools available for all operations
 - Documentation lives in Linear, not filesystem
 
-This reduces context window by ~90% while maintaining full access to historical information through Linear's search capabilities.
+This reduces context window by ~90% while maintaining full access to historical
+information through Linear's search capabilities.

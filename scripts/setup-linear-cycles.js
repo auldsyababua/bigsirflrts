@@ -14,7 +14,7 @@ import chalk from 'chalk';
 config();
 
 const linear = new LinearClient({
-  apiKey: process.env.LINEAR_API_KEY
+  apiKey: process.env.LINEAR_API_KEY,
 });
 
 const TEAM_ID = process.env.LINEAR_TEAM_ID || 'YOUR_LINEAR_PROJECT_ID';
@@ -63,10 +63,14 @@ program
           startsAt: currentStart.toISOString(),
           endsAt: cycleEnd.toISOString(),
           teamId: TEAM_ID,
-          description: `${weekDuration}-week sprint (${currentStart.toLocaleDateString()} - ${cycleEnd.toLocaleDateString()})`
+          description: `${weekDuration}-week sprint (${currentStart.toLocaleDateString()} - ${cycleEnd.toLocaleDateString()})`,
         });
 
-        console.log(chalk.green(`  ${cycleName}: ${currentStart.toLocaleDateString()} - ${cycleEnd.toLocaleDateString()}`));
+        console.log(
+          chalk.green(
+            `  ${cycleName}: ${currentStart.toLocaleDateString()} - ${cycleEnd.toLocaleDateString()}`
+          )
+        );
 
         currentStart = new Date(cycleEnd);
         currentStart.setDate(currentStart.getDate() + 1);
@@ -83,7 +87,6 @@ program
       } else {
         console.log(chalk.yellow('Cancelled'));
       }
-
     } catch (error) {
       console.error(chalk.red('Error:', error.message));
     }
@@ -99,9 +102,11 @@ program
 
       const team = await linear.team(TEAM_ID);
       const cycles = await team.cycles({
-        filter: options.all ? {} : {
-          endsAt: { gte: new Date() }
-        }
+        filter: options.all
+          ? {}
+          : {
+              endsAt: { gte: new Date() },
+            },
       });
 
       if (cycles.nodes.length === 0) {
@@ -111,8 +116,8 @@ program
 
       // Find current cycle
       const now = new Date();
-      const currentCycle = cycles.nodes.find(c =>
-        new Date(c.startsAt) <= now && new Date(c.endsAt) >= now
+      const currentCycle = cycles.nodes.find(
+        (c) => new Date(c.startsAt) <= now && new Date(c.endsAt) >= now
       );
 
       for (const cycle of cycles.nodes) {
@@ -123,8 +128,8 @@ program
         const status = isCurrent
           ? chalk.green(' [CURRENT]')
           : start > now
-          ? chalk.blue(' [UPCOMING]')
-          : chalk.gray(' [COMPLETED]');
+            ? chalk.blue(' [UPCOMING]')
+            : chalk.gray(' [COMPLETED]');
 
         console.log(`${chalk.bold(cycle.name || `Cycle ${cycle.number}`)}${status}`);
         console.log(`  ${start.toLocaleDateString()} - ${end.toLocaleDateString()}`);
@@ -141,7 +146,6 @@ program
 
         console.log();
       }
-
     } catch (error) {
       console.error(chalk.red('Error:', error.message));
     }
@@ -158,8 +162,8 @@ program
       const cycles = await team.cycles({
         filter: {
           isPast: { eq: false },
-          isFuture: { eq: false }
-        }
+          isFuture: { eq: false },
+        },
       });
 
       const cycle = cycles.nodes[0];
@@ -182,7 +186,7 @@ program
 
       // Progress bar
       const barLength = 30;
-      const filled = Math.round(barLength * progress / 100);
+      const filled = Math.round((barLength * progress) / 100);
       const bar = '█'.repeat(filled) + '░'.repeat(barLength - filled);
       console.log(chalk.cyan(`[${bar}]`));
 
@@ -210,7 +214,6 @@ program
           }
         }
       }
-
     } catch (error) {
       console.error(chalk.red('Error:', error.message));
     }
@@ -228,8 +231,8 @@ program
       const cycles = await team.cycles({
         filter: {
           isPast: { eq: false },
-          isFuture: { eq: false }
-        }
+          isFuture: { eq: false },
+        },
       });
 
       const cycle = cycles.nodes[0];
@@ -240,7 +243,7 @@ program
 
       // Find issue
       const searchResults = await linear.searchIssues(issueId);
-      const issue = searchResults.nodes.find(i => i.identifier === issueId);
+      const issue = searchResults.nodes.find((i) => i.identifier === issueId);
 
       if (!issue) {
         console.log(chalk.red(`Issue ${issueId} not found`));
@@ -249,11 +252,12 @@ program
 
       // Update issue
       await linear.updateIssue(issue.id, {
-        cycleId: cycle.id
+        cycleId: cycle.id,
       });
 
-      console.log(chalk.green(`✅ Assigned ${issueId} to ${cycle.name || `Cycle ${cycle.number}`}`));
-
+      console.log(
+        chalk.green(`✅ Assigned ${issueId} to ${cycle.name || `Cycle ${cycle.number}`}`)
+      );
     } catch (error) {
       console.error(chalk.red('Error:', error.message));
     }

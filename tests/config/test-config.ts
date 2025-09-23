@@ -89,11 +89,8 @@ export const testConfig: TestConfig = {
       mockServer: {
         port: parseInt(process.env.MOCK_WEBHOOK_PORT || '3001'),
         failingWebhookUrl:
-          process.env.MOCK_FAILING_WEBHOOK_URL ||
-          'http://localhost:3001/failing-webhook',
-        slowWebhookUrl:
-          process.env.MOCK_SLOW_WEBHOOK_URL ||
-          'http://localhost:3001/slow-webhook',
+          process.env.MOCK_FAILING_WEBHOOK_URL || 'http://localhost:3001/failing-webhook',
+        slowWebhookUrl: process.env.MOCK_SLOW_WEBHOOK_URL || 'http://localhost:3001/slow-webhook',
       },
     },
   },
@@ -133,9 +130,7 @@ export function validateTestConfig(): void {
  * @returns Headers object
  */
 export function getSupabaseHeaders(useServiceRole = false): Record<string, string> {
-  const key = useServiceRole
-    ? testConfig.supabase.serviceRoleKey
-    : testConfig.supabase.anonKey;
+  const key = useServiceRole ? testConfig.supabase.serviceRoleKey : testConfig.supabase.anonKey;
 
   if (!key) {
     throw new Error('Missing Supabase API key');

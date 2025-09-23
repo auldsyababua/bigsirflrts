@@ -1,9 +1,13 @@
 # Repository Linear Integration Preparation Task
 
 ## Objective
-Systematically prepare the repository for complete Linear workflow integration by eliminating sources of confusion, consolidating configurations, and migrating documentation.
+
+Systematically prepare the repository for complete Linear workflow integration
+by eliminating sources of confusion, consolidating configurations, and migrating
+documentation.
 
 ## Prerequisites
+
 - Linear MCP tools configured and working
 - Understanding of current repository structure
 - List of active vs deprecated components
@@ -34,6 +38,7 @@ done
 ```
 
 For each duplicate config found:
+
 1. Determine which is actually used (check package.json, imports)
 2. Merge necessary settings into primary config
 3. Add header documentation explaining it's the single source
@@ -60,6 +65,7 @@ grep -l "describe.*expect" tests/**/*.js 2>/dev/null | grep -v vitest
 ```
 
 Action items:
+
 1. Convert all tests to use Vitest (single test runner)
 2. Update test file imports from `node:test` to `vitest`
 3. Remove Jest/other test runner configs
@@ -80,17 +86,19 @@ done
 ```
 
 For each documentation file:
+
 1. **Active & Important** → Create Linear document
 2. **Setup/Config guides** → Move to Linear, leave README pointer
 3. **Historical/Deprecated** → Move to `.archive/YYYY-MM/`
 4. **Temporary/Scratch** → Delete after review
 
 Create Linear documents using:
+
 ```javascript
 await linear.createDocument({
-  title: "[Original filename without .md]",
-  content: "[Markdown content]",
-  team: "10netzero"
+  title: '[Original filename without .md]',
+  content: '[Markdown content]',
+  team: '10netzero',
 });
 ```
 
@@ -109,6 +117,7 @@ npm outdated
 ```
 
 Actions:
+
 1. Remove unused dependencies from package.json
 2. Update outdated packages (careful with breaking changes)
 3. Standardize on npm (remove other lock files)
@@ -126,6 +135,7 @@ find . -type f -not -path "./node_modules/*" | xargs -I {} basename {} | sort | 
 ```
 
 Standardize naming:
+
 - No spaces in filenames (use hyphens)
 - Consistent case (kebab-case for files)
 - Remove version numbers from filenames (use git)
@@ -134,9 +144,10 @@ Standardize naming:
 ### Phase 6: Create Linear Tracking
 
 Create epic in Linear:
+
 ```javascript
 const epic = await linear.createIssue({
-  title: "Repository Cleanup for Linear Integration",
+  title: 'Repository Cleanup for Linear Integration',
   description: `
 # Repository Preparation for Linear Workflow
 
@@ -154,8 +165,8 @@ const epic = await linear.createIssue({
 - Clean dependency tree
 - No naming conflicts
 `,
-  team: "10netzero",
-  labels: ["cleanup", "linear-integration"]
+  team: '10netzero',
+  labels: ['cleanup', 'linear-integration'],
 });
 ```
 
@@ -195,6 +206,7 @@ fi
 ### Phase 8: Validation
 
 Run validation checks:
+
 ```bash
 # All tests pass with single runner
 npm run test:mvp
@@ -215,6 +227,7 @@ git log --oneline | head -20  # Verify history intact
 ### Phase 9: Documentation in Linear
 
 Create final report in Linear with:
+
 1. Before/after metrics
 2. Configurations consolidated
 3. Documentation migrated (with Linear URLs)
@@ -223,14 +236,13 @@ Create final report in Linear with:
 
 ## Success Criteria
 
-✅ No duplicate configuration files
-✅ Single test runner (Vitest) for all tests
-✅ Documentation in Linear or properly archived
-✅ Clean package.json with no unused deps
-✅ Git hooks preventing regression
-✅ All changes tracked in Linear issues
+✅ No duplicate configuration files ✅ Single test runner (Vitest) for all tests
+✅ Documentation in Linear or properly archived ✅ Clean package.json with no
+unused deps ✅ Git hooks preventing regression ✅ All changes tracked in Linear
+issues
 
 ## Time Estimate
+
 - Phase 1-2: 1 hour (configs & tests)
 - Phase 3: 2 hours (documentation migration)
 - Phase 4-5: 1 hour (dependencies & naming)
@@ -239,6 +251,7 @@ Create final report in Linear with:
 Total: ~5 hours for complete cleanup
 
 ## Notes
+
 - Always create Linear issue before making changes
 - Use git commits linking to Linear issues
 - Archive rather than delete when uncertain

@@ -2,13 +2,15 @@
 
 ## Overview
 
-This guide explains how to deploy the Linear webhook handler to receive real-time updates from Linear and trigger BMAD agents automatically.
+This guide explains how to deploy the Linear webhook handler to receive
+real-time updates from Linear and trigger BMAD agents automatically.
 
 ## Deployment Options
 
 ### Option 1: Supabase Edge Function (Recommended)
 
-Since you already have Supabase configured, this is the most straightforward approach.
+Since you already have Supabase configured, this is the most straightforward
+approach.
 
 #### 1. Create Edge Function
 
@@ -24,69 +26,73 @@ cp scripts/linear-webhook.js supabase/functions/linear-webhook/index.ts
 
 ```typescript
 // supabase/functions/linear-webhook/index.ts
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const LINEAR_WEBHOOK_SECRET = Deno.env.get('LINEAR_WEBHOOK_SECRET')!
-const GITHUB_TOKEN = Deno.env.get('GITHUB_TOKEN')!
+const LINEAR_WEBHOOK_SECRET = Deno.env.get('LINEAR_WEBHOOK_SECRET')!;
+const GITHUB_TOKEN = Deno.env.get('GITHUB_TOKEN')!;
 
 serve(async (req) => {
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 })
+    return new Response('Method not allowed', { status: 405 });
   }
 
   try {
     // Verify webhook signature
-    const signature = req.headers.get('linear-signature')
-    const body = await req.text()
+    const signature = req.headers.get('linear-signature');
+    const body = await req.text();
 
     if (!verifySignature(body, signature, LINEAR_WEBHOOK_SECRET)) {
-      return new Response('Unauthorized', { status: 401 })
+      return new Response('Unauthorized', { status: 401 });
     }
 
-    const payload = JSON.parse(body)
-    const { action, data, type } = payload
-    const event = `${type}.${action}`
+    const payload = JSON.parse(body);
+    const { action, data, type } = payload;
+    const event = `${type}.${action}`;
 
-    console.log(`Received Linear webhook: ${event}`)
+    console.log(`Received Linear webhook: ${event}`);
 
     // Handle different event types
     if (type === 'Issue') {
-      await handleIssueEvent(event, data)
+      await handleIssueEvent(event, data);
     }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { 'Content-Type': 'application/json' },
-    })
+    });
   } catch (error) {
-    console.error('Webhook error:', error)
-    return new Response('Internal error', { status: 500 })
+    console.error('Webhook error:', error);
+    return new Response('Internal error', { status: 500 });
   }
-})
+});
 
 async function handleIssueEvent(event: string, data: any) {
-  const { issue } = data
+  const { issue } = data;
 
   switch (event) {
     case 'Issue.created':
       // Create GitHub branch if assigned
       if (issue.assignee) {
-        await createGitHubBranch(issue)
+        await createGitHubBranch(issue);
       }
-      break
+      break;
 
     case 'Issue.updated':
       // Handle status changes
       if (issue.state?.name === 'In Review') {
-        await createPullRequest(issue)
+        await createPullRequest(issue);
       }
-      break
+      break;
   }
 }
 
-function verifySignature(body: string, signature: string, secret: string): boolean {
+function verifySignature(
+  body: string,
+  signature: string,
+  secret: string
+): boolean {
   // Implement HMAC verification
-  return true // TODO: Implement
+  return true; // TODO: Implement
 }
 
 async function createGitHubBranch(issue: any) {
@@ -94,15 +100,15 @@ async function createGitHubBranch(issue: any) {
   const branchName = `colin/10n-${issue.identifier.toLowerCase()}-${issue.title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .substring(0, 50)}`
+    .substring(0, 50)}`;
 
   // TODO: Implement GitHub API call
-  console.log(`Would create branch: ${branchName}`)
+  console.log(`Would create branch: ${branchName}`);
 }
 
 async function createPullRequest(issue: any) {
   // TODO: Implement PR creation
-  console.log(`Would create PR for: ${issue.identifier}`)
+  console.log(`Would create PR for: ${issue.identifier}`);
 }
 ```
 
@@ -120,6 +126,7 @@ supabase functions deploy linear-webhook
 #### 4. Get Webhook URL
 
 Your webhook URL will be:
+
 ```
 https://thnwlykidzhrsagyjncc.supabase.co/functions/v1/linear-webhook
 ```
@@ -133,68 +140,69 @@ Since you're already using Cloudflare for other services:
 export default {
   async fetch(request, env) {
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 })
+      return new Response('Method not allowed', { status: 405 });
     }
 
-    const signature = request.headers.get('linear-signature')
-    const body = await request.text()
+    const signature = request.headers.get('linear-signature');
+    const body = await request.text();
 
     // Verify signature
-    if (!await verifySignature(body, signature, env.LINEAR_WEBHOOK_SECRET)) {
-      return new Response('Unauthorized', { status: 401 })
+    if (!(await verifySignature(body, signature, env.LINEAR_WEBHOOK_SECRET))) {
+      return new Response('Unauthorized', { status: 401 });
     }
 
-    const payload = JSON.parse(body)
+    const payload = JSON.parse(body);
 
     // Process webhook
-    await processWebhook(payload, env)
+    await processWebhook(payload, env);
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { 'Content-Type': 'application/json' },
-    })
-  }
-}
+    });
+  },
+};
 
 async function verifySignature(body, signature, secret) {
-  const encoder = new TextEncoder()
+  const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
-  )
+  );
 
   const expectedSignature = await crypto.subtle.sign(
     'HMAC',
     key,
     encoder.encode(body)
-  )
+  );
 
   const expected = Array.from(new Uint8Array(expectedSignature))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 
-  return signature === expected
+  return signature === expected;
 }
 
 async function processWebhook(payload, env) {
-  const { action, data, type } = payload
+  const { action, data, type } = payload;
 
   // Store in D1 or KV for processing
   await env.LINEAR_EVENTS.put(
     `${type}-${action}-${Date.now()}`,
     JSON.stringify(payload)
-  )
+  );
 
   // Trigger GitHub Actions workflow or other automation
   if (type === 'Issue' && action === 'created') {
-    await triggerGitHubWorkflow(data.issue, env.GITHUB_TOKEN)
+    await triggerGitHubWorkflow(data.issue, env.GITHUB_TOKEN);
   }
 }
 ```
 
 Deploy with:
+
 ```bash
 wrangler publish linear-webhook-worker.js
 ```
@@ -209,7 +217,7 @@ name: Linear Sync
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes
+    - cron: '*/15 * * * *' # Every 15 minutes
   workflow_dispatch:
 
 jobs:
@@ -270,7 +278,8 @@ Once your endpoint is deployed:
 
 ### 1. Linear Test Event
 
-Linear provides a test button in webhook settings. Use it to verify your endpoint receives events.
+Linear provides a test button in webhook settings. Use it to verify your
+endpoint receives events.
 
 ### 2. Manual Test
 
@@ -309,16 +318,19 @@ curl -X POST https://your-webhook-url \
 ## Troubleshooting
 
 ### Webhook not receiving events
+
 - Check Linear webhook settings
 - Verify URL is publicly accessible
 - Check webhook is enabled
 
 ### Signature verification failing
+
 - Ensure webhook secret matches
 - Check signature algorithm (HMAC-SHA256)
 - Verify body is raw, not parsed
 
 ### Events not processing
+
 - Check logs for errors
 - Verify API keys are valid
 - Test with simple event first
@@ -332,4 +344,5 @@ curl -X POST https://your-webhook-url \
 
 ---
 
-*For questions or issues, check the [Linear Webhook Documentation](https://developers.linear.app/docs/graphql/webhooks)*
+_For questions or issues, check the
+[Linear Webhook Documentation](https://developers.linear.app/docs/graphql/webhooks)_

@@ -2,15 +2,19 @@
 
 ## Overview
 
-FLRTS requires integration with OpenProject for task management, with specific UI customizations (logo replacement, text input box for NLP). This document outlines the approaches for achieving these customizations.
+FLRTS requires integration with OpenProject for task management, with specific
+UI customizations (logo replacement, text input box for NLP). This document
+outlines the approaches for achieving these customizations.
 
 ## Integration Approaches Comparison
 
 ### Option 1: API-Only Integration (Recommended) ✅
 
-**Approach**: Build FLRTS as a separate application that communicates with OpenProject via REST API v3
+**Approach**: Build FLRTS as a separate application that communicates with
+OpenProject via REST API v3
 
 **Pros**:
+
 - No need to fork or maintain OpenProject source code
 - Clean separation of concerns
 - Easier upgrades of OpenProject
@@ -18,10 +22,12 @@ FLRTS requires integration with OpenProject for task management, with specific U
 - FLRTS remains lightweight and focused
 
 **Cons**:
+
 - Cannot directly modify OpenProject UI
 - Need to build separate UI for FLRTS features
 
 **Implementation**:
+
 ```javascript
 // FLRTS embeds in OpenProject via:
 1. Browser extension that injects FLRTS UI
@@ -34,18 +40,21 @@ FLRTS requires integration with OpenProject for task management, with specific U
 **Approach**: Develop an OpenProject plugin using their plugin API
 
 **Pros**:
+
 - Native integration with OpenProject UI
 - Access to internal hooks and events
 - Can modify UI elements directly
 - Single deployment unit
 
 **Cons**:
+
 - Must learn Ruby on Rails (OpenProject is Rails-based)
 - Plugin API may have limitations
 - Tied to OpenProject release cycles
 - More complex development environment
 
 **Implementation**:
+
 ```ruby
 # Create plugin at: openproject-flrts/
 module OpenProject::FLRTS
@@ -61,10 +70,12 @@ end
 **Approach**: Fork entire OpenProject repository and modify source directly
 
 **Pros**:
+
 - Complete control over all features
 - Can make any UI changes needed
 
 **Cons**:
+
 - Massive maintenance burden (OpenProject is 500k+ lines of code)
 - Difficult to merge upstream updates
 - Need to understand entire Rails application
@@ -103,8 +114,8 @@ services:
     volumes:
       - opdata:/var/openproject/assets
     ports:
-      - "8080:80"
-    
+      - '8080:80'
+
   postgres:
     image: postgres:13
     environment:
@@ -146,7 +157,7 @@ function replaceLogo() {
 // packages/flrts-extension/inject-ui.js
 function injectFLRTSInput() {
   const toolbar = document.querySelector('.toolbar-container');
-  
+
   const flrtsInput = document.createElement('div');
   flrtsInput.className = 'flrts-quick-input';
   flrtsInput.innerHTML = `
@@ -157,7 +168,7 @@ function injectFLRTSInput() {
     />
     <button onclick="parseFLRTS()">Create</button>
   `;
-  
+
   toolbar.prepend(flrtsInput);
 }
 
@@ -166,9 +177,9 @@ async function parseFLRTS() {
   const input = document.getElementById('flrts-nlp-input').value;
   const parsed = await fetch('https://api.flrts.local/parse', {
     method: 'POST',
-    body: JSON.stringify({ input })
+    body: JSON.stringify({ input }),
   });
-  
+
   // Create work package via OpenProject API
   const workPackage = await createWorkPackage(parsed);
 }
@@ -197,25 +208,24 @@ op-cli work-package create --subject "Test from CLI" --project "flrts"
 export class OpenProjectIntegration {
   private cli = '/usr/local/bin/op-cli';
   private api = 'http://localhost:8080/api/v3';
-  
+
   async createTask(parsed: ParsedTask) {
     // Option 1: Via REST API
     const response = await fetch(`${this.api}/work_packages`, {
       method: 'POST',
       headers: {
-        'Authorization': `Basic ${this.apiKey}`,
-        'Content-Type': 'application/json'
+        Authorization: `Basic ${this.apiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(this.mapToWorkPackage(parsed))
+      body: JSON.stringify(this.mapToWorkPackage(parsed)),
     });
-    
+
     // Option 2: Via CLI
     const result = await exec(`${this.cli} work-package create \
       --subject "${parsed.subject}" \
       --assignee "${parsed.assignee}" \
-      --due-date "${parsed.dueDate}"`
-    );
-    
+      --due-date "${parsed.dueDate}"`);
+
     return result;
   }
 }
@@ -224,23 +234,27 @@ export class OpenProjectIntegration {
 ## Implementation Phases
 
 ### Phase 1: API Integration (Week 1-2)
+
 - Set up OpenProject Docker instance
 - Install and configure CLI
 - Build basic API client
 - Test CRUD operations
 
 ### Phase 2: Browser Extension (Week 3-4)
+
 - Create Chrome/Firefox extension
 - Inject FLRTS input box
 - Replace logo via CSS
 - Handle authentication
 
 ### Phase 3: Standalone UI (Week 5-6)
+
 - Build React app with FLRTS UI
 - Embed via iframe or popup
 - Deep linking to OpenProject
 
 ### Phase 4: Plugin Exploration (Future)
+
 - If deeper integration needed
 - Develop Ruby plugin
 - Native UI modifications
@@ -249,13 +263,15 @@ export class OpenProjectIntegration {
 
 **We should NOT install OpenProject source code in our repo because:**
 
-1. **Separation of Concerns**: FLRTS is an NLP layer, not a project management system
+1. **Separation of Concerns**: FLRTS is an NLP layer, not a project management
+   system
 2. **Maintainability**: Avoid maintaining 500k+ lines of Rails code
 3. **Flexibility**: Can work with hosted or self-hosted OpenProject
 4. **Technology Stack**: Stay in TypeScript/Node.js comfort zone
 5. **Upgrade Path**: Easy to upgrade OpenProject independently
 
 **Instead, we will:**
+
 1. Use OpenProject's Docker image for development
 2. Integrate via REST API v3
 3. Build browser extension for UI injection
@@ -287,19 +303,19 @@ export class OpenProjectIntegration {
 server {
   listen 80;
   server_name openproject.company.com;
-  
+
   # Serve custom logo
   location /assets/flrts-logo.png {
     alias /var/www/flrts/logo.png;
   }
-  
+
   # Inject custom CSS
   location / {
     proxy_pass http://openproject:8080;
     sub_filter '</head>' '<link rel="stylesheet" href="/flrts-custom.css"></head>';
     sub_filter_once off;
   }
-  
+
   # FLRTS API endpoint
   location /api/flrts/ {
     proxy_pass http://flrts-api:3000/;
@@ -310,10 +326,12 @@ server {
 ## Conclusion
 
 The recommended approach is to:
+
 1. **Keep FLRTS separate** from OpenProject source
 2. **Use API integration** for backend functionality
 3. **Build browser extension** for UI enhancements
 4. **Deploy OpenProject via Docker** for development
 5. **Consider plugin development** only if absolutely necessary
 
-This maintains clean architecture, reduces maintenance burden, and allows both systems to evolve independently while providing the desired user experience.
+This maintains clean architecture, reduces maintenance burden, and allows both
+systems to evolve independently while providing the desired user experience.

@@ -6,20 +6,20 @@ dotenv.config();
 const API_URL = 'http://localhost:3001';
 
 const testExamples = [
-  "Task for @Taylor to inspect pump 3 by tomorrow 3pm",
-  "Emergency: Conveyor belt down in sector 7, assign to @Bryan",
-  "Schedule preventive maintenance for loader next Tuesday morning",
-  "What tasks does @Colin have this week?",
-  "Create high priority task for @Austin to move equipment from Site B to Site C by Friday",
-  "Partner 1 delivering parts tomorrow at 10am, need someone to receive",
-  "Urgent: Site C excavator needs immediate repair",
-  "List all maintenance tasks for this month",
-  "Assign @Taylor to check the main facility pumps today before 5pm"
+  'Task for @Taylor to inspect pump 3 by tomorrow 3pm',
+  'Emergency: Conveyor belt down in sector 7, assign to @Bryan',
+  'Schedule preventive maintenance for loader next Tuesday morning',
+  'What tasks does @Colin have this week?',
+  'Create high priority task for @Austin to move equipment from Site B to Site C by Friday',
+  'Partner 1 delivering parts tomorrow at 10am, need someone to receive',
+  'Urgent: Site C excavator needs immediate repair',
+  'List all maintenance tasks for this month',
+  'Assign @Taylor to check the main facility pumps today before 5pm',
 ];
 
 async function testParser() {
   console.log('🧪 Testing NLP Parser with PRD Examples\n');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   for (const [index, example] of testExamples.entries()) {
     console.log(`\n📝 Test ${index + 1}/${testExamples.length}`);
@@ -30,7 +30,7 @@ async function testParser() {
       const response = await fetch(`${API_URL}/parse`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: example })
+        body: JSON.stringify({ input: example }),
       });
 
       const result = await response.json();
@@ -38,7 +38,7 @@ async function testParser() {
       if (result.success) {
         console.log('✅ Parsed successfully!');
         console.log(`Operation: ${result.parsed.operation}`);
-        
+
         if (result.parsed.workPackage) {
           console.log('Work Package:');
           console.log(`  - Subject: ${result.parsed.workPackage.subject || 'N/A'}`);
@@ -47,15 +47,17 @@ async function testParser() {
           console.log(`  - Due Date: ${result.parsed.workPackage.dueDate || 'N/A'}`);
           console.log(`  - Site: ${result.parsed.workPackage.site || 'N/A'}`);
         }
-        
+
         if (result.parsed.query) {
           console.log('Query:');
           console.log(`  - Assignee: ${result.parsed.query.assignee || 'N/A'}`);
           if (result.parsed.query.dateRange) {
-            console.log(`  - Date Range: ${result.parsed.query.dateRange.start} to ${result.parsed.query.dateRange.end}`);
+            console.log(
+              `  - Date Range: ${result.parsed.query.dateRange.start} to ${result.parsed.query.dateRange.end}`
+            );
           }
         }
-        
+
         console.log(`\n💡 Reasoning: ${result.parsed.reasoning}`);
         console.log(`⏱️  Parse time: ${result.metadata.parseTimeMs}ms`);
       } else {
@@ -70,7 +72,7 @@ async function testParser() {
       console.log(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
-    console.log('=' .repeat(60));
+    console.log('='.repeat(60));
   }
 
   // Get analytics
@@ -78,7 +80,7 @@ async function testParser() {
   try {
     const analyticsResponse = await fetch(`${API_URL}/analytics`);
     const analytics = await analyticsResponse.json();
-    
+
     console.log('Session Statistics:');
     console.log(`  - Total parses: ${analytics.total}`);
     console.log(`  - Successful: ${analytics.successful}`);

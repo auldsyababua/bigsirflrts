@@ -10,7 +10,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const linear = new LinearClient({
-  apiKey: process.env.LINEAR_API_KEY
+  apiKey: process.env.LINEAR_API_KEY,
 });
 
 const PROJECT_ID = process.env.LINEAR_PROJECT_ID || '9d089be4-a284-4879-9b67-f472abecf998';
@@ -22,7 +22,7 @@ async function pushDocsToLinear() {
     { path: 'docs/stories', label: 'story' },
     { path: 'docs/qa', label: 'qa' },
     { path: 'docs/misc', label: 'documentation' },
-    { path: 'docs/processes', label: 'process' }
+    { path: 'docs/processes', label: 'process' },
   ];
 
   let created = 0;
@@ -30,7 +30,10 @@ async function pushDocsToLinear() {
 
   for (const dir of docDirs) {
     try {
-      const dirExists = await fs.access(dir.path).then(() => true).catch(() => false);
+      const dirExists = await fs
+        .access(dir.path)
+        .then(() => true)
+        .catch(() => false);
       if (!dirExists) continue;
 
       const files = await getMarkdownFiles(dir.path);
@@ -52,8 +55,8 @@ async function pushDocsToLinear() {
               sourcePath: file,
               importDate: new Date().toISOString(),
               type: dir.label,
-              ...metadata
-            }
+              ...metadata,
+            },
           });
 
           console.log(`✅ Created: ${title} (${doc.id})`);
@@ -61,7 +64,6 @@ async function pushDocsToLinear() {
 
           // Add to migration log
           await logMigration(file, doc.id, title);
-
         } catch (err) {
           console.error(`❌ Error with ${file}: ${err.message}`);
           errors.push({ file, error: err.message });
@@ -110,9 +112,10 @@ function extractTitle(content, filepath) {
   if (titleMatch) return titleMatch[1];
 
   // Use filename as fallback
-  return path.basename(filepath, '.md')
+  return path
+    .basename(filepath, '.md')
     .replace(/-/g, ' ')
-    .replace(/\b\w/g, l => l.toUpperCase());
+    .replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 function extractMetadata(content) {
@@ -151,7 +154,7 @@ async function logMigration(filepath, linearId, title) {
     timestamp: new Date().toISOString(),
     filepath,
     linearId,
-    title
+    title,
   });
 
   await fs.writeFile(logPath, JSON.stringify(log, null, 2));
@@ -167,7 +170,7 @@ Date: ${new Date().toISOString()}
 - Errors: ${errors.length}
 
 ## Errors
-${errors.map(e => `- ${e.file || e.dir}: ${e.error}`).join('\n')}
+${errors.map((e) => `- ${e.file || e.dir}: ${e.error}`).join('\n')}
 
 ## Next Steps
 1. Run \`node scripts/archive-docs.js\` to archive local files
@@ -205,7 +208,7 @@ if (require.main === module) {
   }
 
   pushDocsToLinear()
-    .then(result => {
+    .then((result) => {
       console.log('\n✅ Push to Linear complete!');
       if (result.errors.length === 0) {
         console.log('\n📦 You can now archive local files:');
@@ -213,7 +216,7 @@ if (require.main === module) {
       }
       process.exit(0);
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('\n❌ Push failed:', err);
       process.exit(1);
     });

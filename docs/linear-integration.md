@@ -2,11 +2,14 @@
 
 ## Architecture Overview
 
-Linear serves as the authoritative source for all project planning, task management, and development workflow orchestration. This document outlines how Linear integrates with BMAD-Method and the BigSirFLRTS codebase.
+Linear serves as the authoritative source for all project planning, task
+management, and development workflow orchestration. This document outlines how
+Linear integrates with BMAD-Method and the BigSirFLRTS codebase.
 
 ## Core Principles
 
 ### 1. Linear Method Alignment
+
 - **Issues, Not Stories**: Write clear, actionable tasks in plain language
 - **Project-Focused**: All work tied to meaningful projects with clear outcomes
 - **Cycles**: 1-2 week development cycles for focused execution
@@ -61,6 +64,7 @@ Linear (SSOT)
 ## Integration Points
 
 ### 1. Linear → Repository
+
 - **Webhook Events**: Issue creation, updates, comments
 - **Automatic Actions**:
   - Create feature branches from issues
@@ -68,11 +72,13 @@ Linear (SSOT)
   - Sync issue status with PR state
 
 ### 2. BMAD Agents → Linear
+
 - **Context Retrieval**: Agents read project/issue details
 - **Status Updates**: Agents update issue progress
 - **Documentation**: Generated docs linked to issues
 
 ### 3. Git → Linear
+
 - **Branch Naming**: `colin/10n-[issue-number]-[issue-title]`
 - **Commit Messages**: Include Linear issue ID
 - **PR Integration**: Auto-link PRs to Linear issues
@@ -130,19 +136,25 @@ Done:
 ## Implementation Scripts
 
 ### Linear Webhook Handler
+
 Location: `/scripts/linear-webhook.js`
+
 - Receives Linear webhook events
 - Triggers appropriate BMAD agents
 - Updates repository state
 
 ### Linear Sync Script
+
 Location: `/scripts/sync-linear.js`
+
 - Periodic sync of Linear state
 - Ensures consistency between systems
 - Handles offline/missed events
 
 ### BMAD-Linear Bridge
+
 Location: `/.bmad-core/integrations/linear.md`
+
 - Configuration for BMAD agents to read Linear
 - Templates for Linear-aware agents
 - Context mapping rules
@@ -150,6 +162,7 @@ Location: `/.bmad-core/integrations/linear.md`
 ## Best Practices
 
 ### Issue Writing
+
 1. **Title**: Action-oriented, specific (e.g., "Add user authentication to API")
 2. **Description**: Context, acceptance criteria, technical notes
 3. **Labels**: Component (frontend/backend), type (feature/bug), priority
@@ -157,12 +170,14 @@ Location: `/.bmad-core/integrations/linear.md`
 5. **Cycle**: Assign to current or next cycle
 
 ### Project Management
+
 1. **Cycles**: 2-week sprints aligned with Linear cycles
 2. **Planning**: Review and groom backlog weekly
 3. **Stand-ups**: Update Linear issues daily
 4. **Retrospectives**: Create improvement issues
 
 ### Development Flow
+
 1. Start with Linear issue
 2. BMAD agents read context
 3. Implement in codebase
@@ -173,6 +188,7 @@ Location: `/.bmad-core/integrations/linear.md`
 ## Monitoring & Metrics
 
 Track these in Linear:
+
 - **Cycle velocity**: Issues completed per cycle
 - **Lead time**: Backlog → Done duration
 - **Project progress**: Milestone completion
@@ -189,6 +205,7 @@ node scripts/setup-linear.js
 ```
 
 This will:
+
 - Prompt for your Linear API key
 - Configure environment variables
 - Test the connection
@@ -249,4 +266,5 @@ For real-time sync between Linear and your repository:
 
 ---
 
-*This document is the source of truth for Linear integration. All changes should be reflected in Linear project documentation.*
+_This document is the source of truth for Linear integration. All changes should
+be reflected in Linear project documentation._
