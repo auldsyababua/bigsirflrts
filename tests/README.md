@@ -44,7 +44,7 @@ npm run test:api:watch
 
 ### **Directory Structure**
 
-```
+```bash
 tests/
 ├── README.md                                # This file
 ├── .env.test                               # 1Password secret references (safe to commit)
@@ -68,7 +68,7 @@ Your "MCP Secrets" vault needs these items:
 
 **Item: "FLRTS SECRETS"**
 
-```
+```bash
 SUPABASE_PROJECT_ID: thnwlykidzhrsagyjncc
 SUPABASE_URL: https://thnwlykidzhrsagyjncc.supabase.co
 SUPABASE_ANON_KEY: [your-anon-key]
@@ -232,7 +232,7 @@ Tools:
 
 Install dependencies and Playwright Chromium:
 
-```
+```bash
 npm install
 npx playwright install chromium
 ```
@@ -241,31 +241,31 @@ npx playwright install chromium
 
 - Full MVP suite (P0):
 
-```
+```bash
 npm run test:mvp
 ```
 
 - Unit only:
 
-```
+```bash
 npm run test:unit
 ```
 
 - Integration only:
 
-```
+```bash
 npm run test:integration
 ```
 
 - E2E only (Chromium, @P0-tagged):
 
-```
+```bash
 npm run test:e2e
 ```
 
 - Smoke test:
 
-```
+```bash
 npm run test:smoke
 ```
 
