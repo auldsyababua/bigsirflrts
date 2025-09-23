@@ -5,4 +5,6 @@ coverage/
 .git/
 *.min.js
 package-lock.json
-.github/workflows/linear-pr-automation.yml
+.github/workflows/*.yml
+ARCHIVE(DEPRECATED)/
+infrastructure/digitalocean/monitoring/

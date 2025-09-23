@@ -1,4 +1,5 @@
 {
+  "root": true,
   "env": {
     "browser": true,
     "es2021": true,
@@ -26,7 +27,14 @@
       ],
       "rules": {
         "@typescript-eslint/no-unused-vars": "warn",
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-var-requires": "off"
+      }
+    },
+    {
+      "files": ["tests/**/*.js", "tests/**/*.ts"],
+      "env": {
+        "jest": true
       }
     }
   ],
@@ -38,6 +46,8 @@
     "coverage/",
     ".git/",
     "archive/",
-    "ARCHIVE(DEPRECATED)/"
+    "ARCHIVE(DEPRECATED)/",
+    "package-lock.json",
+    "infrastructure/digitalocean/monitoring/"
   ]
 }
