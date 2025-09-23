@@ -129,7 +129,7 @@ Configure tunnel ingress rules in Cloudflare Dashboard:
 3. Add public hostname:
    - Subdomain: openproject
    - Domain: yourdomain.com
-   - Service: http://openproject:80
+   - Service: <http://openproject:80>
 
 ### 6. Deploy the Application
 
@@ -151,7 +151,7 @@ docker compose logs -f openproject
 
 1. Access OpenProject at `http://165.227.216.172:8080` (temporary)
 2. Complete the setup wizard:
-   - Admin email: admin@yourdomain.com
+   - Admin email: <admin@yourdomain.com>
    - Admin password: (secure password)
    - Language: English
 3. Configure organization settings
@@ -319,9 +319,9 @@ docker compose up -d
 
 ## Support Contacts
 
-- **Digital Ocean Support**: https://www.digitalocean.com/support/
-- **OpenProject Community**: https://community.openproject.org/
-- **Cloudflare Support**: https://support.cloudflare.com/
+- **Digital Ocean Support**: <https://www.digitalocean.com/support/>
+- **OpenProject Community**: <https://community.openproject.org/>
+- **Cloudflare Support**: <https://support.cloudflare.com/>
 
 ## Appendix: Environment Variables Reference
 

@@ -67,10 +67,10 @@ docker-compose ps
 
 ### 4. Verify Access
 
-- **Prometheus**: https://prometheus.monitoring.${DOMAIN}
-- **Grafana**: https://grafana.monitoring.${DOMAIN} (admin/admin)
-- **Jaeger**: https://jaeger.monitoring.${DOMAIN}
-- **n8n Monitor**: https://n8n-monitor.monitoring.${DOMAIN}
+- **Prometheus**: <https://prometheus.monitoring.${DOMAIN}>
+- **Grafana**: <https://grafana.monitoring.${DOMAIN}> (admin/admin)
+- **Jaeger**: <https://jaeger.monitoring.${DOMAIN}>
+- **n8n Monitor**: <https://n8n-monitor.monitoring.${DOMAIN}>
 
 ## Detailed Configuration
 
@@ -111,7 +111,7 @@ docker-compose ps
 
 ### Grafana Setup
 
-1. **Login**: https://grafana.monitoring.${DOMAIN}
+1. **Login**: <https://grafana.monitoring.${DOMAIN}>
    - Username: `admin`
    - Password: `admin` (change on first login)
 
@@ -182,6 +182,7 @@ docker stats
    ```
 
 3. **High resource usage**
+
    ```bash
    # Monitor container resources
    docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"

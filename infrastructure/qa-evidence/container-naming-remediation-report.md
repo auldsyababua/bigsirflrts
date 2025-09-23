@@ -216,7 +216,7 @@ export PROMETHEUS_CONTAINER="flrts-prometheus"
 
 ### Phase 4: Documentation Updates
 
-#### Files to Update:
+#### Files to Update
 
 - `/docs/setup/openproject.md` - Update container references
 - `/docs/stories/1.3.n8n-production-deployment.md` - Fix container names
@@ -251,14 +251,14 @@ npm run test:resilience
 
 ## Risk Assessment
 
-### High Risk Areas:
+### High Risk Areas
 
 1. **Production Deployments** - Container name changes will cause downtime
 2. **Remote Webhooks** - May fail until URLs are updated
 3. **Monitoring** - Metrics collection will break temporarily
 4. **CI/CD Pipelines** - May have hardcoded container references
 
-### Mitigation Strategy:
+### Mitigation Strategy
 
 1. Test all changes in development environment first
 2. Create rollback script before production changes
@@ -268,7 +268,7 @@ npm run test:resilience
 
 ## Implementation Checklist
 
-### Pre-Implementation:
+### Pre-Implementation
 
 - [ ] Backup all docker-compose files
 - [ ] Document current container names from `docker ps`
@@ -276,7 +276,7 @@ npm run test:resilience
 - [ ] Create rollback script
 - [ ] Notify team of maintenance window
 
-### Implementation:
+### Implementation
 
 - [ ] Add COMPOSE_PROJECT_NAME to all .env files
 - [ ] Update all docker-compose.yml files with container_name
@@ -286,7 +286,7 @@ npm run test:resilience
 - [ ] Update remote service configurations
 - [ ] Update documentation
 
-### Post-Implementation:
+### Post-Implementation
 
 - [ ] Verify all containers have correct names
 - [ ] Run full test suite

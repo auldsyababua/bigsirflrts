@@ -270,6 +270,7 @@ Once your endpoint is deployed:
 
 4. Copy the webhook signing secret
 5. Add to your environment:
+
    ```bash
    LINEAR_WEBHOOK_SECRET=lin_whs_xxxxx
    ```

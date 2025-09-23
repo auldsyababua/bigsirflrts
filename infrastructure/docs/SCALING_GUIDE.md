@@ -206,6 +206,7 @@ Monthly executions: 50,000+
    ```
 
 2. **Slow Webhook Processing**
+
    ```bash
    # Check execution queue
    docker exec n8n-postgres psql -U n8n -d n8n -c \
@@ -241,14 +242,14 @@ docker-compose -f docker-compose.single.yml up -d
 
 ## Cost-Benefit Analysis
 
-### Keep Single Instance Until:
+### Keep Single Instance Until
 
 - 30+ active users
 - 200+ webhooks/hour sustained
 - 10+ workflow timeout errors/day
 - Business requires HA/fault tolerance
 
-### ROI of Queue Mode:
+### ROI of Queue Mode
 
 - **Cost**: 3-4x infrastructure
 - **Benefit**: 10x capacity

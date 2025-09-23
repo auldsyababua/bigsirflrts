@@ -245,7 +245,7 @@ operations.
 As a system administrator, I want OpenProject deployed via Docker on Digital
 Ocean, so that we have our core project management platform running.
 
-**Status:** ✅ COMPLETED - Running at https://ops.10nz.tools
+**Status:** ✅ COMPLETED - Running at <https://ops.10nz.tools>
 
 ### Story 1.2: PostgreSQL 15.8 Validation
 

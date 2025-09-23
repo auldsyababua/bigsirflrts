@@ -216,6 +216,7 @@ Automated deployment script that:
 3. **Wait for initialization** (3-5 minutes)
 
 4. **Run QA tests**:
+
    ```bash
    cd /root/infrastructure/qa-evidence/story-1.1
    ./RUN_ALL_TESTS.sh

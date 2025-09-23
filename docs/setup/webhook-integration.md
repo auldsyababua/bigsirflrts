@@ -403,7 +403,7 @@ supabase functions logs openproject-sync
 
 ### n8n Monitoring
 
-- Access n8n UI at http://localhost:5678
+- Access n8n UI at <http://localhost:5678>
 - Check "Executions" tab for webhook triggers
 - Review execution logs for detailed debugging
 

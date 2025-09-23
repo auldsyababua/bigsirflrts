@@ -280,7 +280,7 @@ export class OpenProjectIntegration {
 
 ## Custom Branding Implementation
 
-### Without Forking OpenProject:
+### Without Forking OpenProject
 
 1. **Admin Panel Customization**
    - Upload custom logo via Admin > Settings
@@ -297,7 +297,7 @@ export class OpenProjectIntegration {
    - Serve custom assets
    - Rewrite certain URLs
 
-### Example Nginx Configuration:
+### Example Nginx Configuration
 
 ```nginx
 server {

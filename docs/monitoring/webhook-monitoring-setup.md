@@ -251,7 +251,7 @@ export { WebhookMonitor };
 1. Navigate to Supabase Dashboard → Project Settings → Integrations
 2. Configure webhook delivery failure notifications:
    - **Failure Threshold**: 3 consecutive failures
-   - **Email Recipients**: dev-team@company.com
+   - **Email Recipients**: <dev-team@company.com>
    - **Webhook URL**: Slack integration webhook
 
 ### 2. Cron-based Monitoring

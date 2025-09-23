@@ -35,7 +35,7 @@ that can occur in production environments.
 
 **Primary comprehensive failure testing script**
 
-#### Real Failure Scenarios Tested:
+#### Real Failure Scenarios Tested
 
 - **Invalid Credentials**: Uses deliberately wrong password against real
   Supabase
@@ -44,7 +44,7 @@ that can occur in production environments.
 - **Session Recovery**: Tests automatic reconnection after failure
 - **Connection Pool Stress**: Multiple simultaneous connections to test limits
 
-#### Actionable Error Messages:
+#### Actionable Error Messages
 
 ```bash
 # Example error guidance for team:
@@ -53,7 +53,7 @@ that can occur in production environments.
 "Connection lost during operation. For internal team: 1) Check Supabase status at status.supabase.com 2) Verify network connectivity 3) Restart OpenProject container if connection issues persist"
 ```
 
-#### Usage:
+#### Usage
 
 ```bash
 ./test-supabase-connection-REAL-FAILURES.sh YOUR_DB_PASSWORD
@@ -63,7 +63,7 @@ that can occur in production environments.
 
 **2+ hour idle session testing (as specifically required by QA)**
 
-#### Real Extended Testing:
+#### Real Extended Testing
 
 - **Full Mode**: Runs for 2+ hours with periodic connection checks
 - **Accelerated Mode**: 2-minute version for development (QA should use full
@@ -71,13 +71,13 @@ that can occur in production environments.
 - **Real Idle Behavior**: Actual waiting periods, not simulated
 - **Recovery Validation**: Tests reconnection after extended idle periods
 
-#### Weekend/Overnight Simulation:
+#### Weekend/Overnight Simulation
 
 - Tests what happens when OpenProject sits idle over weekends
 - Validates automatic reconnection works in practice
 - Ensures no data loss during extended idle periods
 
-#### Usage:
+#### Usage
 
 ```bash
 # For QA validation (full 2+ hour test):
@@ -91,14 +91,14 @@ that can occur in production environments.
 
 **Master test runner that executes all required tests**
 
-#### Test Suite Coordination:
+#### Test Suite Coordination
 
 - Runs baseline validation
 - Executes all real failure scenarios
 - Performs extended session testing
 - Generates QA validation report
 
-#### Usage:
+#### Usage
 
 ```bash
 # Development testing (fast):
@@ -110,7 +110,7 @@ that can occur in production environments.
 
 ## QA Validation Process
 
-### For QA Team to Verify:
+### For QA Team to Verify
 
 1. **Run Full Test Suite**:
 
@@ -128,7 +128,7 @@ that can occur in production environments.
    - Verify error messages are specific, not generic
    - Check that team members can follow error guidance to resolve issues
 
-### Expected QA Results:
+### Expected QA Results
 
 - All tests should **PASS** the failure scenario requirements
 - Error messages should be **actionable for non-technical team members**
@@ -137,7 +137,7 @@ that can occur in production environments.
 
 ## Compliance with QA Standards
 
-### Zero Tolerance Policy Compliance:
+### Zero Tolerance Policy Compliance
 
 ✅ **NO happy path testing** - All tests designed to fail and recover ✅ **Real
 failure conditions** - Actual network, credential, and timeout failures ✅
@@ -145,7 +145,7 @@ failure conditions** - Actual network, credential, and timeout failures ✅
 recovery behavior** - Tests real reconnection, not assumed behavior ✅ **QA
 reproducible** - All tests can be independently verified
 
-### Team Guidance Examples:
+### Team Guidance Examples
 
 Every test failure includes specific guidance like:
 
@@ -156,13 +156,13 @@ Every test failure includes specific guidance like:
 
 ## Integration with Existing Infrastructure
 
-### File Locations:
+### File Locations
 
 - `infrastructure/docker/openproject/test-supabase-connection-REAL-FAILURES.sh`
 - `infrastructure/docker/openproject/test-supabase-extended-session.sh`
 - `infrastructure/docker/openproject/run-comprehensive-db-tests.sh`
 
-### Deployment Integration:
+### Deployment Integration
 
 - Tests run against actual Supabase PostgreSQL 15.8 instance
 - Uses Session Mode (port 5432) as required for OpenProject
@@ -171,7 +171,7 @@ Every test failure includes specific guidance like:
 
 ## Replacing Old Happy-Path Testing
 
-### Old Script Issues:
+### Old Script Issues
 
 The previous `test-supabase-connection.sh` was pure happy-path testing:
 
@@ -180,7 +180,7 @@ The previous `test-supabase-connection.sh` was pure happy-path testing:
 - Generic error handling
 - No extended session testing
 
-### New Approach:
+### New Approach
 
 - **Comprehensive failure testing** with real conditions
 - **Extended session validation** (2+ hours as required)
@@ -189,19 +189,19 @@ The previous `test-supabase-connection.sh` was pure happy-path testing:
 
 ## Running the Tests
 
-### Quick Development Check:
+### Quick Development Check
 
 ```bash
 ./run-comprehensive-db-tests.sh YOUR_PASSWORD
 ```
 
-### Full QA Validation:
+### Full QA Validation
 
 ```bash
 ./run-comprehensive-db-tests.sh YOUR_PASSWORD --extended-full
 ```
 
-### Individual Test Components:
+### Individual Test Components
 
 ```bash
 # Real failure scenarios only:

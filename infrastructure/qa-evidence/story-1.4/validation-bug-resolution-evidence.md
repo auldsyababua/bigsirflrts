@@ -133,7 +133,7 @@ but does not affect the core n8n validation fix.
 **Tunnel Configuration**:
 
 - Tunnel ID: 0db2b84d-306c-4577-9b77-38f145566ee4
-- Target: ops.10nz.tools → http://localhost:8080
+- Target: ops.10nz.tools → <http://localhost:8080>
 - Status: Active with 4 registered connections
 
 ### Current Infrastructure Status

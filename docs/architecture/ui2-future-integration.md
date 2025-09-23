@@ -3,7 +3,7 @@
 ## Overview
 
 The `ui2/` directory contains the UI2 framework
-(https://github.com/EvanZhouDev/ui2), which will be used post-MVP for natural
+(<https://github.com/EvanZhouDev/ui2>), which will be used post-MVP for natural
 language interface capabilities.
 
 ## Purpose

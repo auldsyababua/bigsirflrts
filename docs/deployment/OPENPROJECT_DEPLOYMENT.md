@@ -5,7 +5,7 @@
 OpenProject has been successfully deployed to DigitalOcean with Supabase
 PostgreSQL backend and Cloudflare R2 for file storage.
 
-**Live URL**: https://ops.10nz.tools
+**Live URL**: <https://ops.10nz.tools>
 
 ## Infrastructure Components
 
@@ -14,6 +14,7 @@ PostgreSQL backend and Cloudflare R2 for file storage.
 - **Name**: flrts-openproject-prod
 - **IP**: 165.227.216.172
 - **SSH Access**:
+
   ```bash
   ssh do-openproject
   ssh flrts-prod
@@ -135,9 +136,9 @@ query: SELECT * FROM public.work_packages;
 
 ## Support Information
 
-- **Cloudflare Dashboard**: https://dash.cloudflare.com
-- **Supabase Dashboard**: https://app.supabase.com
-- **DigitalOcean Console**: https://cloud.digitalocean.com
+- **Cloudflare Dashboard**: <https://dash.cloudflare.com>
+- **Supabase Dashboard**: <https://app.supabase.com>
+- **DigitalOcean Console**: <https://cloud.digitalocean.com>
 
 ## Last Updated
 
