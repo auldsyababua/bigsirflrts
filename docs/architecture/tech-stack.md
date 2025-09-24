@@ -4,7 +4,8 @@
 
 ### Runtime & Language
 
-- **Node.js 22 LTS** - JavaScript runtime with native TypeScript support via --experimental-strip-types
+- **Node.js 22 LTS** - JavaScript runtime with native TypeScript support via
+  --experimental-strip-types
 - **TypeScript 5.6** - Type safety and modern JavaScript features
 - **Bun 1.1** (alternative) - Fast all-in-one JavaScript runtime for development
 
@@ -183,23 +184,23 @@
 
 ## Technology Decision Matrix
 
-| Category | Primary Choice | Rationale | Alternatives |
-|----------|---------------|-----------|--------------|
-| Runtime | Node.js 22 LTS | Native TypeScript support, stability, ecosystem | Bun 1.1 (speed), Deno 2 (security) |
-| Web Framework | Express.js | Maturity, middleware ecosystem | Fastify (performance), Koa (modern) |
-| Database | Supabase PostgreSQL 15.8 | Single instance, no sync complexity, direct OpenProject support | Self-hosted PostgreSQL |
-| Connection Pooling | Supavisor | Session mode for persistent, transaction mode for serverless | PgBouncer |
-| Object Storage | Cloudflare R2 | S3-compatible, cost-effective | AWS S3, MinIO |
-| Cache | Redis 7 | n8n queue mode, pub/sub support | Memcached, KeyDB |
-| Queue | n8n Queue Mode | Native n8n integration, Redis-based | Bull, BullMQ, RabbitMQ |
-| Workflow Orchestration | n8n v1.105.2 | Visual workflow builder, extensive integrations | Temporal, Apache Airflow |
-| Edge Functions | Supabase Edge Functions | Low-latency, TypeScript-first | Cloudflare Workers, Vercel Edge |
-| AI/NLP | OpenAI GPT-4o | Quality, ease of integration | Local LLMs, Azure OpenAI |
-| Frontend | Next.js 14 | App Router, RSC, performance | Remix, Astro |
-| CSS | Tailwind CSS | Rapid development, consistency | CSS Modules, styled-components |
-| Testing | Jest 29 | Comprehensive, wide support | Vitest, Mocha |
-| Container | Docker 24 | Industry standard | Podman, containerd |
-| Monitoring | Prometheus + Grafana | Open source, powerful | DataDog, New Relic |
+| Category               | Primary Choice           | Rationale                                                       | Alternatives                        |
+| ---------------------- | ------------------------ | --------------------------------------------------------------- | ----------------------------------- |
+| Runtime                | Node.js 22 LTS           | Native TypeScript support, stability, ecosystem                 | Bun 1.1 (speed), Deno 2 (security)  |
+| Web Framework          | Express.js               | Maturity, middleware ecosystem                                  | Fastify (performance), Koa (modern) |
+| Database               | Supabase PostgreSQL 15.8 | Single instance, no sync complexity, direct OpenProject support | Self-hosted PostgreSQL              |
+| Connection Pooling     | Supavisor                | Session mode for persistent, transaction mode for serverless    | PgBouncer                           |
+| Object Storage         | Cloudflare R2            | S3-compatible, cost-effective                                   | AWS S3, MinIO                       |
+| Cache                  | Redis 7                  | n8n queue mode, pub/sub support                                 | Memcached, KeyDB                    |
+| Queue                  | n8n Queue Mode           | Native n8n integration, Redis-based                             | Bull, BullMQ, RabbitMQ              |
+| Workflow Orchestration | n8n v1.105.2             | Visual workflow builder, extensive integrations                 | Temporal, Apache Airflow            |
+| Edge Functions         | Supabase Edge Functions  | Low-latency, TypeScript-first                                   | Cloudflare Workers, Vercel Edge     |
+| AI/NLP                 | OpenAI GPT-4o            | Quality, ease of integration                                    | Local LLMs, Azure OpenAI            |
+| Frontend               | Next.js 14               | App Router, RSC, performance                                    | Remix, Astro                        |
+| CSS                    | Tailwind CSS             | Rapid development, consistency                                  | CSS Modules, styled-components      |
+| Testing                | Jest 29                  | Comprehensive, wide support                                     | Vitest, Mocha                       |
+| Container              | Docker 24                | Industry standard                                               | Podman, containerd                  |
+| Monitoring             | Prometheus + Grafana     | Open source, powerful                                           | DataDog, New Relic                  |
 
 ## Version Management Strategy
 
@@ -223,14 +224,14 @@
 
 ## Performance Targets
 
-| Metric | Target | Current | Tools |
-|--------|--------|---------|-------|
-| API Response Time | < 200ms p95 | - | Express + Redis cache |
-| OpenAI Parse Time | < 2s | - | GPT-4o with streaming |
-| Database Query | < 50ms | - | Indexed SQLite/PostgreSQL |
-| Frontend Load | < 1s FCP | - | Next.js with SSG |
-| WebSocket Latency | < 100ms | - | Socket.io with sticky sessions |
-| Memory Usage | < 512MB per service | - | Node.js with --max-old-space-size |
+| Metric            | Target              | Current | Tools                             |
+| ----------------- | ------------------- | ------- | --------------------------------- |
+| API Response Time | < 200ms p95         | -       | Express + Redis cache             |
+| OpenAI Parse Time | < 2s                | -       | GPT-4o with streaming             |
+| Database Query    | < 50ms              | -       | Indexed SQLite/PostgreSQL         |
+| Frontend Load     | < 1s FCP            | -       | Next.js with SSG                  |
+| WebSocket Latency | < 100ms             | -       | Socket.io with sticky sessions    |
+| Memory Usage      | < 512MB per service | -       | Node.js with --max-old-space-size |
 
 ## License Compliance
 
@@ -244,26 +245,26 @@ All dependencies are compatible with MIT license:
 
 ### Monthly Operating Costs (Estimated)
 
-| Service | Usage | Cost |
-|---------|-------|------|
-| OpenAI GPT-4o | 50 tasks/day × 500 tokens | $5-10 |
-| Google Speech API | 100 minutes/month (future) | $2-5 |
-| Digital Ocean VM | s-4vcpu-8gb (4GB RAM minimum) | $48 |
-| Supabase PostgreSQL | Pro tier (single instance for all) | $25 |
-| Supabase Edge Functions | 150,000 invocations/month | Included in Pro |
-| n8n Cloud (optional) | Self-hosted on VM | $0 |
-| Cloudflare R2 | 100GB storage + bandwidth | $5 |
-| Redis (containerized) | Included in VM | $0 |
-| **Total** | | **$85-93/month** |
+| Service                 | Usage                              | Cost             |
+| ----------------------- | ---------------------------------- | ---------------- |
+| OpenAI GPT-4o           | 50 tasks/day × 500 tokens          | $5-10            |
+| Google Speech API       | 100 minutes/month (future)         | $2-5             |
+| Digital Ocean VM        | s-4vcpu-8gb (4GB RAM minimum)      | $48              |
+| Supabase PostgreSQL     | Pro tier (single instance for all) | $25              |
+| Supabase Edge Functions | 150,000 invocations/month          | Included in Pro  |
+| n8n Cloud (optional)    | Self-hosted on VM                  | $0               |
+| Cloudflare R2           | 100GB storage + bandwidth          | $5               |
+| Redis (containerized)   | Included in VM                     | $0               |
+| **Total**               |                                    | **$85-93/month** |
 
 ### Development Costs
 
-| Resource | Time | Cost |
-|----------|------|------|
-| Initial Development | 12 weeks | Internal |
-| npm packages | All open source | $0 |
-| Development tools | VS Code, GitHub | $0 |
-| Testing infrastructure | GitHub Actions free tier | $0 |
+| Resource               | Time                     | Cost     |
+| ---------------------- | ------------------------ | -------- |
+| Initial Development    | 12 weeks                 | Internal |
+| npm packages           | All open source          | $0       |
+| Development tools      | VS Code, GitHub          | $0       |
+| Testing infrastructure | GitHub Actions free tier | $0       |
 
 ## Future Technology Considerations
 

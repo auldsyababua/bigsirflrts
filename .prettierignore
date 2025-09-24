@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+coverage/
+.git/
+*.min.js
+package-lock.json
+.github/workflows/*.yml
+ARCHIVE(DEPRECATED)/
+infrastructure/digitalocean/monitoring/

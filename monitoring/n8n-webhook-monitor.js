@@ -1,8 +1,9 @@
 // Enhanced n8n Webhook Monitor for FLRTS Story 1.7
 // Collects metrics from n8n webhooks following best practices from .bmad-core/references/n8n-best-practices.md
 
-const express = require('express');
-const winston = require('winston');
+import express from 'express';
+import winston from 'winston';
+import { randomUUID } from 'node:crypto';
 
 const app = express();
 const PORT = process.env.N8N_MONITOR_PORT || 3002;
@@ -10,14 +11,11 @@ const PORT = process.env.N8N_MONITOR_PORT || 3002;
 // Winston logger for structured logging
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
+  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/n8n-metrics.log' })
-  ]
+    new winston.transports.File({ filename: 'logs/n8n-metrics.log' }),
+  ],
 });
 
 // In-memory metrics storage (replace with proper metrics store in production)
@@ -27,7 +25,7 @@ const metrics = {
   errors: [],
   totalRequests: 0,
   totalErrors: 0,
-  responseTimes: []
+  responseTimes: [],
 };
 
 app.use(express.json());
@@ -44,7 +42,7 @@ app.use((req, res, next) => {
       statusCode: res.statusCode,
       duration,
       userAgent: req.get('User-Agent'),
-      ip: req.ip
+      ip: req.ip,
     });
   });
 
@@ -60,8 +58,8 @@ app.get('/health', (req, res) => {
     metrics: {
       totalRequests: metrics.totalRequests,
       totalErrors: metrics.totalErrors,
-      activeWorkflows: metrics.workflows.size
-    }
+      activeWorkflows: metrics.workflows.size,
+    },
   });
 });
 
@@ -80,13 +78,13 @@ app.post('/metrics/n8n', (req, res) => {
       node_types,
       trigger_type,
       environment,
-      region
+      region,
     } = req.body;
 
     // Validate required fields
     if (!workflow_id || !execution_id) {
       return res.status(400).json({
-        error: 'Missing required fields: workflow_id, execution_id'
+        error: 'Missing required fields: workflow_id, execution_id',
       });
     }
 
@@ -104,7 +102,7 @@ app.post('/metrics/n8n', (req, res) => {
         nodeTypes: node_types ? node_types.split(',') : [],
         triggerType: trigger_type,
         environment,
-        region
+        region,
       });
     }
 
@@ -140,7 +138,7 @@ app.post('/metrics/n8n', (req, res) => {
       itemsCount: items_count || 0,
       errorMessage: error_message,
       environment,
-      region
+      region,
     });
 
     // Keep only last 500 executions for memory management
@@ -156,21 +154,20 @@ app.post('/metrics/n8n', (req, res) => {
       executionId: execution_id,
       success: success !== false,
       duration: duration_ms,
-      itemsCount: items_count
+      itemsCount: items_count,
     });
 
     res.json({
       success: true,
       message: 'Metrics recorded',
       workflowId: workflow_id,
-      executionId: execution_id
+      executionId: execution_id,
     });
-
   } catch (error) {
     logger.error('Failed to process n8n metrics', { error: error.message });
     res.status(500).json({
       error: 'Failed to process metrics',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -186,11 +183,11 @@ app.post('/metrics/n8n/errors', (req, res) => {
       error_stack,
       failed_node,
       timestamp,
-      environment
+      environment,
     } = req.body;
 
     const errorRecord = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       workflowId: workflow_id,
       workflowName: workflow_name,
       executionId: execution_id,
@@ -198,7 +195,7 @@ app.post('/metrics/n8n/errors', (req, res) => {
       errorStack: error_stack,
       failedNode: failed_node,
       timestamp: timestamp || new Date().toISOString(),
-      environment
+      environment,
     };
 
     metrics.errors.push(errorRecord);
@@ -213,14 +210,13 @@ app.post('/metrics/n8n/errors', (req, res) => {
     res.json({
       success: true,
       message: 'Error recorded',
-      errorId: errorRecord.id
+      errorId: errorRecord.id,
     });
-
   } catch (error) {
     logger.error('Failed to process n8n error', { error: error.message });
     res.status(500).json({
       error: 'Failed to process error',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -228,12 +224,12 @@ app.post('/metrics/n8n/errors', (req, res) => {
 // Get workflow statistics
 app.get('/metrics/n8n/workflows', (req, res) => {
   try {
-    const workflowStats = Array.from(metrics.workflows.values()).map(workflow => ({
+    const workflowStats = Array.from(metrics.workflows.values()).map((workflow) => ({
       ...workflow,
-      successRate: workflow.executions > 0 ?
-        Math.round((workflow.successes / workflow.executions) * 100) : 0,
-      errorRate: workflow.executions > 0 ?
-        Math.round((workflow.failures / workflow.executions) * 100) : 0
+      successRate:
+        workflow.executions > 0 ? Math.round((workflow.successes / workflow.executions) * 100) : 0,
+      errorRate:
+        workflow.executions > 0 ? Math.round((workflow.failures / workflow.executions) * 100) : 0,
     }));
 
     res.json({
@@ -243,16 +239,19 @@ app.get('/metrics/n8n/workflows', (req, res) => {
         totalWorkflows: metrics.workflows.size,
         totalExecutions: metrics.totalRequests,
         totalErrors: metrics.totalErrors,
-        overallSuccessRate: metrics.totalRequests > 0 ?
-          Math.round(((metrics.totalRequests - metrics.totalErrors) / metrics.totalRequests) * 100) : 0
-      }
+        overallSuccessRate:
+          metrics.totalRequests > 0
+            ? Math.round(
+                ((metrics.totalRequests - metrics.totalErrors) / metrics.totalRequests) * 100
+              )
+            : 0,
+      },
     });
-
   } catch (error) {
     logger.error('Failed to get workflow metrics', { error: error.message });
     res.status(500).json({
       error: 'Failed to get metrics',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -268,8 +267,8 @@ app.get('/metrics/n8n/performance', (req, res) => {
           avgResponseTime: 0,
           p50: 0,
           p95: 0,
-          p99: 0
-        }
+          p99: 0,
+        },
       });
     }
 
@@ -287,19 +286,18 @@ app.get('/metrics/n8n/performance', (req, res) => {
       p95: sorted[p95Index],
       p99: sorted[p99Index],
       min: sorted[0],
-      max: sorted[count - 1]
+      max: sorted[count - 1],
     };
 
     res.json({
       success: true,
-      performance
+      performance,
     });
-
   } catch (error) {
     logger.error('Failed to get performance metrics', { error: error.message });
     res.status(500).json({
       error: 'Failed to get performance metrics',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -308,21 +306,18 @@ app.get('/metrics/n8n/performance', (req, res) => {
 app.get('/metrics/n8n/errors', (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 20;
-    const recentErrors = metrics.errors
-      .slice(-limit)
-      .reverse(); // Most recent first
+    const recentErrors = metrics.errors.slice(-limit).reverse(); // Most recent first
 
     res.json({
       success: true,
       errors: recentErrors,
-      totalErrors: metrics.errors.length
+      totalErrors: metrics.errors.length,
     });
-
   } catch (error) {
     logger.error('Failed to get error metrics', { error: error.message });
     res.status(500).json({
       error: 'Failed to get error metrics',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -347,7 +342,7 @@ app.get('/metrics', (req, res) => {
     prometheus += `n8n_active_workflows ${metrics.workflows.size} ${now}\n\n`;
 
     // Per-workflow metrics
-    metrics.workflows.forEach(workflow => {
+    metrics.workflows.forEach((workflow) => {
       const labels = `workflow_id="${workflow.id}",workflow_name="${workflow.name}",environment="${workflow.environment || 'unknown'}"`;
 
       prometheus += `n8n_workflow_executions{${labels}} ${workflow.executions} ${now}\n`;
@@ -358,12 +353,13 @@ app.get('/metrics', (req, res) => {
 
     res.set('Content-Type', 'text/plain');
     res.send(prometheus);
-
   } catch (error) {
-    logger.error('Failed to generate Prometheus metrics', { error: error.message });
+    logger.error('Failed to generate Prometheus metrics', {
+      error: error.message,
+    });
     res.status(500).json({
       error: 'Failed to generate metrics',
-      message: error.message
+      message: error.message,
     });
   }
 });
@@ -387,7 +383,7 @@ app.listen(PORT, () => {
       health: `http://localhost:${PORT}/health`,
       metrics: `http://localhost:${PORT}/metrics/n8n`,
       errors: `http://localhost:${PORT}/metrics/n8n/errors`,
-      prometheus: `http://localhost:${PORT}/metrics`
-    }
+      prometheus: `http://localhost:${PORT}/metrics`,
+    },
   });
 });

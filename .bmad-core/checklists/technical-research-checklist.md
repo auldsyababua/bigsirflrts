@@ -3,9 +3,13 @@
 # Technical Research Checklist
 
 ## Purpose
-Ensure all technical implementation details in stories are properly researched, documented with working examples, and validated before marking the story as ready for development.
+
+Ensure all technical implementation details in stories are properly researched,
+documented with working examples, and validated before marking the story as
+ready for development.
 
 ## When to Use
+
 - MANDATORY: Before marking any story with technical components as "Ready"
 - MANDATORY: When reviewing stories before development begins
 - RECOMMENDED: During story refinement sessions
@@ -13,13 +17,16 @@ Ensure all technical implementation details in stories are properly researched, 
 ## Checklist Items
 
 ### 1. Technology Identification
-- [ ] All technologies, APIs, frameworks, and services mentioned in the story are listed
+
+- [ ] All technologies, APIs, frameworks, and services mentioned in the story
+      are listed
 - [ ] Each technology has been explicitly identified (name, version if relevant)
 - [ ] No assumptions made about technology capabilities
 
 ### 2. Documentation Research
 
 #### For APIs and Web Services:
+
 - [ ] Used `mcp__ref__ref_search_documentation` to find official API docs
 - [ ] Extracted exact endpoint URLs
 - [ ] Documented HTTP methods (GET, POST, PUT, DELETE, etc.)
@@ -29,6 +36,7 @@ Ensure all technical implementation details in stories are properly researched, 
 - [ ] Included working curl or SDK examples
 
 #### For n8n Workflows:
+
 - [ ] Used `mcp__n8n-cloud__search_nodes` to find correct node types
 - [ ] Used `mcp__n8n-cloud__get_node_info` for complete parameter schemas
 - [ ] Used `mcp__n8n-cloud__get_node_documentation` for working examples
@@ -39,6 +47,7 @@ Ensure all technical implementation details in stories are properly researched, 
 - [ ] Listed required credentials and their types
 
 #### For Database Operations:
+
 - [ ] Schema definitions researched and documented
 - [ ] Table structures with exact column names and types
 - [ ] Relationships and foreign keys identified
@@ -46,6 +55,7 @@ Ensure all technical implementation details in stories are properly researched, 
 - [ ] Migration requirements specified
 
 #### For Frontend Components:
+
 - [ ] Component library documentation referenced
 - [ ] Props/parameters with types documented
 - [ ] State management approach specified
@@ -121,7 +131,8 @@ Ensure all technical implementation details in stories are properly researched, 
 
 Before marking the checklist complete, answer:
 
-1. **Can a developer implement this story using ONLY the provided documentation?**
+1. **Can a developer implement this story using ONLY the provided
+   documentation?**
 2. **Are all code examples directly copy-pasteable?**
 3. **Have all configurations been validated with appropriate tools?**
 4. **Is every technical claim backed by a documentation source?**
@@ -139,6 +150,7 @@ Before marking the checklist complete, answer:
 ## Success Criteria
 
 The story is technically ready when:
+
 - ✅ All checklist items are complete
 - ✅ All validation questions answered "Yes"
 - ✅ No red flags present

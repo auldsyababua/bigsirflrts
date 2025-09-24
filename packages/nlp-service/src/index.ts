@@ -9,7 +9,6 @@ import { logger, requestLogger } from './logger';
 
 // Load environment variables
 dotenv.config();
-dotenv.config({ path: '.env.local', override: true });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -88,7 +87,10 @@ app.post('/parse', async (req, res) => {
       },
     });
   } catch (error) {
-    logger.error('Parse error', { error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
+    logger.error('Parse error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     // Log error to Supabase
     try {
@@ -137,7 +139,9 @@ app.get('/history', async (req, res) => {
       count: data?.length || 0,
     });
   } catch (error) {
-    logger.error('History error', { error: error instanceof Error ? error.message : 'Unknown error' });
+    logger.error('History error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch history',
@@ -164,7 +168,9 @@ app.get('/analytics', async (req, res) => {
       successRate: total > 0 ? ((successful / total) * 100).toFixed(1) + '%' : 'N/A',
     });
   } catch (error) {
-    logger.error('Analytics error', { error: error instanceof Error ? error.message : 'Unknown error' });
+    logger.error('Analytics error', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch analytics',
@@ -179,7 +185,7 @@ app.listen(PORT, () => {
     endpoints: {
       examples: `http://localhost:${PORT}/examples`,
       parse: `POST http://localhost:${PORT}/parse`,
-      health: `http://localhost:${PORT}/health`
-    }
+      health: `http://localhost:${PORT}/health`,
+    },
   });
 });

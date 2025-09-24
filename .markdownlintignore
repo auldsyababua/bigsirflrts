@@ -1,0 +1,13 @@
+node_modules/
+docs/archive/
+ARCHIVE(DEPRECATED)/
+archive/
+*.min.js
+coverage/
+.git/
+package-lock.json
+dist/
+build/
+.bmad-core/
+tools/
+infrastructure/digitalocean/monitoring/

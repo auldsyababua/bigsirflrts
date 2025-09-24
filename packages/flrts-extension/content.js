@@ -249,7 +249,9 @@ async function createWorkPackage(parsed) {
       _links: {
         type: { href: `/api/v3/types/${parsed.workPackage.typeId || 2}` },
         assignee: { href: `/api/v3/users/${parsed.workPackage.assigneeId}` },
-        project: { href: `/api/v3/projects/${parsed.workPackage.projectId || 1}` },
+        project: {
+          href: `/api/v3/projects/${parsed.workPackage.projectId || 1}`,
+        },
       },
       dueDate: parsed.workPackage.dueDate,
     }),

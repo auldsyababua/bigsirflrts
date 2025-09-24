@@ -50,9 +50,9 @@ scenarios:
             userId: "{{ userId }}"
           expect:
             - statusCode: 200
-            - responseTime: 5000  # Max 5 seconds
+            - responseTime: 5000 # Max 5 seconds
 
-      - think: 1  # Wait 1 second between requests
+      - think: 1 # Wait 1 second between requests
 
   - name: "Webhook Load Test - Complex Payload"
     weight: 30
@@ -73,7 +73,7 @@ scenarios:
               field3: "{{ $randomString(10) }}"
           expect:
             - statusCode: 200
-            - responseTime: 10000  # Max 10 seconds for complex
+            - responseTime: 10000 # Max 10 seconds for complex
 
       - think: 2
 
@@ -81,17 +81,17 @@ scenarios:
     weight: 10
     flow:
       - loop:
-        - post:
-            url: "/webhook/telegram-batch"
-            json:
-              batch: true
-              messages:
-                - text: "Message 1 - {{ $timestamp() }}"
-                - text: "Message 2 - {{ $timestamp() }}"
-                - text: "Message 3 - {{ $timestamp() }}"
-              userId: "{{ userId }}"
-            expect:
-              - statusCode: 200
+          - post:
+              url: "/webhook/telegram-batch"
+              json:
+                batch: true
+                messages:
+                  - text: "Message 1 - {{ $timestamp() }}"
+                  - text: "Message 2 - {{ $timestamp() }}"
+                  - text: "Message 3 - {{ $timestamp() }}"
+                userId: "{{ userId }}"
+              expect:
+                - statusCode: 200
         count: 5
 
       - think: 5

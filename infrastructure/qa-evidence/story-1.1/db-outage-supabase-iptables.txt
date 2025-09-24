@@ -1,0 +1,18 @@
+[PRE] 2025-09-17T21:43:11+00:00 Health default code: 200
+Pooler IPs: 13.59.95.192
+3.13.175.194
+3.139.14.59
+Added DROP rule for 13.59.95.192
+Added DROP rule for 3.13.175.194
+Added DROP rule for 3.139.14.59
+[OUTAGE] 2025-09-17T21:43:16+00:00 Health default code: 200
+[OUTAGE] 2025-09-17T21:43:16+00:00 Health database code: 200
+... (OpenProject logs tail showed 200s for health_checks/default)
+Removed DROP rules for pooler IPs
+
+[OUTAGE2] 2025-09-17T21:44:44+00:00 Blocked all outbound tcp/5432
+[OUTAGE2] 2025-09-17T21:44:47+00:00 Health default code: 200
+[OUTAGE2] 2025-09-17T21:44:47+00:00 Health database code: 200
+... (OpenProject logs tail remained 200s)
+
+Observation: OkComputer database health endpoint remained 200 even with host‑level egress block, likely due to connection pooling/caching and check semantics. Recommendation: tighten DB health probe to force a live query on a new connection or adjust check interval to exceed keepalive.

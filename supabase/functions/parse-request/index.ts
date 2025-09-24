@@ -2,14 +2,12 @@
 // Handles direct parse requests from web UI and other clients
 // Provides immediate response for simple parsing tasks
 
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 
 // Environment variables
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
-const N8N_WEBHOOK_URL = Deno.env.get("N8N_WEBHOOK_URL")!;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL')!;
 
 // Initialize Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -24,7 +22,8 @@ const corsHeaders = {
 // Simple parse patterns for immediate response
 const SIMPLE_PATTERNS = {
   CREATE_TASK: /^(create|add|new)\s+(task|item|work)\s+(.+)/i,
-  DUE_DATE: /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+  DUE_DATE:
+    /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
   ASSIGNEE: /@(\w+)/g,
   PRIORITY: /(urgent|high|medium|low|critical)/i,
   PROJECT: /#(\w+)/g,
@@ -55,10 +54,10 @@ Deno.serve(async (req: Request) => {
     const { input, context } = await req.json();
 
     if (!input) {
-      return new Response(
-        JSON.stringify({ error: 'Input text is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Input text is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log(`Parsing input: ${input.substring(0, 100)}`);
@@ -75,11 +74,11 @@ Deno.serve(async (req: Request) => {
           success: true,
           data: quickParse,
           parseType: 'quick',
-          confidence: quickParse.confidence
+          confidence: quickParse.confidence,
         }),
         {
           status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -94,27 +93,26 @@ Deno.serve(async (req: Request) => {
           status: 'pending',
           queueId: queueId,
           message: 'Complex parsing queued for processing',
-          estimatedTime: '2-5 seconds'
+          estimatedTime: '2-5 seconds',
         },
-        parseType: 'complex'
+        parseType: 'complex',
       }),
       {
         status: 202, // Accepted for processing
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
-
   } catch (error) {
     console.error('Parse request error:', error);
 
     return new Response(
       JSON.stringify({
         error: 'Failed to process parse request',
-        message: error.message
+        message: error.message,
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
@@ -122,8 +120,6 @@ Deno.serve(async (req: Request) => {
 
 // Attempt quick parsing for simple patterns
 function attemptQuickParse(input: string): any | null {
-  const normalized = input.toLowerCase().trim();
-
   // Check for simple task creation
   const createMatch = input.match(SIMPLE_PATTERNS.CREATE_TASK);
   if (!createMatch) return null;
@@ -131,8 +127,8 @@ function attemptQuickParse(input: string): any | null {
   const taskDescription = createMatch[3];
 
   // Extract components
-  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map(m => m[1]);
-  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map(m => m[1]);
+  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map((m) => m[1]);
+  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map((m) => m[1]);
   const priorityMatch = input.match(SIMPLE_PATTERNS.PRIORITY);
   const dueDateMatch = input.match(SIMPLE_PATTERNS.DUE_DATE);
 
@@ -146,7 +142,7 @@ function attemptQuickParse(input: string): any | null {
     priority: priorityMatch ? normalizePriority(priorityMatch[1]) : 'normal',
     dueDate: dueDateMatch ? parseDueDate(dueDateMatch[2]) : undefined,
     confidence: calculateConfidence(input, assignees.length, projects.length),
-    raw: input
+    raw: input,
   };
 
   // Only return if we have reasonable confidence
@@ -168,8 +164,8 @@ function parseDueDate(dateStr: string): string {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const dateMap: Record<string, Date> = {
-    'today': today,
-    'tomorrow': tomorrow,
+    today: today,
+    tomorrow: tomorrow,
   };
 
   // Add weekdays
@@ -219,37 +215,42 @@ async function queueComplexParse(input: string, context: any, authHeader: string
 
   // Send to n8n webhook
   fetch(N8N_WEBHOOK_URL, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
-      "X-Queue-Type": "complex-parse"
+      'Content-Type': 'application/json',
+      'X-Queue-Type': 'complex-parse',
     },
-    body: JSON.stringify(queueData)
-  }).catch(err => console.error("Failed to queue to n8n:", err));
+    body: JSON.stringify(queueData),
+  }).catch((err) => console.error('Failed to queue to n8n:', err));
 
   // Also store in Supabase for tracking
-  await supabase.from("parse_queue").insert({
+  await supabase.from('parse_queue').insert({
     queue_id: queueId,
     input: input.substring(0, 500),
     status: 'queued',
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   });
 
   return queueId;
 }
 
 // Log parse attempts for analytics
-async function logParse(input: string, result: any, parseType: string, success: boolean): Promise<void> {
+async function logParse(
+  input: string,
+  result: any,
+  parseType: string,
+  success: boolean
+): Promise<void> {
   try {
-    await supabase.from("parse_logs").insert({
+    await supabase.from('parse_logs').insert({
       input: input.substring(0, 200),
       result: result,
       parse_type: parseType,
       success,
       confidence: result?.confidence,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Failed to log parse:", error);
+    console.error('Failed to log parse:', error);
   }
 }

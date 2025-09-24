@@ -1,12 +1,12 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: '.',
+  testDir: ".",
   timeout: 20_000,
   expect: { timeout: 5_000 },
   use: {
-    browserName: 'chromium',
+    browserName: "chromium",
     headless: true,
   },
-  reporter: [['list']],
+  reporter: [["list"]],
 });

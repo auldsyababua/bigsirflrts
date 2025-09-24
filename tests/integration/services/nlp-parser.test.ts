@@ -15,7 +15,10 @@ describe('NLP Parser Service', () => {
       if (process.env.MOCK_NLP_PARSER === 'true') {
         vi.mocked(global.fetch).mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ status: 'healthy', timestamp: new Date().toISOString() }),
+          json: async () => ({
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+          }),
         } as Response);
       }
 

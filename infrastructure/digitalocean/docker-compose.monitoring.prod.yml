@@ -1,6 +1,6 @@
 # Monitoring Stack for Existing OpenProject DigitalOcean Droplet
 # Adds monitoring services to existing flrts_network
-version: '3.8'
+version: "3.8"
 
 services:
   # Prometheus for metrics collection
@@ -11,25 +11,25 @@ services:
       - ./monitoring/prometheus.prod.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=15d'
-      - '--web.enable-lifecycle'
-      - '--web.listen-address=0.0.0.0:9090'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+      - "--web.listen-address=0.0.0.0:9090"
     restart: unless-stopped
     networks:
-      - flrts_network  # Connect to existing OpenProject network
+      - flrts_network # Connect to existing OpenProject network
     ports:
-      - "127.0.0.1:9090:9090"  # Only bind to localhost for security
+      - "127.0.0.1:9090:9090" # Only bind to localhost for security
     deploy:
       resources:
         limits:
-          cpus: '0.15'
+          cpus: "0.15"
           memory: 320M
         reservations:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 192M
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/"]
@@ -58,14 +58,14 @@ services:
     networks:
       - flrts_network
     ports:
-      - "127.0.0.1:3000:3000"  # Only bind to localhost
+      - "127.0.0.1:3000:3000" # Only bind to localhost
     deploy:
       resources:
         limits:
-          cpus: '0.15'
+          cpus: "0.15"
           memory: 320M
         reservations:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 192M
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
@@ -80,22 +80,22 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true
       - SPAN_STORAGE_TYPE=memory
-      - MEMORY_MAX_TRACES=3000  # Reduced for memory efficiency
+      - MEMORY_MAX_TRACES=3000 # Reduced for memory efficiency
     restart: unless-stopped
     networks:
       - flrts_network
     ports:
-      - "127.0.0.1:16686:16686"  # UI - localhost only
-      - "127.0.0.1:14250:14250"  # gRPC
-      - "4317:4317"              # OTLP gRPC - allow container access
-      - "4318:4318"              # OTLP HTTP - allow container access
+      - "127.0.0.1:16686:16686" # UI - localhost only
+      - "127.0.0.1:14250:14250" # gRPC
+      - "4317:4317" # OTLP gRPC - allow container access
+      - "4318:4318" # OTLP HTTP - allow container access
     deploy:
       resources:
         limits:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 192M
         reservations:
-          cpus: '0.05'
+          cpus: "0.05"
           memory: 96M
 
   # Node Exporter for system metrics
@@ -107,21 +107,21 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
-      - '--web.listen-address=0.0.0.0:9100'
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+      - "--web.listen-address=0.0.0.0:9100"
     restart: unless-stopped
     networks:
       - flrts_network
     deploy:
       resources:
         limits:
-          cpus: '0.05'
+          cpus: "0.05"
           memory: 64M
         reservations:
-          cpus: '0.02'
+          cpus: "0.02"
           memory: 32M
     # No external port - internal access only
 
@@ -144,10 +144,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 128M
         reservations:
-          cpus: '0.05'
+          cpus: "0.05"
           memory: 64M
     # No external port - internal access only
 
@@ -168,14 +168,14 @@ services:
     networks:
       - flrts_network
     ports:
-      - "127.0.0.1:3002:3002"  # localhost only
+      - "127.0.0.1:3002:3002" # localhost only
     deploy:
       resources:
         limits:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 128M
         reservations:
-          cpus: '0.05'
+          cpus: "0.05"
           memory: 64M
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3002/health"]

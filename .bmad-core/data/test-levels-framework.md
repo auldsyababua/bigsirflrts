@@ -2,7 +2,8 @@
 
 # Test Levels Framework
 
-Comprehensive guide for determining appropriate test levels (unit, integration, E2E) for different scenarios.
+Comprehensive guide for determining appropriate test levels (unit, integration,
+E2E) for different scenarios.
 
 ## Test Level Decision Matrix
 
@@ -127,7 +128,8 @@ e2e_test:
 
 **Coverage overlap is only acceptable when:**
 
-- Testing different aspects (unit: logic, integration: interaction, e2e: user experience)
+- Testing different aspects (unit: logic, integration: interaction, e2e: user
+  experience)
 - Critical paths requiring defense in depth
 - Regression prevention for previously broken functionality
 

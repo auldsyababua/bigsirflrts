@@ -2,7 +2,10 @@
 
 ## Overview
 
-This document defines the API contract between FLRTS NLP Service and OpenProject REST API v3, implementing Story 3.1 (OpenProject API Workflows). **CRITICAL**: FLRTS never writes directly to the database. All operations MUST go through the OpenProject REST API.
+This document defines the API contract between FLRTS NLP Service and OpenProject
+REST API v3, implementing Story 3.1 (OpenProject API Workflows). **CRITICAL**:
+FLRTS never writes directly to the database. All operations MUST go through the
+OpenProject REST API.
 
 ## Authentication
 
@@ -38,7 +41,7 @@ Content-Type: application/json
   },
   "_links": {
     "type": {
-      "href": "/api/v3/types/2"  // Task type
+      "href": "/api/v3/types/2" // Task type
     },
     "project": {
       "href": "/api/v3/projects/site-a"
@@ -50,10 +53,10 @@ Content-Type: application/json
       "href": "/api/v3/users/colin"
     },
     "status": {
-      "href": "/api/v3/statuses/1"  // New/Open
+      "href": "/api/v3/statuses/1" // New/Open
     },
     "priority": {
-      "href": "/api/v3/priorities/8"  // Normal
+      "href": "/api/v3/priorities/8" // Normal
     }
   },
   "dueDate": "2025-01-15",
@@ -124,7 +127,8 @@ filters=[
 
 **Endpoint**: `GET /api/v3/work_packages/:id`
 
-**Response**: Complete work package resource with all properties and embedded resources.
+**Response**: Complete work package resource with all properties and embedded
+resources.
 
 ### 3. UPDATE Work Package
 
@@ -142,7 +146,7 @@ filters=[
       "href": "/api/v3/users/bryan"
     },
     "status": {
-      "href": "/api/v3/statuses/7"  // In Progress
+      "href": "/api/v3/statuses/7" // In Progress
     }
   }
 }
@@ -152,7 +156,8 @@ filters=[
 
 ### 4. ARCHIVE Work Package (Soft Delete)
 
-**CRITICAL**: Never use DELETE endpoint. Always use status change for audit trail.
+**CRITICAL**: Never use DELETE endpoint. Always use status change for audit
+trail.
 
 **Endpoint**: `PATCH /api/v3/work_packages/:id`
 
@@ -163,7 +168,7 @@ filters=[
   "lockVersion": 2,
   "_links": {
     "status": {
-      "href": "/api/v3/statuses/14"  // Archived/Closed
+      "href": "/api/v3/statuses/14" // Archived/Closed
     }
   }
 }
@@ -280,7 +285,8 @@ interface FLRTSToOpenProjectMapper {
 3. **Lock Version**: Always include lockVersion for updates to prevent conflicts
 4. **Error Recovery**: On 422 errors, display to user for manual correction
 5. **Pagination**: Use pageSize=100 for list operations
-6. **Connection Pool**: Reuse HTTP connections, don't create new ones per request
+6. **Connection Pool**: Reuse HTTP connections, don't create new ones per
+   request
 
 ## Webhook Integration (Optional)
 

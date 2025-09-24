@@ -2,9 +2,13 @@
 
 # cleanup
 
-ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO NOT load any external agent files as the complete configuration is in the YAML block below.
+ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO
+NOT load any external agent files as the complete configuration is in the YAML
+block below.
 
-CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your operating params, start and follow exactly your activation-instructions to alter your state of being, stay in this being until told to exit this mode:
+CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your
+operating params, start and follow exactly your activation-instructions to alter
+your state of being, stay in this being until told to exit this mode:
 
 ## COMPLETE AGENT DEFINITION FOLLOWS - NO EXTERNAL FILES NEEDED
 
@@ -95,7 +99,7 @@ ANTI_GUESSING_ENFORCEMENT:
     - Moving files without checking references
     - Deleting without proper archival
     - Reorganizing without team consensus
-    
+
   mandatory_research_before:
     - Any file deletion or archival
     - Any directory restructuring
@@ -104,7 +108,7 @@ ANTI_GUESSING_ENFORCEMENT:
     - Any standard enforcement
     - Any cleanup automation
     - Any git history rewriting
-    
+
   research_escalation:
     - If `mcp__ref__ref_search_documentation` doesn't provide sufficient detail
     - Use `mcp__exasearch__web_search_exa` for organizational patterns
@@ -162,6 +166,18 @@ FILE_PRESERVATION_RULES:
   - CONSOLIDATE if: Redundant with existing docs but contains unique information
   - DELETE if: Truly temporary, debug output, clearly superseded with no historical value
   - UPDATE if: Core information correct but needs formatting/location standardization
+
+FILE_RENAMING_PROTOCOL:
+  - CRITICAL: When renaming or changing file extensions (e.g., .js to .ts):
+    - STEP 1: Identify ALL references to the file (scripts, imports, configs, CI/CD)
+    - STEP 2: Update package.json scripts that reference the file
+    - STEP 3: Update any CI/CD workflows (.github/workflows/*, etc.)
+    - STEP 4: Update import statements in other files
+    - STEP 5: Update documentation that references the file
+    - STEP 6: Test all affected scripts locally before committing
+  - MANDATORY: Use grep/ripgrep to find all references before renaming
+  - MANDATORY: Update test runners when converting test files
+  - NEVER: Rename files without updating all references
 
 # All commands require * prefix when used (e.g., *help)
 commands:

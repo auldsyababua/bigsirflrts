@@ -2,12 +2,16 @@
 
 ## Overview
 
-This document defines the conversational flows and message templates for the FLRTS Telegram Bot interface. The design prioritizes clarity and simplicity for 5-10 internal users, focusing on mobile-first interaction patterns within Telegram's text-only constraints.
+This document defines the conversational flows and message templates for the
+FLRTS Telegram Bot interface. The design prioritizes clarity and simplicity for
+5-10 internal users, focusing on mobile-first interaction patterns within
+Telegram's text-only constraints.
 
 ## Design Principles
 
-- **Mobile-First Format**: Short lines, clear sections, emoji landmarks for scanning
-- **Progressive Disclosure**: Start simple, add detail as needed  
+- **Mobile-First Format**: Short lines, clear sections, emoji landmarks for
+  scanning
+- **Progressive Disclosure**: Start simple, add detail as needed
 - **Error Prevention**: Show parsed understanding before action
 - **Easy Recovery**: Clear correction instructions at each step
 - **Capture All Interactions**: Keep users in-bot to improve NLP pipeline
@@ -76,7 +80,7 @@ LISTS:
 ```
 📝 Creating New Task
 
-What needs to be done? 
+What needs to be done?
 (or type the complete task naturally)
 
 Example: "Taylor needs to review server logs by tomorrow 2pm"
@@ -149,7 +153,7 @@ Reply:
 ```
 🗑 Delete Task
 
-Which task to delete? 
+Which task to delete?
 
 Your recent tasks:
 1. #1234 - Server logs review ✓ Completed
@@ -374,7 +378,7 @@ Bot:
 ℹ️ I need more details:
 
 Task: Server migration ✓
-Assignee: ? 
+Assignee: ?
 Due date: ?
 
 Who should handle this and when?

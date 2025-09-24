@@ -4,7 +4,10 @@ import path from 'path';
 
 // Load environment variables for tests
 dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local'), override: false });
+dotenv.config({
+  path: path.resolve(process.cwd(), '.env.local'),
+  override: false,
+});
 dotenv.config({ path: path.resolve(process.cwd(), '.env'), override: false });
 
 // Global test setup

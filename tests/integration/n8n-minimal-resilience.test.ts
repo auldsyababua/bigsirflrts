@@ -13,7 +13,6 @@ const HEALTH_URL = `${N8N_BASE_URL}/healthz`;
 const WEBHOOK_URL = `${N8N_BASE_URL}/webhook-test`;
 
 describe('n8n Minimal Resilience Tests', () => {
-
   describe('HEALTH-ENDPOINT-005: Health check reliability', () => {
     it('should respond correctly during normal operation', async () => {
       const response = await axios.get(HEALTH_URL);
@@ -29,7 +28,7 @@ describe('n8n Minimal Resilience Tests', () => {
         await axios.get(HEALTH_URL);
         const responseTime = Date.now() - startTime;
         measurements.push(responseTime);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       const avgResponseTime = measurements.reduce((a, b) => a + b, 0) / measurements.length;
@@ -51,7 +50,7 @@ describe('n8n Minimal Resilience Tests', () => {
       }
 
       const results = await Promise.allSettled(monitoringChecks);
-      const successful = results.filter(r => r.status === 'fulfilled');
+      const successful = results.filter((r) => r.status === 'fulfilled');
 
       // All rapid checks should succeed
       expect(successful.length).toBe(5);
@@ -67,26 +66,29 @@ describe('n8n Minimal Resilience Tests', () => {
 
       for (let i = 0; i < concurrentRequests; i++) {
         webhookPromises.push(
-          axios.post(
-            `${WEBHOOK_URL}/concurrent-${i}`,
-            { test: `concurrent_${i}`, timestamp: Date.now() },
-            {
-              timeout: 5000,
-              validateStatus: () => true // Accept any status
-            }
-          ).catch(error => ({
-            status: error.code === 'ECONNABORTED' ? 'timeout' : 'error',
-            error: error.message
-          }))
+          axios
+            .post(
+              `${WEBHOOK_URL}/concurrent-${i}`,
+              { test: `concurrent_${i}`, timestamp: Date.now() },
+              {
+                timeout: 5000,
+                validateStatus: () => true, // Accept any status
+              }
+            )
+            .catch((error) => ({
+              status: error.code === 'ECONNABORTED' ? 'timeout' : 'error',
+              error: error.message,
+            }))
         );
       }
 
       const results = await Promise.allSettled(webhookPromises);
-      const successful = results.filter(r =>
-        r.status === 'fulfilled' &&
-        r.value.status &&
-        r.value.status >= 200 &&
-        r.value.status < 500
+      const successful = results.filter(
+        (r) =>
+          r.status === 'fulfilled' &&
+          r.value.status &&
+          r.value.status >= 200 &&
+          r.value.status < 500
       );
 
       console.log(`${successful.length}/${concurrentRequests} webhooks processed`);
@@ -118,7 +120,7 @@ describe('n8n Minimal Resilience Tests', () => {
         responseTimes.push(responseTime);
 
         // Small delay between requests
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
       const avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
@@ -133,11 +135,13 @@ describe('n8n Minimal Resilience Tests', () => {
       const loadPromises = [];
       for (let i = 0; i < 3; i++) {
         loadPromises.push(
-          axios.post(
-            `${WEBHOOK_URL}/load-${i}`,
-            { load_test: true },
-            { timeout: 5000, validateStatus: () => true }
-          ).catch(() => null)
+          axios
+            .post(
+              `${WEBHOOK_URL}/load-${i}`,
+              { load_test: true },
+              { timeout: 5000, validateStatus: () => true }
+            )
+            .catch(() => null)
         );
       }
 
@@ -159,7 +163,7 @@ describe('n8n Minimal Resilience Tests', () => {
         const response = await axios.get(`${N8N_BASE_URL}/`, {
           timeout: 2000,
           maxRedirects: 0,
-          validateStatus: (status) => status < 500
+          validateStatus: (status) => status < 500,
         });
 
         // n8n should respond (might redirect to login)
@@ -194,5 +198,5 @@ export const minimalTestSummary = {
   'WEBHOOK-TIMEOUT-003': 'Partial - Testing concurrent handling without timeout simulation',
   'CONTAINER-RESILIENCE-001': 'Skipped - Requires Docker container manipulation',
   'DATABASE-CONNECTION-002': 'Skipped - Requires network manipulation',
-  'MEMORY-PRESSURE-004': 'Skipped - Requires Docker stats access'
+  'MEMORY-PRESSURE-004': 'Skipped - Requires Docker stats access',
 };

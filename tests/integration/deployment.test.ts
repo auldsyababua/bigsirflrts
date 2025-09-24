@@ -1,9 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
 // Mocked wrangler CLI interface
-async function wranglerPublish(): Promise<{ success: boolean; output: string }> {
+async function wranglerPublish(): Promise<{
+  success: boolean;
+  output: string;
+}> {
   // Simulate a quick, successful deploy
-  return { success: true, output: 'Published your Worker at https://example.workers.dev' };
+  return {
+    success: true,
+    output: 'Published your Worker at https://example.workers.dev',
+  };
 }
 
 // Simple in-memory API service mock

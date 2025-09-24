@@ -2,7 +2,9 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for deploying OpenProject Community Edition on Digital Ocean using Docker Compose with Cloudflare Tunnel for secure access and R2 for file storage.
+This guide provides step-by-step instructions for deploying OpenProject
+Community Edition on Digital Ocean using Docker Compose with Cloudflare Tunnel
+for secure access and R2 for file storage.
 
 ## Architecture
 
@@ -127,7 +129,7 @@ Configure tunnel ingress rules in Cloudflare Dashboard:
 3. Add public hostname:
    - Subdomain: openproject
    - Domain: yourdomain.com
-   - Service: http://openproject:80
+   - Service: <http://openproject:80>
 
 ### 6. Deploy the Application
 
@@ -149,7 +151,7 @@ docker compose logs -f openproject
 
 1. Access OpenProject at `http://165.227.216.172:8080` (temporary)
 2. Complete the setup wizard:
-   - Admin email: admin@yourdomain.com
+   - Admin email: <admin@yourdomain.com>
    - Admin password: (secure password)
    - Language: English
 3. Configure organization settings
@@ -252,12 +254,12 @@ docker compose restart cloudflared
 
 ## Resource Allocation
 
-| Service | Memory Limit | CPU Limit | Actual Usage (typical) |
-|---------|-------------|-----------|------------------------|
-| OpenProject | 4GB | 2.0 cores | 2-3GB / 0.5-1.0 cores |
-| Memcached | 384MB | 0.25 cores | 256MB / 0.05 cores |
-| Cloudflared | 256MB | 0.25 cores | 50MB / 0.01 cores |
-| **Total** | **4.6GB** | **2.5 cores** | **2.5-3.5GB / 0.6-1.1 cores** |
+| Service     | Memory Limit | CPU Limit     | Actual Usage (typical)        |
+| ----------- | ------------ | ------------- | ----------------------------- |
+| OpenProject | 4GB          | 2.0 cores     | 2-3GB / 0.5-1.0 cores         |
+| Memcached   | 384MB        | 0.25 cores    | 256MB / 0.05 cores            |
+| Cloudflared | 256MB        | 0.25 cores    | 50MB / 0.01 cores             |
+| **Total**   | **4.6GB**    | **2.5 cores** | **2.5-3.5GB / 0.6-1.1 cores** |
 
 ## Security Checklist
 
@@ -272,12 +274,12 @@ docker compose restart cloudflared
 
 ## Cost Breakdown
 
-| Service | Monthly Cost |
-|---------|-------------|
-| Digital Ocean Droplet (s-4vcpu-8gb) | $48.00 |
-| Cloudflare R2 (100GB storage) | ~$2.00 |
-| Cloudflare Tunnel | Free |
-| **Total** | **~$50/month** |
+| Service                             | Monthly Cost   |
+| ----------------------------------- | -------------- |
+| Digital Ocean Droplet (s-4vcpu-8gb) | $48.00         |
+| Cloudflare R2 (100GB storage)       | ~$2.00         |
+| Cloudflare Tunnel                   | Free           |
+| **Total**                           | **~$50/month** |
 
 ## Emergency Procedures
 
@@ -317,9 +319,9 @@ docker compose up -d
 
 ## Support Contacts
 
-- **Digital Ocean Support**: https://www.digitalocean.com/support/
-- **OpenProject Community**: https://community.openproject.org/
-- **Cloudflare Support**: https://support.cloudflare.com/
+- **Digital Ocean Support**: <https://www.digitalocean.com/support/>
+- **OpenProject Community**: <https://community.openproject.org/>
+- **Cloudflare Support**: <https://support.cloudflare.com/>
 
 ## Appendix: Environment Variables Reference
 
@@ -348,4 +350,5 @@ SMTP_AUTH=plain                       # SMTP authentication method
 
 ---
 
-**Deployment Status**: ✅ Server Provisioned | ⏳ Configuration Pending | ⏳ Services Pending
+**Deployment Status**: ✅ Server Provisioned | ⏳ Configuration Pending | ⏳
+Services Pending

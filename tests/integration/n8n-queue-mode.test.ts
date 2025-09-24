@@ -26,11 +26,14 @@ describe('n8n Queue Mode Configuration', () => {
         path.join(dockerDir, 'postgres'),
         path.join(dockerDir, 'nginx'),
         scriptsDir,
-        testsDir
+        testsDir,
       ];
 
       for (const dir of requiredDirs) {
-        const exists = await fsAsync.access(dir).then(() => true).catch(() => false);
+        const exists = await fsAsync
+          .access(dir)
+          .then(() => true)
+          .catch(() => false);
         expect(exists).toBe(true);
       }
     });
@@ -39,7 +42,10 @@ describe('n8n Queue Mode Configuration', () => {
   describe('Configuration Files', () => {
     it('should have docker-compose.yml', async () => {
       const composePath = path.join(dockerDir, 'docker-compose.yml');
-      const exists = await fsAsync.access(composePath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(composePath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const content = await fsAsync.readFile(composePath, 'utf-8');
@@ -55,7 +61,10 @@ describe('n8n Queue Mode Configuration', () => {
 
     it('should have .env.example file', async () => {
       const envPath = path.join(dockerDir, '.env.example');
-      const exists = await fsAsync.access(envPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(envPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const content = await fsAsync.readFile(envPath, 'utf-8');
@@ -70,7 +79,10 @@ describe('n8n Queue Mode Configuration', () => {
 
     it('should have Redis configuration', async () => {
       const redisConfPath = path.join(dockerDir, 'redis', 'redis.conf');
-      const exists = await fsAsync.access(redisConfPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(redisConfPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const content = await fsAsync.readFile(redisConfPath, 'utf-8');
@@ -82,7 +94,10 @@ describe('n8n Queue Mode Configuration', () => {
 
     it('should have PostgreSQL tuning script', async () => {
       const pgTunePath = path.join(dockerDir, 'postgres', 'tune.sql');
-      const exists = await fsAsync.access(pgTunePath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(pgTunePath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const content = await fsAsync.readFile(pgTunePath, 'utf-8');
@@ -94,7 +109,10 @@ describe('n8n Queue Mode Configuration', () => {
 
     it('should have Nginx configuration', async () => {
       const nginxPath = path.join(dockerDir, 'nginx', 'nginx.conf');
-      const exists = await fsAsync.access(nginxPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(nginxPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const content = await fsAsync.readFile(nginxPath, 'utf-8');
@@ -108,7 +126,10 @@ describe('n8n Queue Mode Configuration', () => {
   describe('Deployment Scripts', () => {
     it('should have deployment script', async () => {
       const deployPath = path.join(scriptsDir, 'deploy-queue-mode.sh');
-      const exists = await fsAsync.access(deployPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(deployPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const stats = await fsAsync.stat(deployPath);
@@ -125,7 +146,10 @@ describe('n8n Queue Mode Configuration', () => {
 
     it('should have health check script', async () => {
       const healthPath = path.join(scriptsDir, 'health-check.sh');
-      const exists = await fsAsync.access(healthPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(healthPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const stats = await fsAsync.stat(healthPath);
@@ -143,7 +167,10 @@ describe('n8n Queue Mode Configuration', () => {
   describe('Load Testing Configuration', () => {
     it('should have Artillery test configuration', async () => {
       const artilleryPath = path.join(testsDir, 'artillery-test.yml');
-      const exists = await fsAsync.access(artilleryPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(artilleryPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const content = await fsAsync.readFile(artilleryPath, 'utf-8');
@@ -155,13 +182,19 @@ describe('n8n Queue Mode Configuration', () => {
 
     it('should have test data file', async () => {
       const testDataPath = path.join(testsDir, 'test-data.csv');
-      const exists = await fsAsync.access(testDataPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(testDataPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
     });
 
     it('should have load test runner script', async () => {
       const runnerPath = path.join(testsDir, 'run-load-test.sh');
-      const exists = await fsAsync.access(runnerPath).then(() => true).catch(() => false);
+      const exists = await fsAsync
+        .access(runnerPath)
+        .then(() => true)
+        .catch(() => false);
       expect(exists).toBe(true);
 
       const stats = await fsAsync.stat(runnerPath);
@@ -201,7 +234,7 @@ describe('n8n Queue Mode Configuration', () => {
         'REDIS_PASSWORD',
         'N8N_ENCRYPTION_KEY',
         'N8N_HOST',
-        'WEBHOOK_URL'
+        'WEBHOOK_URL',
       ];
 
       for (const varName of requiredVars) {
@@ -244,7 +277,12 @@ describe('n8n Queue Mode Configuration', () => {
 });
 
 describe('Deployment Script Functionality', () => {
-  const deployScript = path.join(process.cwd(), 'infrastructure', 'scripts', 'deploy-queue-mode.sh');
+  const deployScript = path.join(
+    process.cwd(),
+    'infrastructure',
+    'scripts',
+    'deploy-queue-mode.sh'
+  );
 
   it('should check for Docker prerequisites', async () => {
     const content = await fsAsync.readFile(deployScript, 'utf-8');

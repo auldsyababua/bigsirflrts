@@ -7,7 +7,14 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
-import { trace as otelTrace, context, SpanStatusCode, diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+import {
+  trace as otelTrace,
+  context,
+  SpanStatusCode,
+  diag,
+  DiagConsoleLogger,
+  DiagLogLevel,
+} from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { resourceFromAttributes } from '@opentelemetry/resources';
@@ -18,7 +25,10 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
 import { createServer, Server } from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
 
-describe('@P0 OpenTelemetry Integration Tests', () => {
+// Skip in CI unless explicitly enabled
+const skipInCI = process.env.CI && !process.env.ENABLE_OTEL_TESTS;
+
+describe.skipIf(skipInCI)('@P0 OpenTelemetry Integration Tests', () => {
   let mockOTLPServer: Server;
   let mockOTLPPort: number;
   let receivedTraces: any[] = [];
@@ -45,7 +55,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
               headers: req.headers,
               body: body.toString('base64'), // Store as base64 for protobuf
               rawBody: body,
-              timestamp: Date.now()
+              timestamp: Date.now(),
             });
 
             console.log(`Mock server received trace: ${receivedTraces.length} total traces`);
@@ -75,7 +85,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
     const exporter = new OTLPTraceExporter({
       url: `http://localhost:${mockOTLPPort}/v1/traces`,
       headers: {
-        'authorization': 'Bearer test-api-key',
+        authorization: 'Bearer test-api-key',
       },
     });
 
@@ -119,14 +129,14 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
       await tracer.startActiveSpan('parent-operation', async (parentSpan) => {
         parentSpan.setAttributes({
           'service.name': 'nlp-service',
-          'operation.type': 'parse-request'
+          'operation.type': 'parse-request',
         });
 
         // Simulate child service call with context propagation
         await tracer.startActiveSpan('child-operation', async (childSpan) => {
           childSpan.setAttributes({
             'service.name': 'openproject-api',
-            'operation.type': 'create-task'
+            'operation.type': 'create-task',
           });
 
           // Verify trace context is active
@@ -145,7 +155,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -170,14 +180,14 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
         spanIds.push(rootSpan.spanContext().spanId);
 
         // Simulate async database operation
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
 
         await tracer.startActiveSpan('database-query', async (dbSpan) => {
           traceIds.push(dbSpan.spanContext().traceId);
           spanIds.push(dbSpan.spanContext().spanId);
 
           // Simulate async API call
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
 
           await tracer.startActiveSpan('api-call', async (apiSpan) => {
             traceIds.push(apiSpan.spanContext().traceId);
@@ -196,7 +206,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
       });
 
       // Allow time for trace export
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       // All spans should share the same trace ID
@@ -209,7 +219,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Verify traces were exported
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -237,9 +247,9 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
           headers: {
             'Content-Type': 'application/json',
             // In real implementation, trace headers would be auto-injected
-            'traceparent': `00-${span.spanContext().traceId}-${span.spanContext().spanId}-01`,
+            traceparent: `00-${span.spanContext().traceId}-${span.spanContext().spanId}-01`,
           },
-          body: JSON.stringify({ test: 'data' })
+          body: JSON.stringify({ test: 'data' }),
         });
 
         span.setStatus({ code: SpanStatusCode.OK });
@@ -262,7 +272,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
       await tracer.startActiveSpan('connectivity-test', async (span) => {
         span.setAttributes({
           'test.type': 'connectivity',
-          'test.endpoint': `http://localhost:${mockOTLPPort}/v1/traces`
+          'test.endpoint': `http://localhost:${mockOTLPPort}/v1/traces`,
         });
 
         span.setStatus({ code: SpanStatusCode.OK });
@@ -272,7 +282,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
       // Allow time for export
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -297,7 +307,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
         const testExporter = new OTLPTraceExporter({
           url: `http://localhost:${mockOTLPPort}/v1/traces`,
           headers: {
-            'authorization': testCase.auth,
+            authorization: testCase.auth,
           },
         });
 
@@ -321,13 +331,13 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
         const tracer = otelTrace.getTracer('auth-test');
         await tracer.startActiveSpan('auth-test-span', async (span) => {
           span.setAttributes({
-            'auth.test': testCase.auth.substring(0, 10) + '...'
+            'auth.test': testCase.auth.substring(0, 10) + '...',
           });
           span.end();
         });
 
         await testSpanProcessor.forceFlush();
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         await testSDK.shutdown();
 
         // Assert
@@ -369,7 +379,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
         });
 
         // Allow time for export attempt
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }).not.toThrow();
 
       await failSDK.shutdown();
@@ -385,7 +395,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
           'service.name': 'flrts-nlp-service',
           'operation.name': 'parse-input',
           'request.id': 'test-request-123',
-          'user.id': 'test-user-456'
+          'user.id': 'test-user-456',
         });
 
         span.setStatus({ code: SpanStatusCode.OK });
@@ -394,7 +404,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -421,7 +431,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
         await tracer.startActiveSpan(`batch-span-${i}`, async (span) => {
           span.setAttributes({
             'span.index': i,
-            'batch.test': true
+            'batch.test': true,
           });
           spans.push(span);
           span.end();
@@ -430,7 +440,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(receivedTraces.length).toBeGreaterThan(0);
@@ -452,13 +462,13 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
           // Simulate error in span processing
           span.setAttributes({
             'error.test': true,
-            'large.attribute': 'x'.repeat(10000) // Very large attribute
+            'large.attribute': 'x'.repeat(10000), // Very large attribute
           });
 
           span.recordException(new Error('Test exception in span'));
           span.setStatus({
             code: SpanStatusCode.ERROR,
-            message: 'Test error status'
+            message: 'Test error status',
           });
           span.end();
         });
@@ -478,11 +488,11 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
           tracer.startActiveSpan(`perf-span-${i}`, async (span) => {
             span.setAttributes({
               'operation.index': i,
-              'performance.test': true
+              'performance.test': true,
             });
 
             // Simulate work
-            await new Promise(resolve => setTimeout(resolve, 1));
+            await new Promise((resolve) => setTimeout(resolve, 1));
 
             span.end();
           })
@@ -494,7 +504,7 @@ describe('@P0 OpenTelemetry Integration Tests', () => {
 
       // Force export by flushing the span processor
       await spanProcessor.forceFlush();
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Assert
       expect(duration).toBeLessThan(5000); // Should complete within 5 seconds

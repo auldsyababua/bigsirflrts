@@ -51,7 +51,9 @@ async function runTests() {
   const hasOp = await check1PasswordCLI();
   if (!hasOp) {
     console.error('❌ 1Password CLI not found!');
-    console.error('Please install 1Password CLI: https://developer.1password.com/docs/cli/get-started/');
+    console.error(
+      'Please install 1Password CLI: https://developer.1password.com/docs/cli/get-started/'
+    );
     process.exit(1);
   }
 
@@ -89,14 +91,10 @@ async function runTests() {
   // Run with 1Password secret injection
   console.log('🚀 Starting tests with secure environment...\n');
 
-  const child = spawn(
-    'op',
-    ['run', `--env-file=${envFile}`, '--', 'node', ...nodeArgs],
-    {
-      stdio: 'inherit',
-      cwd: projectRoot,
-    }
-  );
+  const child = spawn('op', ['run', `--env-file=${envFile}`, '--', 'tsx', ...nodeArgs], {
+    stdio: 'inherit',
+    cwd: projectRoot,
+  });
 
   child.on('close', (code) => {
     if (code === 0) {

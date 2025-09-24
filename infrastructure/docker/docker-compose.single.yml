@@ -38,7 +38,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 512M
 
   # n8n Single Instance (handles everything)
@@ -68,8 +68,8 @@ services:
 
       # Performance (tuned for 10 users)
       N8N_METRICS: true
-      EXECUTIONS_PROCESS: main  # Process in main thread
-      N8N_CONCURRENCY_PRODUCTION_LIMIT: 10  # Concurrent executions
+      EXECUTIONS_PROCESS: main # Process in main thread
+      N8N_CONCURRENCY_PRODUCTION_LIMIT: 10 # Concurrent executions
 
       # Memory management
       NODE_OPTIONS: "--max-old-space-size=2048"
@@ -84,7 +84,7 @@ services:
 
     volumes:
       - n8n_data:/home/node/.n8n
-      - ./backups:/backups  # For workflow exports
+      - ./backups:/backups # For workflow exports
     depends_on:
       postgres:
         condition: service_healthy
@@ -97,7 +97,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
+          cpus: "1"
           memory: 2G
 
   # Nginx Reverse Proxy (simpler configuration)
@@ -120,7 +120,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 128M
 
   # Optional: Redis for caching (not for queue mode)

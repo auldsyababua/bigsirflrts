@@ -2,7 +2,8 @@
 
 ## Overview
 
-This directory contains all infrastructure configuration and deployment scripts for the FLRTS OpenProject deployment on Digital Ocean.
+This directory contains all infrastructure configuration and deployment scripts
+for the FLRTS OpenProject deployment on Digital Ocean.
 
 ## Directory Structure
 
@@ -149,8 +150,8 @@ Automated deployment that:
    ```
 
 4. **Verify Deployment**:
-   - Check health: http://165.227.216.172:8080/health_checks/default
-   - Access UI: http://165.227.216.172:8080
+   - Check health: <http://165.227.216.172:8080/health_checks/default>
+   - Access UI: <http://165.227.216.172:8080>
    - Complete setup wizard
 
 5. **Secure Access**:

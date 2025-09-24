@@ -2,8 +2,8 @@
 // Example implementation with Sentry error tracking and performance monitoring
 // Based on the original parse-request function with Sentry integration
 
-import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { serve } from 'https://deno.land/std@0.208.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import * as Sentry from 'https://deno.land/x/sentry/index.mjs';
 
 // Initialize Sentry for error tracking and performance monitoring
@@ -22,10 +22,10 @@ Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID') || 'unknown');
 Sentry.setTag('function_name', 'parse-request');
 
 // Environment variables
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
-const N8N_WEBHOOK_URL = Deno.env.get("N8N_WEBHOOK_URL")!;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!;
+const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL')!;
 
 // Initialize Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -40,7 +40,8 @@ const corsHeaders = {
 // Simple parse patterns for immediate response
 const SIMPLE_PATTERNS = {
   CREATE_TASK: /^(create|add|new)\s+(task|item|work)\s+(.+)/i,
-  DUE_DATE: /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+  DUE_DATE:
+    /(due|by|before|until)\s+(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
   ASSIGNEE: /@(\w+)/g,
   PRIORITY: /(urgent|high|medium|low|critical)/i,
   PROJECT: /#(\w+)/g,
@@ -86,9 +87,10 @@ serve(async (req: Request) => {
 
       scope.setUser({
         id: authHeader ? 'authenticated' : 'anonymous',
-        authMethod: PARSE_AUTH_TOKEN && authHeader === `Bearer ${PARSE_AUTH_TOKEN}`
-          ? 'custom_token'
-          : 'supabase_jwt'
+        authMethod:
+          PARSE_AUTH_TOKEN && authHeader === `Bearer ${PARSE_AUTH_TOKEN}`
+            ? 'custom_token'
+            : 'supabase_jwt',
       });
 
       authSpan.finish();
@@ -108,18 +110,15 @@ serve(async (req: Request) => {
         transaction.finish();
 
         Sentry.captureException(new Error('Invalid JSON in request body'), {
-          extra: { originalError: parseError.message }
+          extra: { originalError: parseError.message },
         });
 
         await Sentry.flush(2000);
 
-        return new Response(
-          JSON.stringify({ error: 'Invalid JSON in request body' }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
+        return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       parseSpan.finish();
@@ -135,10 +134,10 @@ serve(async (req: Request) => {
 
         await Sentry.flush(2000);
 
-        return new Response(
-          JSON.stringify({ error: 'Input text is required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ error: 'Input text is required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
 
       console.log(`Parsing input: ${input.substring(0, 100)}`);
@@ -181,11 +180,11 @@ serve(async (req: Request) => {
             success: true,
             data: quickParse,
             parseType: 'quick',
-            confidence: quickParse.confidence
+            confidence: quickParse.confidence,
           }),
           {
             status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
       }
@@ -216,16 +215,15 @@ serve(async (req: Request) => {
             status: 'pending',
             queueId: queueId,
             message: 'Complex parsing queued for processing',
-            estimatedTime: '2-5 seconds'
+            estimatedTime: '2-5 seconds',
           },
-          parseType: 'complex'
+          parseType: 'complex',
         }),
         {
           status: 202, // Accepted for processing
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
-
     } catch (error) {
       console.error('Parse request error:', error);
 
@@ -249,7 +247,7 @@ serve(async (req: Request) => {
         }),
         {
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -264,8 +262,8 @@ function attemptQuickParse(input: string): any | null {
   if (!createMatch) return null;
 
   const taskDescription = createMatch[3];
-  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map(m => m[1]);
-  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map(m => m[1]);
+  const assignees = [...input.matchAll(SIMPLE_PATTERNS.ASSIGNEE)].map((m) => m[1]);
+  const projects = [...input.matchAll(SIMPLE_PATTERNS.PROJECT)].map((m) => m[1]);
   const priorityMatch = input.match(SIMPLE_PATTERNS.PRIORITY);
   const dueDateMatch = input.match(SIMPLE_PATTERNS.DUE_DATE);
 
@@ -278,7 +276,7 @@ function attemptQuickParse(input: string): any | null {
     priority: priorityMatch ? normalizePriority(priorityMatch[1]) : 'normal',
     dueDate: dueDateMatch ? parseDueDate(dueDateMatch[2]) : undefined,
     confidence: calculateConfidence(input, assignees.length, projects.length),
-    raw: input
+    raw: input,
   };
 
   return parsed.confidence >= 0.7 ? parsed : null;
@@ -297,8 +295,8 @@ function parseDueDate(dateStr: string): string {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const dateMap: Record<string, Date> = {
-    'today': today,
-    'tomorrow': tomorrow,
+    today: today,
+    tomorrow: tomorrow,
   };
 
   const weekdays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -343,53 +341,58 @@ async function queueComplexParse(input: string, context: any, authHeader: string
 
   try {
     await fetch(N8N_WEBHOOK_URL, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "X-Queue-Type": "complex-parse"
+        'Content-Type': 'application/json',
+        'X-Queue-Type': 'complex-parse',
       },
-      body: JSON.stringify(queueData)
+      body: JSON.stringify(queueData),
     });
   } catch (err) {
     Sentry.captureException(err, {
       tags: { operation: 'n8n_webhook_queue' },
-      extra: { queueId, webhookUrl: N8N_WEBHOOK_URL }
+      extra: { queueId, webhookUrl: N8N_WEBHOOK_URL },
     });
-    console.error("Failed to queue to n8n:", err);
+    console.error('Failed to queue to n8n:', err);
   }
 
   try {
-    await supabase.from("parse_queue").insert({
+    await supabase.from('parse_queue').insert({
       queue_id: queueId,
       input: input.substring(0, 500),
       status: 'queued',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
   } catch (err) {
     Sentry.captureException(err, {
       tags: { operation: 'supabase_queue_insert' },
-      extra: { queueId }
+      extra: { queueId },
     });
   }
 
   return queueId;
 }
 
-async function logParse(input: string, result: any, parseType: string, success: boolean): Promise<void> {
+async function logParse(
+  input: string,
+  result: any,
+  parseType: string,
+  success: boolean
+): Promise<void> {
   try {
-    await supabase.from("parse_logs").insert({
+    await supabase.from('parse_logs').insert({
       input: input.substring(0, 200),
       result: result,
       parse_type: parseType,
       success,
       confidence: result?.confidence,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
   } catch (error) {
     Sentry.captureException(error, {
       tags: { operation: 'parse_log_insert' },
-      extra: { parseType, success }
+      extra: { parseType, success },
     });
-    console.error("Failed to log parse:", error);
+    console.error('Failed to log parse:', error);
   }
 }
