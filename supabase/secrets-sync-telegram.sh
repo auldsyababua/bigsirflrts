@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Sync required secrets for the telegram-webhook Edge Function to Supabase.
-# Prereqs: supabase CLI logged in; .env.supabase and .env.telegram present.
+# Prereqs: supabase CLI logged in; main .env file present.
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
@@ -12,14 +12,13 @@ if ! command -v supabase >/dev/null 2>&1; then
   exit 1
 fi
 
-# Load env
-if [ -f .env.supabase ]; then
+# Load env from main .env file
+if [ -f .env ]; then
   # shellcheck disable=SC1091
-  source .env.supabase
-fi
-if [ -f .env.telegram ]; then
-  # shellcheck disable=SC1091
-  source .env.telegram
+  source .env
+else
+  echo "Main .env file not found" >&2
+  exit 1
 fi
 
 REQUIRED_VARS=( \
@@ -37,7 +36,7 @@ for v in "${REQUIRED_VARS[@]}"; do
   fi
 done
 if [ "$missing" = true ]; then
-  echo "Aborting. Provide the missing variables in .env.supabase and .env.telegram" >&2
+  echo "Aborting. Provide the missing variables in .env" >&2
   exit 1
 fi
 

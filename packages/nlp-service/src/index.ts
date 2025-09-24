@@ -9,7 +9,6 @@ import { logger, requestLogger } from './logger';
 
 // Load environment variables
 dotenv.config();
-dotenv.config({ path: '.env.local', override: true });
 
 const app = express();
 const PORT = process.env.PORT || 3001;

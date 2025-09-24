@@ -11,19 +11,19 @@ echo "PostgreSQL 15.8 - Session Mode"
 echo "==================================="
 echo ""
 
-# Check if .env.supabase exists
-if [ ! -f ".env.supabase" ]; then
-    echo "Error: .env.supabase file not found!"
-    echo "Please create .env.supabase with your SUPABASE_DB_PASSWORD"
+# Check if main .env exists
+if [ ! -f ".env" ]; then
+    echo "Error: .env file not found!"
+    echo "Please ensure .env contains your SUPABASE_DB_PASSWORD"
     exit 1
 fi
 
 # Load environment variables
-source .env.supabase
+source .env
 
 # Check if password is set
 if [ "$SUPABASE_DB_PASSWORD" == "YOUR_SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
-    echo "Error: Please set your actual Supabase database password in .env.supabase"
+    echo "Error: Please set your actual Supabase database password in .env"
     exit 1
 fi
 
