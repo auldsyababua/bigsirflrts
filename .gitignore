@@ -123,4 +123,4 @@ infrastructure/digitalocean/docker-compose.simple.yml
 
 # === ADR DIRECTORY (if using different location) ===
 # Uncomment if ADRs should be in docs/architecture/adr instead
-# docs/adr/
+# docs/adr/DISASTER_RECOVERY.md
