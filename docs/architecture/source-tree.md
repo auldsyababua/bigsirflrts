@@ -235,7 +235,7 @@ telegram-bot/
 ```
 docker/
 ├── docker-compose.yml              # Development environment
-├── docker-compose.prod.yml         # Production overrides
+├── docker-compose.supabase.yml     # Canonical production compose (Supabase)
 ├── nginx/
 │   ├── nginx.conf                 # Main config
 │   └── sites/                     # Site configs
@@ -359,7 +359,8 @@ bigsirflrts/
 ### Must Not Modify Without Review
 
 - `packages/shared/src/schemas/*` - Data contracts
-- `packages/openproject-config/src/env/database.config.ts` - Database connection (Session Mode port 5432 required!)
+- `packages/openproject-config/src/env/database.config.ts` - Database connection
+  (Session Mode port 5432 required!)
 - `.github/workflows/deploy.yml` - Deployment pipeline
 - `infrastructure/docker/docker-compose.yml` - Service orchestration
 - `infrastructure/n8n/queue.config.json` - n8n queue mode configuration

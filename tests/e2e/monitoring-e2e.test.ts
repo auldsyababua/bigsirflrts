@@ -8,7 +8,11 @@
 
 import { test, expect, Page, BrowserContext } from '@playwright/test';
 
+// Skip in CI unless explicitly enabled
+const skipCondition = process.env.CI && !process.env.ENABLE_E2E_TESTS;
+
 test.describe('@P0 Monitoring End-to-End Tests', () => {
+  test.skip(skipCondition, 'Skipping E2E tests in CI - requires running services');
   let context: BrowserContext;
   let page: Page;
 
@@ -16,10 +20,11 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
   const TEST_CONFIG = {
     // Use test environment endpoints
     nlpServiceUrl: process.env.TEST_NLP_SERVICE_URL || 'http://localhost:3001',
-    edgeFunctionUrl: process.env.TEST_EDGE_FUNCTION_URL || 'http://localhost:54321/functions/v1/parse-request',
+    edgeFunctionUrl:
+      process.env.TEST_EDGE_FUNCTION_URL || 'http://localhost:54321/functions/v1/parse-request',
     monitoringDashboard: process.env.TEST_GRAFANA_URL || 'http://localhost:3000',
     jaegerUI: process.env.TEST_JAEGER_URL || 'http://localhost:16686',
-    sentryDSN: process.env.TEST_SENTRY_DSN || 'https://test@sentry.io/project'
+    sentryDSN: process.env.TEST_SENTRY_DSN || 'https://test@sentry.io/project',
   };
 
   test.beforeEach(async ({ browser }) => {
@@ -30,19 +35,19 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
     page = await context.newPage();
 
     // Monitor network requests for trace headers
-    page.on('request', request => {
+    page.on('request', (request) => {
       const headers = request.headers();
       if (headers['traceparent'] || headers['x-trace-id']) {
         console.log(`Request with trace headers: ${request.url()}`);
         console.log(`Trace headers:`, {
           traceparent: headers['traceparent'],
-          'x-trace-id': headers['x-trace-id']
+          'x-trace-id': headers['x-trace-id'],
         });
       }
     });
 
     // Monitor responses for monitoring data
-    page.on('response', response => {
+    page.on('response', (response) => {
       if (response.url().includes('/metrics') || response.url().includes('/traces')) {
         console.log(`Monitoring response: ${response.url()} - ${response.status()}`);
       }
@@ -64,16 +69,16 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         headers: {
           'Content-Type': 'application/json',
           'x-trace-id': traceId,
-          'Authorization': 'Bearer test-token'
+          Authorization: 'Bearer test-token',
         },
         data: {
           input: testInput,
           context: {
             userId: 'test-user-e2e',
             timezone: 'UTC',
-            source: 'e2e-test'
-          }
-        }
+            source: 'e2e-test',
+          },
+        },
       });
 
       // Assert - Response should be successful
@@ -120,17 +125,17 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         context: {
           userId: 'trace-test-user',
           timezone: 'America/New_York',
-          source: 'e2e-trace-test'
-        }
+          source: 'e2e-trace-test',
+        },
       };
 
       // Act - Make request that will involve multiple services
       const response = await page.request.post(TEST_CONFIG.edgeFunctionUrl, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token'
+          Authorization: 'Bearer test-token',
         },
-        data: testRequest
+        data: testRequest,
       });
 
       expect(response.status()).toBeInRange(200, 202);
@@ -160,7 +165,10 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
       // Arrange
       const performanceTestCases = [
         { input: 'Quick task creation', expectedType: 'quick' },
-        { input: 'Complex analysis with multiple @mentions and #tags requiring OpenAI processing', expectedType: 'complex' }
+        {
+          input: 'Complex analysis with multiple @mentions and #tags requiring OpenAI processing',
+          expectedType: 'complex',
+        },
       ];
 
       for (const testCase of performanceTestCases) {
@@ -170,12 +178,12 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         const response = await page.request.post(TEST_CONFIG.edgeFunctionUrl, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-token'
+            Authorization: 'Bearer test-token',
           },
           data: {
             input: testCase.input,
-            context: { source: 'performance-test' }
-          }
+            context: { source: 'performance-test' },
+          },
         });
 
         const responseTime = Date.now() - startTime;
@@ -202,21 +210,22 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
     test('should generate distributed traces across microservices', async () => {
       // Arrange - Complex request that involves multiple services
       const complexRequest = {
-        input: 'Create task "Multi-service trace test" for @alice and @bob due next Friday #project1 #urgent with description "This should trigger OpenAI processing and database operations"',
+        input:
+          'Create task "Multi-service trace test" for @alice and @bob due next Friday #project1 #urgent with description "This should trigger OpenAI processing and database operations"',
         context: {
           userId: 'multi-service-test',
           timezone: 'Europe/London',
-          source: 'distributed-trace-test'
-        }
+          source: 'distributed-trace-test',
+        },
       };
 
       // Act
       const response = await page.request.post(TEST_CONFIG.edgeFunctionUrl, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token'
+          Authorization: 'Bearer test-token',
         },
-        data: complexRequest
+        data: complexRequest,
       });
 
       expect(response.status()).toBeInRange(200, 202);
@@ -252,7 +261,7 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         { data: null, expectedError: 'Invalid JSON' },
         { data: {}, expectedError: 'Input text is required' },
         { data: { input: '' }, expectedError: 'Input text is required' },
-        { data: { input: 'x'.repeat(10000) }, expectedError: 'Input too long' }
+        { data: { input: 'x'.repeat(10000) }, expectedError: 'Input too long' },
       ];
 
       for (const testCase of invalidRequests) {
@@ -260,10 +269,10 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         const response = await page.request.post(TEST_CONFIG.edgeFunctionUrl, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-token'
+            Authorization: 'Bearer test-token',
           },
           data: testCase.data,
-          failOnStatusCode: false
+          failOnStatusCode: false,
         });
 
         // Assert
@@ -288,12 +297,12 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
       const authTestCases = [
         { auth: null, expectedStatus: 401 },
         { auth: 'Bearer invalid-token', expectedStatus: 401 },
-        { auth: 'Invalid auth-header', expectedStatus: 401 }
+        { auth: 'Invalid auth-header', expectedStatus: 401 },
       ];
 
       for (const testCase of authTestCases) {
         const headers: Record<string, string> = {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         };
 
         if (testCase.auth) {
@@ -304,9 +313,9 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         const response = await page.request.post(TEST_CONFIG.edgeFunctionUrl, {
           headers,
           data: {
-            input: 'Test authentication error tracking'
+            input: 'Test authentication error tracking',
           },
-          failOnStatusCode: false
+          failOnStatusCode: false,
         });
 
         // Assert - Note: Actual auth implementation may vary
@@ -327,12 +336,12 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
       const errorTestCases = [
         {
           input: 'Test with invalid JSON characters: \x00\x01\x02',
-          description: 'Invalid characters'
+          description: 'Invalid characters',
         },
         {
           input: '{ "malformed": json }',
-          description: 'Malformed JSON in input'
-        }
+          description: 'Malformed JSON in input',
+        },
       ];
 
       for (const testCase of errorTestCases) {
@@ -340,13 +349,13 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         const response = await page.request.post(TEST_CONFIG.edgeFunctionUrl, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer test-token'
+            Authorization: 'Bearer test-token',
           },
           data: {
             input: testCase.input,
-            context: { source: 'error-test' }
+            context: { source: 'error-test' },
           },
-          failOnStatusCode: false
+          failOnStatusCode: false,
         });
 
         // Assert
@@ -371,19 +380,19 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         context: {
           userId: 'error-context-test',
           requestId: 'test-req-123',
-          source: 'error-context-test'
-        }
+          source: 'error-context-test',
+        },
       };
 
       // Act
       const response = await page.request.post(TEST_CONFIG.edgeFunctionUrl, {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-token',
-          'X-Request-ID': 'test-request-12345'
+          Authorization: 'Bearer test-token',
+          'X-Request-ID': 'test-request-12345',
         },
         data: testRequest,
-        failOnStatusCode: false
+        failOnStatusCode: false,
       });
 
       // Assert
@@ -415,12 +424,12 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
           page.request.post(TEST_CONFIG.edgeFunctionUrl, {
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer test-token'
+              Authorization: 'Bearer test-token',
             },
             data: {
-              input: '' // Invalid input
+              input: '', // Invalid input
             },
-            failOnStatusCode: false
+            failOnStatusCode: false,
           })
         );
       }
@@ -440,9 +449,12 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
       expect(duration).toBeLessThan(5000);
 
       // System should remain responsive
-      const healthResponse = await page.request.get(`${TEST_CONFIG.edgeFunctionUrl.replace('/parse-request', '/health')}`, {
-        failOnStatusCode: false
-      });
+      const healthResponse = await page.request.get(
+        `${TEST_CONFIG.edgeFunctionUrl.replace('/parse-request', '/health')}`,
+        {
+          failOnStatusCode: false,
+        }
+      );
 
       // Health check should work (or 404 if not implemented)
       expect([200, 404]).toContain(healthResponse.status());
@@ -456,12 +468,12 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
       // Check if monitoring infrastructure is available
       const endpoints = [
         { url: TEST_CONFIG.jaegerUI, name: 'Jaeger UI' },
-        { url: TEST_CONFIG.monitoringDashboard, name: 'Grafana Dashboard' }
+        { url: TEST_CONFIG.monitoringDashboard, name: 'Grafana Dashboard' },
       ];
 
       for (const endpoint of endpoints) {
         const response = await page.request.get(endpoint.url, {
-          failOnStatusCode: false
+          failOnStatusCode: false,
         });
 
         const status = response.status();
@@ -476,12 +488,12 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
       // Test metrics endpoints if available
       const metricsEndpoints = [
         `${TEST_CONFIG.nlpServiceUrl}/metrics`,
-        `${TEST_CONFIG.edgeFunctionUrl.replace('/parse-request', '/metrics')}`
+        `${TEST_CONFIG.edgeFunctionUrl.replace('/parse-request', '/metrics')}`,
       ];
 
       for (const endpoint of metricsEndpoints) {
         const response = await page.request.get(endpoint, {
-          failOnStatusCode: false
+          failOnStatusCode: false,
         });
 
         const status = response.status();

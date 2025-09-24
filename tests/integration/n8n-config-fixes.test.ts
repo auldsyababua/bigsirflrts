@@ -15,10 +15,7 @@ const SCRIPTS_DIR = path.join(__dirname, '../../infrastructure/scripts');
 describe('n8n Configuration Fixes', () => {
   describe('CONFIG-001: Health Check Fix', () => {
     it('should use curl instead of wget for health checks', () => {
-      const dockerCompose = fs.readFileSync(
-        path.join(DOCKER_DIR, 'docker-compose.yml'),
-        'utf8'
-      );
+      const dockerCompose = fs.readFileSync(path.join(DOCKER_DIR, 'docker-compose.yml'), 'utf8');
 
       // Check that wget is not used in health checks
       expect(dockerCompose).not.toContain('wget');
@@ -31,10 +28,7 @@ describe('n8n Configuration Fixes', () => {
     });
 
     it('should have consistent health check configuration across all services', () => {
-      const dockerCompose = fs.readFileSync(
-        path.join(DOCKER_DIR, 'docker-compose.yml'),
-        'utf8'
-      );
+      const dockerCompose = fs.readFileSync(path.join(DOCKER_DIR, 'docker-compose.yml'), 'utf8');
 
       // Count health check occurrences
       const healthChecks = dockerCompose.match(/healthcheck:/g);
@@ -56,8 +50,8 @@ describe('n8n Configuration Fixes', () => {
             REDIS_PASSWORD: 'test',
             N8N_ENCRYPTION_KEY: 'test',
             N8N_HOST: 'test.local',
-            WEBHOOK_URL: 'https://test.local'
-          }
+            WEBHOOK_URL: 'https://test.local',
+          },
         });
       } catch (error: any) {
         // Should not throw syntax errors
@@ -147,10 +141,7 @@ describe('n8n Configuration Fixes', () => {
     });
 
     it('should have scaling guide documentation', () => {
-      const scalingGuidePath = path.join(
-        __dirname,
-        '../../infrastructure/docs/SCALING_GUIDE.md'
-      );
+      const scalingGuidePath = path.join(__dirname, '../../infrastructure/docs/SCALING_GUIDE.md');
       expect(fs.existsSync(scalingGuidePath)).toBe(true);
 
       const scalingGuide = fs.readFileSync(scalingGuidePath, 'utf8');
@@ -168,10 +159,7 @@ describe('n8n Configuration Fixes', () => {
     });
 
     it('should have monitoring queries in scaling guide', () => {
-      const scalingGuidePath = path.join(
-        __dirname,
-        '../../infrastructure/docs/SCALING_GUIDE.md'
-      );
+      const scalingGuidePath = path.join(__dirname, '../../infrastructure/docs/SCALING_GUIDE.md');
       const scalingGuide = fs.readFileSync(scalingGuidePath, 'utf8');
 
       // Check for SQL monitoring query
@@ -183,10 +171,7 @@ describe('n8n Configuration Fixes', () => {
 
   describe('Docker Compose Version Compatibility', () => {
     it('should not use deprecated version field', () => {
-      const dockerCompose = fs.readFileSync(
-        path.join(DOCKER_DIR, 'docker-compose.yml'),
-        'utf8'
-      );
+      const dockerCompose = fs.readFileSync(path.join(DOCKER_DIR, 'docker-compose.yml'), 'utf8');
       const singleCompose = fs.readFileSync(
         path.join(DOCKER_DIR, 'docker-compose.single.yml'),
         'utf8'
@@ -207,10 +192,10 @@ describe('n8n Configuration Fixes', () => {
       const scripts = [
         path.join(SCRIPTS_DIR, 'generate-secure-env.sh'),
         path.join(SCRIPTS_DIR, 'health-check.sh'),
-        path.join(SCRIPTS_DIR, 'deploy-queue-mode.sh')
+        path.join(SCRIPTS_DIR, 'deploy-queue-mode.sh'),
       ];
 
-      scripts.forEach(script => {
+      scripts.forEach((script) => {
         if (fs.existsSync(script)) {
           const stats = fs.statSync(script);
           // Check for execute permission (at least for owner)
@@ -275,21 +260,18 @@ const describeIfDocker = isDockerAvailable() ? describe : describe.skip;
 
 describeIfDocker('Docker Integration Tests', () => {
   it('should validate queue mode docker-compose configuration', () => {
-    const result = execSync(
-      `docker-compose -f ${DOCKER_DIR}/docker-compose.yml config --quiet`,
-      {
-        env: {
-          ...process.env,
-          POSTGRES_USER: 'test',
-          POSTGRES_PASSWORD: 'test',
-          REDIS_PASSWORD: 'test',
-          N8N_ENCRYPTION_KEY: 'test123',
-          N8N_HOST: 'localhost',
-          WEBHOOK_URL: 'http://localhost'
-        },
-        encoding: 'utf8'
-      }
-    );
+    const result = execSync(`docker-compose -f ${DOCKER_DIR}/docker-compose.yml config --quiet`, {
+      env: {
+        ...process.env,
+        POSTGRES_USER: 'test',
+        POSTGRES_PASSWORD: 'test',
+        REDIS_PASSWORD: 'test',
+        N8N_ENCRYPTION_KEY: 'test123',
+        N8N_HOST: 'localhost',
+        WEBHOOK_URL: 'http://localhost',
+      },
+      encoding: 'utf8',
+    });
 
     // Should return valid YAML
     const config = yaml.load(result) as any;
@@ -308,9 +290,9 @@ describeIfDocker('Docker Integration Tests', () => {
           POSTGRES_PASSWORD: 'test',
           N8N_ENCRYPTION_KEY: 'test123',
           N8N_HOST: 'localhost',
-          WEBHOOK_URL: 'http://localhost'
+          WEBHOOK_URL: 'http://localhost',
         },
-        encoding: 'utf8'
+        encoding: 'utf8',
       }
     );
 

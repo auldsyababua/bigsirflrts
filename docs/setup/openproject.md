@@ -2,20 +2,21 @@
 
 ## ✅ Status: OpenProject is Running
 
-Your OpenProject instance is now successfully running at: **http://localhost:8080**
+Your OpenProject instance is now successfully running at:
+**<http://localhost:8080>**
 
 ## 🔑 Login Credentials
 
-- **URL**: http://localhost:8080
+- **URL**: <http://localhost:8080>
 - **Username**: admin
 - **Password**: admin
-- **Email**: admin@flrts.local
+- **Email**: <admin@flrts.local>
 
 ## 🚀 Quick Start Steps
 
 ### 1. Access OpenProject
 
-Open your browser and go to: http://localhost:8080
+Open your browser and go to: <http://localhost:8080>
 
 ### 2. Initial Setup
 
@@ -148,12 +149,12 @@ Use Nginx to inject custom headers and CSS (advanced)
 
 ## 🔍 Troubleshooting
 
-### Can't connect to http://localhost:8080
+### Can't connect to <http://localhost:8080>
 
 1. Check containers are running: `docker ps`
 2. Check logs: `docker logs flrts-openproject`
 3. Wait 2-3 minutes for initialization
-4. Try: http://127.0.0.1:8080
+4. Try: <http://127.0.0.1:8080>
 
 ### Port 8080 already in use
 
@@ -191,10 +192,11 @@ User.find_by(login: 'admin').update(password: 'newpassword')
 
 ## 🔗 Useful Links
 
-- OpenProject API Docs: https://www.openproject.org/docs/api/
-- OpenProject User Guide: https://www.openproject.org/docs/user-guide/
+- OpenProject API Docs: <https://www.openproject.org/docs/api/>
+- OpenProject User Guide: <https://www.openproject.org/docs/user-guide/>
 - FLRTS Architecture: [docs/architecture/](../architecture/)
 
 ---
 
-**Remember**: We're using OpenProject as a backend service via API. No need to fork or modify OpenProject source code!
+**Remember**: We're using OpenProject as a backend service via API. No need to
+fork or modify OpenProject source code!

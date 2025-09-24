@@ -36,7 +36,7 @@ type Operation = 'CREATE' | 'UPDATE' | 'DELETE' | 'LIST';
 // ⚠️ AVOID: Enums unless needed for numeric values
 enum OperationEnum {
   CREATE = 0,
-  UPDATE = 1
+  UPDATE = 1,
 }
 ```
 
@@ -47,9 +47,8 @@ enum OperationEnum {
 const userName = user?.profile?.name ?? 'Anonymous';
 
 // ❌ BAD: Nested if checks
-const userName = user && user.profile && user.profile.name 
-  ? user.profile.name 
-  : 'Anonymous';
+const userName =
+  user && user.profile && user.profile.name ? user.profile.name : 'Anonymous';
 ```
 
 ## Code Organization
@@ -142,7 +141,7 @@ try {
 const [user, projects, tasks] = await Promise.all([
   fetchUser(userId),
   fetchProjects(userId),
-  fetchTasks(userId)
+  fetchTasks(userId),
 ]);
 
 // ❌ BAD: Sequential when parallel would work
@@ -200,21 +199,21 @@ interface ApiResponse<T> {
 describe('ParsingService', () => {
   let service: ParsingService;
   let mockOpenAI: jest.Mocked<OpenAI>;
-  
+
   beforeEach(() => {
     mockOpenAI = createMockOpenAI();
     service = new ParsingService(mockOpenAI);
   });
-  
+
   describe('parseInput', () => {
     it('should parse simple task creation', async () => {
       // Arrange
       const input = 'Create task for @Taylor';
       const expected = { operation: 'CREATE', assignee: 'taylor' };
-      
+
       // Act
       const result = await service.parseInput(input);
-      
+
       // Assert
       expect(result).toEqual(expected);
     });
@@ -245,15 +244,18 @@ interface CommandBarProps {
   placeholder?: string;
 }
 
-export function CommandBar({ onSubmit, placeholder = 'Type a command...' }: CommandBarProps) {
+export function CommandBar({
+  onSubmit,
+  placeholder = 'Type a command...',
+}: CommandBarProps) {
   const [input, setInput] = useState('');
-  
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     await onSubmit(input);
     setInput('');
   };
-  
+
   return (
     <form onSubmit={handleSubmit}>
       <input value={input} onChange={(e) => setInput(e.target.value)} />
@@ -269,7 +271,7 @@ export function CommandBar({ onSubmit, placeholder = 'Type a command...' }: Comm
 function useParser() {
   const [parsing, setParsing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  
+
   const parse = useCallback(async (input: string) => {
     setParsing(true);
     setError(null);
@@ -283,7 +285,7 @@ function useParser() {
       setParsing(false);
     }
   }, []);
-  
+
   return { parse, parsing, error };
 }
 ```
@@ -295,13 +297,16 @@ function useParser() {
 ```typescript
 // ✅ GOOD: Use Supavisor pooling appropriately
 // For serverless/edge functions - Transaction mode (port 6543)
-const DATABASE_URL = 'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true';
+const DATABASE_URL =
+  'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true';
 
 // For persistent servers - Session mode (port 5432)
-const DATABASE_URL = 'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:5432/postgres';
+const DATABASE_URL =
+  'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:5432/postgres';
 
 // ❌ BAD: Direct connection from serverless
-const DATABASE_URL = 'postgresql://postgres:[password]@db.project.supabase.co:5432/postgres';
+const DATABASE_URL =
+  'postgresql://postgres:[password]@db.project.supabase.co:5432/postgres';
 ```
 
 ### Query Patterns
@@ -314,9 +319,7 @@ const user = await db.query(
 );
 
 // ❌ BAD: String concatenation (SQL injection risk)
-const user = await db.query(
-  `SELECT * FROM users WHERE id = '${userId}'`
-);
+const user = await db.query(`SELECT * FROM users WHERE id = '${userId}'`);
 ```
 
 ### Transaction Handling
@@ -348,7 +351,7 @@ import { z } from 'zod';
 const CreateTaskSchema = z.object({
   input: z.string().min(1).max(1000).trim(),
   userId: z.string().uuid(),
-  timezone: z.enum(['PST', 'CST', 'EST'])
+  timezone: z.enum(['PST', 'CST', 'EST']),
 });
 
 function createTask(req: Request) {
@@ -425,7 +428,7 @@ wip
 // ✅ GOOD: Efficient caching
 class ParsingCache {
   private cache = new Map<string, CachedResult>();
-  
+
   async get(key: string): Promise<ParsedTask | null> {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < TTL) {
@@ -462,7 +465,7 @@ user = null;
 ```typescript
 /**
  * Parses natural language input into a structured task.
- * 
+ *
  * @param input - Natural language task description
  * @param context - User context including timezone and preferences
  * @returns Parsed task structure ready for OpenProject

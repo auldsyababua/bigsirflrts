@@ -1,14 +1,18 @@
 # Webhook Delivery Monitoring and Alerting Setup
 
-**Story 1.5 Requirement**: Configure monitoring and alerting for webhook delivery failures and performance degradation.
+**Story 1.5 Requirement**: Configure monitoring and alerting for webhook
+delivery failures and performance degradation.
 
 ## Overview
 
-This document provides comprehensive monitoring setup for the Supabase → n8n webhook integration. Addresses QA finding **MNT-001** by establishing monitoring dashboards and alerting systems.
+This document provides comprehensive monitoring setup for the Supabase → n8n
+webhook integration. Addresses QA finding **MNT-001** by establishing monitoring
+dashboards and alerting systems.
 
 ## Prerequisites
 
-- Supabase Dashboard webhook configured per [configuration guide](../setup/supabase-dashboard-webhook-configuration.md)
+- Supabase Dashboard webhook configured per
+  [configuration guide](../setup/supabase-dashboard-webhook-configuration.md)
 - n8n workflow `xeXX1rxX2chJdQis` active
 - Access to Supabase Dashboard monitoring features
 
@@ -17,15 +21,19 @@ This document provides comprehensive monitoring setup for the Supabase → n8n w
 ### 1. Supabase Dashboard Monitoring
 
 #### Webhook Delivery Logs
-**Location**: Supabase Dashboard → Database → Webhooks → n8n-tasks-webhook → Logs
+
+**Location**: Supabase Dashboard → Database → Webhooks → n8n-tasks-webhook →
+Logs
 
 **Key Metrics to Monitor**:
+
 - **Delivery Success Rate**: Should maintain > 99%
 - **Response Time**: Should be < 1 second for webhook delivery
 - **HTTP Status Codes**: Monitor for 4xx/5xx errors
 - **Delivery Volume**: Track INSERT/UPDATE/DELETE events per hour
 
 #### Database Monitoring Queries
+
 ```sql
 -- Check recent webhook delivery success rate
 SELECT
@@ -72,15 +80,18 @@ ORDER BY minute DESC;
 ### 2. n8n Workflow Monitoring
 
 #### n8n Dashboard Monitoring
+
 **Location**: `https://n8n-rrrs.sliplane.app/workflows/xeXX1rxX2chJdQis`
 
 **Key Metrics to Monitor**:
+
 - **Execution Success Rate**: Should maintain > 99%
 - **Processing Time**: Should be < 3 seconds total
 - **Queue Depth**: Monitor for backlog buildup
 - **Error Types**: Track specific failure patterns
 
 #### n8n API Monitoring Queries
+
 ```bash
 # Check recent executions via n8n API
 curl -X GET "https://n8n-rrrs.sliplane.app/api/v1/executions?filter=%7B%22workflowId%22:%22xeXX1rxX2chJdQis%22%7D&limit=100" \
@@ -95,6 +106,7 @@ curl -X GET "https://n8n-rrrs.sliplane.app/api/v1/workflows/xeXX1rxX2chJdQis" \
 ### 3. Automated Monitoring Scripts
 
 #### Daily Health Check Script
+
 Create monitoring automation:
 
 ```bash
@@ -137,6 +149,7 @@ echo "[$DATE] Webhook health check passed: HTTP $HTTP_CODE, ${RESPONSE_TIME}s"
 ```
 
 #### Continuous Monitoring with Node.js
+
 ```javascript
 // File: monitoring/webhook-monitor.js
 import { testConfig } from '../tests/config/test-config.js';
@@ -145,10 +158,10 @@ import fetch from 'node-fetch';
 class WebhookMonitor {
   constructor() {
     this.alertThresholds = {
-      successRate: 99.0,        // Minimum success rate %
-      responseTime: 1.0,        // Maximum response time in seconds
-      processingTime: 3.0,      // Maximum total processing time
-      checkInterval: 60000,     // Check every minute
+      successRate: 99.0, // Minimum success rate %
+      responseTime: 1.0, // Maximum response time in seconds
+      processingTime: 3.0, // Maximum total processing time
+      checkInterval: 60000, // Check every minute
     };
   }
 
@@ -161,20 +174,24 @@ class WebhookMonitor {
         body: JSON.stringify({
           type: 'HEALTH_CHECK',
           table: 'tasks',
-          record: { id: 'monitor-health-check' }
+          record: { id: 'monitor-health-check' },
         }),
-        timeout: 5000
+        timeout: 5000,
       });
 
       const duration = (Date.now() - start) / 1000;
 
       if (!response.ok) {
-        await this.sendAlert(`🚨 Webhook health check failed: HTTP ${response.status}`);
+        await this.sendAlert(
+          `🚨 Webhook health check failed: HTTP ${response.status}`
+        );
         return false;
       }
 
       if (duration > this.alertThresholds.responseTime) {
-        await this.sendAlert(`⚠️ Webhook response time ${duration.toFixed(2)}s exceeds ${this.alertThresholds.responseTime}s threshold`);
+        await this.sendAlert(
+          `⚠️ Webhook response time ${duration.toFixed(2)}s exceeds ${this.alertThresholds.responseTime}s threshold`
+        );
       }
 
       console.log(`✅ Webhook health check passed: ${duration.toFixed(2)}s`);
@@ -195,7 +212,7 @@ class WebhookMonitor {
         await fetch(process.env.SLACK_ALERT_WEBHOOK, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: `[${timestamp}] ${message}` })
+          body: JSON.stringify({ text: `[${timestamp}] ${message}` }),
         });
       } catch (err) {
         console.error('Failed to send Slack alert:', err.message);
@@ -230,15 +247,17 @@ export { WebhookMonitor };
 ### 1. Supabase Dashboard Alerts
 
 **Setup Process**:
+
 1. Navigate to Supabase Dashboard → Project Settings → Integrations
 2. Configure webhook delivery failure notifications:
    - **Failure Threshold**: 3 consecutive failures
-   - **Email Recipients**: dev-team@company.com
+   - **Email Recipients**: <dev-team@company.com>
    - **Webhook URL**: Slack integration webhook
 
 ### 2. Cron-based Monitoring
 
 **Setup crontab entries**:
+
 ```bash
 # Check webhook health every 5 minutes
 */5 * * * * /path/to/monitoring/webhook-health-check.sh >> /var/log/webhook-monitor.log 2>&1
@@ -250,16 +269,19 @@ export { WebhookMonitor };
 ### 3. Real-time Alerting Rules
 
 #### Critical Alerts (Immediate Response)
+
 - **Webhook completely down**: HTTP 5xx or connection timeout
 - **Success rate drops below 95%**: Over 15-minute window
 - **Zero events processed**: For > 30 minutes during business hours
 
 #### Warning Alerts (Monitor)
+
 - **Response time > 1 second**: For > 10 consecutive requests
 - **Success rate 95-99%**: Over 5-minute window
 - **Unusual error patterns**: New error types or increased frequency
 
 #### Performance Alerts
+
 - **Processing time > 3 seconds**: n8n workflow execution time
 - **Queue backlog**: > 100 pending webhook deliveries
 - **Database connection issues**: Connection pool exhaustion
@@ -269,6 +291,7 @@ export { WebhookMonitor };
 ### 1. Supabase Metrics Dashboard
 
 **Key Panels**:
+
 - Webhook delivery success rate (last 24h)
 - Average response time trend
 - Failed delivery count by hour
@@ -278,6 +301,7 @@ export { WebhookMonitor };
 ### 2. n8n Workflow Dashboard
 
 **Key Panels**:
+
 - Workflow execution success rate
 - Processing time percentiles (p50, p95, p99)
 - Error rate by node type
@@ -287,6 +311,7 @@ export { WebhookMonitor };
 ### 3. Combined Health Dashboard
 
 Create a unified view showing:
+
 - **Overall System Health**: Green/Yellow/Red status
 - **End-to-End Latency**: From DB change to n8n completion
 - **Daily Statistics**: Total events, success rate, average processing time
@@ -297,6 +322,7 @@ Create a unified view showing:
 ### Common Alert Scenarios
 
 #### 1. High Failure Rate Alert
+
 ```bash
 # Check webhook endpoint status
 curl -I https://n8n-rrrs.sliplane.app/webhook/supabase-tasks-webhook
@@ -310,6 +336,7 @@ curl -H "Authorization: Bearer $N8N_AUTH_TOKEN" \
 ```
 
 #### 2. Performance Degradation Alert
+
 ```sql
 -- Check for database performance issues
 SELECT * FROM pg_stat_activity
@@ -322,6 +349,7 @@ WHERE status_code IS NULL;
 ```
 
 #### 3. Zero Events Alert
+
 ```sql
 -- Verify triggers are active
 SELECT trigger_name, event_manipulation, action_statement
@@ -357,10 +385,11 @@ This monitoring setup directly addresses QA finding **MNT-001**:
 - **Historical analysis**: Trend tracking and performance degradation detection
 - **Automated reporting**: Daily health summaries and metrics
 
-The monitoring integrates with the existing webhook configuration and provides the operational visibility required for production deployment.
+The monitoring integrates with the existing webhook configuration and provides
+the operational visibility required for production deployment.
 
 ---
 
-**Last Updated**: September 16, 2025
-**Status**: ✅ **COMPLETE** - Monitoring infrastructure documented
-**Next Action**: Implement monitoring scripts and configure alerting
+**Last Updated**: September 16, 2025 **Status**: ✅ **COMPLETE** - Monitoring
+infrastructure documented **Next Action**: Implement monitoring scripts and
+configure alerting

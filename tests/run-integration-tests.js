@@ -24,15 +24,15 @@ import { resolve } from 'node:path';
 // Test configuration
 const TEST_SUITES = {
   'edge-function-n8n-webhook': {
-    file: 'tests/integration/edge-function-n8n-webhook.test.js',
+    file: 'tests/integration/edge-function-n8n-webhook.test.ts',
     description: 'Edge Function → n8n webhook integration tests',
-    timeout: 60000
+    timeout: 60000,
   },
   'performance-regression': {
-    file: 'tests/integration/performance-regression.test.js',
+    file: 'tests/integration/performance-regression.test.ts',
     description: 'Performance regression tests for <200ms requirements',
-    timeout: 120000
-  }
+    timeout: 120000,
+  },
 };
 
 const DEFAULT_ENV_FILE = 'tests/.env.test';
@@ -44,7 +44,7 @@ function parseArgs() {
     suite: null,
     verbose: false,
     envFile: DEFAULT_ENV_FILE,
-    help: false
+    help: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -143,9 +143,9 @@ function runTestSuite(suiteName, config, options) {
 
     // Prepare command
     const useOP = existsSync('op') || process.env.OP_SERVICE_ACCOUNT_TOKEN;
-    const command = useOP ? 'op' : 'node';
+    const command = useOP ? 'op' : 'tsx';
     const args = useOP
-      ? ['run', `--env-file=${options.envFile}`, '--', 'node', '--test', config.file]
+      ? ['run', `--env-file=${options.envFile}`, '--', 'tsx', '--test', config.file]
       : ['--test', config.file];
 
     if (options.verbose) {
@@ -158,8 +158,8 @@ function runTestSuite(suiteName, config, options) {
       env: {
         ...process.env,
         TEST_TIMEOUT: config.timeout.toString(),
-        NODE_ENV: 'test'
-      }
+        NODE_ENV: 'test',
+      },
     });
 
     let stdout = '';
@@ -227,9 +227,7 @@ async function main() {
   }
 
   // Determine which tests to run
-  const suitesToRun = options.suite
-    ? { [options.suite]: TEST_SUITES[options.suite] }
-    : TEST_SUITES;
+  const suitesToRun = options.suite ? { [options.suite]: TEST_SUITES[options.suite] } : TEST_SUITES;
 
   if (options.suite && !TEST_SUITES[options.suite]) {
     console.error(`❌ Unknown test suite: ${options.suite}`);

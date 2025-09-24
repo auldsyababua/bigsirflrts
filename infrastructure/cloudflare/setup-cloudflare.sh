@@ -211,7 +211,7 @@ generate_deployment_files() {
     # Create complete docker-compose overlay
     cat > "${OUTPUT_DIR}/docker-compose.cloudflare.yml" << 'EOF'
 # Cloudflare services overlay for docker-compose
-# Use with: docker-compose -f docker-compose.prod.yml -f docker-compose.cloudflare.yml up -d
+# Use with: docker-compose -f docker-compose.supabase.yml -f docker-compose.cloudflare.yml up -d
 
 version: '3.8'
 
@@ -279,7 +279,7 @@ echo "Configuration deployed!"
 echo ""
 echo "On the server, run:"
 echo "  cd /root/openproject"
-echo "  docker-compose -f docker-compose.prod.yml -f docker-compose.cloudflare.yml up -d"
+echo "  docker-compose -f docker-compose.supabase.yml -f docker-compose.cloudflare.yml up -d"
 EOF
     chmod +x "${OUTPUT_DIR}/deploy-to-server.sh"
 
@@ -341,7 +341,7 @@ display_summary() {
     echo "   ${OUTPUT_DIR}/deploy-to-server.sh <server-ip>"
     echo ""
     echo "4. Start services on server:"
-    echo "   docker-compose -f docker-compose.prod.yml -f docker-compose.cloudflare.yml up -d"
+    echo "   docker-compose -f docker-compose.supabase.yml -f docker-compose.cloudflare.yml up -d"
     echo ""
     echo -e "${GREEN}Public URL:${NC} https://${OPENPROJECT_SUBDOMAIN}.${CLOUDFLARE_DOMAIN}"
     echo -e "${GREEN}R2 Bucket:${NC} ${R2_BUCKET_NAME}"

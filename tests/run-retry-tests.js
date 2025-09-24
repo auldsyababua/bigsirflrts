@@ -25,15 +25,14 @@ class RetryTestRunner {
   validateEnvironment() {
     console.log('🔍 Validating environment for retry tests...');
 
-    const required = [
-      'SUPABASE_URL',
-      'SUPABASE_ANON_KEY',
-    ];
+    const required = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'];
 
-    const missing = required.filter(key => !process.env[key]);
+    const missing = required.filter((key) => !process.env[key]);
     if (missing.length > 0) {
       console.error(`❌ Missing required environment variables: ${missing.join(', ')}`);
-      console.error('💡 Run with: op run --env-file=tests/.env.test -- node tests/run-retry-tests.js');
+      console.error(
+        '💡 Run with: op run --env-file=tests/.env.test -- node tests/run-retry-tests.js'
+      );
       process.exit(1);
     }
 
@@ -72,7 +71,7 @@ class RetryTestRunner {
     console.log('\n🧪 Running webhook retry and backoff tests...');
 
     return new Promise((resolve, reject) => {
-      const testFile = 'tests/integration/supabase-webhook-retry-backoff.test.js';
+      const testFile = 'tests/integration/supabase-webhook-retry-backoff.test.ts';
 
       // Use the same Node.js test runner as other tests
       this.testProcess = spawn('node', ['--test', testFile], {
@@ -82,7 +81,7 @@ class RetryTestRunner {
           // Add mock server URLs to environment
           MOCK_FAILING_WEBHOOK_URL: testConfig.test.retry.mockServer.failingWebhookUrl,
           MOCK_SLOW_WEBHOOK_URL: testConfig.test.retry.mockServer.slowWebhookUrl,
-        }
+        },
       });
 
       this.testProcess.on('close', (code) => {
@@ -139,7 +138,6 @@ class RetryTestRunner {
       await this.runRetryTests();
 
       console.log('\n🎉 All retry tests completed successfully!');
-
     } catch (error) {
       console.error('\n💥 Retry test runner failed:', error.message);
       process.exit(1);
@@ -155,7 +153,7 @@ function parseArgs() {
   return {
     help: args.includes('--help') || args.includes('-h'),
     verbose: args.includes('--verbose') || args.includes('-v'),
-    scenario: args.find(arg => arg.startsWith('--scenario='))?.split('=')[1],
+    scenario: args.find((arg) => arg.startsWith('--scenario='))?.split('=')[1],
   };
 }
 

@@ -16,11 +16,11 @@ import { createClient } from '@supabase/supabase-js';
 class WebhookMonitor {
   constructor() {
     this.alertThresholds = {
-      successRate: 99.0,        // Minimum success rate %
-      responseTime: 1.0,        // Maximum response time in seconds (Story 1.5)
-      processingTime: 3.0,      // Maximum total processing time (Story 1.5)
-      checkInterval: 60000,     // Check every minute
-      alertCooldown: 300000,    // 5 minutes between same alert type
+      successRate: 99.0, // Minimum success rate %
+      responseTime: 1.0, // Maximum response time in seconds (Story 1.5)
+      processingTime: 3.0, // Maximum total processing time (Story 1.5)
+      checkInterval: 60000, // Check every minute
+      alertCooldown: 300000, // 5 minutes between same alert type
     };
 
     this.lastAlerts = new Map();
@@ -28,10 +28,7 @@ class WebhookMonitor {
 
     // Initialize Supabase client for monitoring queries
     if (testConfig.supabase.url && testConfig.supabase.serviceRoleKey) {
-      this.supabase = createClient(
-        testConfig.supabase.url,
-        testConfig.supabase.serviceRoleKey
-      );
+      this.supabase = createClient(testConfig.supabase.url, testConfig.supabase.serviceRoleKey);
     }
   }
 
@@ -50,16 +47,16 @@ class WebhookMonitor {
           status: 'pending',
           priority: 'low',
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         },
-        old_record: null
+        old_record: null,
       };
 
       const response = await fetch(testConfig.n8n.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(testPayload),
-        timeout: 5000
+        timeout: 5000,
       });
 
       const duration = (Date.now() - start) / 1000;
@@ -83,7 +80,6 @@ class WebhookMonitor {
 
       this.log(`✅ Webhook health check passed: ${duration.toFixed(2)}s`);
       return { success: true, duration, statusCode: response.status };
-
     } catch (error) {
       await this.sendAlert(
         'webhook_error',
@@ -104,7 +100,7 @@ class WebhookMonitor {
       // Query webhook delivery success rate (last hour)
       const { data, error } = await this.supabase.rpc('get_webhook_stats', {
         hours_back: 1,
-        webhook_pattern: '%n8n-rrrs.sliplane.app%'
+        webhook_pattern: '%n8n-rrrs.sliplane.app%',
       });
 
       if (error) {
@@ -135,20 +131,21 @@ class WebhookMonitor {
       return { total_deliveries: 0, successful: 0, success_rate: 100 };
     }
 
-    const successful = deliveries.filter(d =>
-      d.status_code && d.status_code >= 200 && d.status_code < 300
+    const successful = deliveries.filter(
+      (d) => d.status_code && d.status_code >= 200 && d.status_code < 300
     ).length;
 
     return {
       total_deliveries: deliveries.length,
       successful,
       success_rate: (successful / deliveries.length) * 100,
-      avg_response_time: deliveries
-        .filter(d => d.updated_at && d.created_at)
-        .reduce((sum, d) => {
-          const duration = new Date(d.updated_at) - new Date(d.created_at);
-          return sum + (duration / 1000);
-        }, 0) / deliveries.length
+      avg_response_time:
+        deliveries
+          .filter((d) => d.updated_at && d.created_at)
+          .reduce((sum, d) => {
+            const duration = new Date(d.updated_at) - new Date(d.created_at);
+            return sum + duration / 1000;
+          }, 0) / deliveries.length,
     };
   }
 
@@ -157,7 +154,7 @@ class WebhookMonitor {
     const lastAlert = this.lastAlerts.get(alertType);
 
     // Implement alert cooldown to prevent spam
-    if (lastAlert && (now - lastAlert) < this.alertThresholds.alertCooldown) {
+    if (lastAlert && now - lastAlert < this.alertThresholds.alertCooldown) {
       return;
     }
 
@@ -173,24 +170,29 @@ class WebhookMonitor {
       try {
         const slackPayload = {
           text: logMessage,
-          attachments: [{
-            color: severity === 'critical' ? 'danger' : 'warning',
-            fields: [{
-              title: 'Alert Type',
-              value: alertType,
-              short: true
-            }, {
-              title: 'Timestamp',
-              value: timestamp,
-              short: true
-            }]
-          }]
+          attachments: [
+            {
+              color: severity === 'critical' ? 'danger' : 'warning',
+              fields: [
+                {
+                  title: 'Alert Type',
+                  value: alertType,
+                  short: true,
+                },
+                {
+                  title: 'Timestamp',
+                  value: timestamp,
+                  short: true,
+                },
+              ],
+            },
+          ],
         };
 
         await fetch(process.env.SLACK_ALERT_WEBHOOK, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(slackPayload)
+          body: JSON.stringify(slackPayload),
         });
       } catch (err) {
         this.log(`Failed to send Slack alert: ${err.message}`);
@@ -210,19 +212,19 @@ class WebhookMonitor {
       webhook_health: {
         current_status: healthCheck.success ? 'healthy' : 'failed',
         response_time: healthCheck.duration ? `${healthCheck.duration.toFixed(2)}s` : 'N/A',
-        status_code: healthCheck.statusCode || 'N/A'
+        status_code: healthCheck.statusCode || 'N/A',
       },
       delivery_stats: stats || {
         total_deliveries: 'Unable to fetch',
         success_rate: 'Unable to fetch',
-        avg_response_time: 'Unable to fetch'
+        avg_response_time: 'Unable to fetch',
       },
       thresholds: {
         success_rate_minimum: `${this.alertThresholds.successRate}%`,
         response_time_maximum: `${this.alertThresholds.responseTime}s`,
-        processing_time_maximum: `${this.alertThresholds.processingTime}s`
+        processing_time_maximum: `${this.alertThresholds.processingTime}s`,
       },
-      recommendations: this.generateRecommendations(healthCheck, stats)
+      recommendations: this.generateRecommendations(healthCheck, stats),
     };
 
     console.log('\n📊 DAILY WEBHOOK MONITORING REPORT');
@@ -236,19 +238,27 @@ class WebhookMonitor {
     const recommendations = [];
 
     if (!healthCheck.success) {
-      recommendations.push('🚨 CRITICAL: Webhook endpoint is not responding - investigate n8n workflow status');
+      recommendations.push(
+        '🚨 CRITICAL: Webhook endpoint is not responding - investigate n8n workflow status'
+      );
     }
 
     if (healthCheck.duration && healthCheck.duration > this.alertThresholds.responseTime) {
-      recommendations.push('⚠️ WARNING: Webhook response time exceeds threshold - check n8n performance');
+      recommendations.push(
+        '⚠️ WARNING: Webhook response time exceeds threshold - check n8n performance'
+      );
     }
 
     if (stats && stats.success_rate < this.alertThresholds.successRate) {
-      recommendations.push('⚠️ WARNING: Webhook success rate below threshold - review failed deliveries');
+      recommendations.push(
+        '⚠️ WARNING: Webhook success rate below threshold - review failed deliveries'
+      );
     }
 
     if (stats && stats.total_deliveries === 0) {
-      recommendations.push('⚠️ WARNING: No webhook deliveries detected - verify database triggers are active');
+      recommendations.push(
+        '⚠️ WARNING: No webhook deliveries detected - verify database triggers are active'
+      );
     }
 
     if (recommendations.length === 0) {
@@ -269,7 +279,9 @@ class WebhookMonitor {
     const stats = await this.checkWebhookDeliveryStats();
 
     if (stats) {
-      this.log(`Delivery stats (last hour): ${stats.total_deliveries} total, ${stats.success_rate.toFixed(1)}% success rate`);
+      this.log(
+        `Delivery stats (last hour): ${stats.total_deliveries} total, ${stats.success_rate.toFixed(1)}% success rate`
+      );
     }
 
     return result.success;

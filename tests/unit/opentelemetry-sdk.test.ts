@@ -29,7 +29,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
     // Mock NodeSDK constructor and methods
     mockNodeSDK = {
       start: vi.fn(),
-      shutdown: vi.fn()
+      shutdown: vi.fn(),
     };
     vi.mocked(NodeSDK).mockImplementation(() => mockNodeSDK);
 
@@ -60,10 +60,10 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
         traceExporter: new OTLPTraceExporter({
           url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT + '/v1/traces',
           headers: {
-            'authorization': `Bearer ${process.env.OTEL_API_KEY}`,
+            authorization: `Bearer ${process.env.OTEL_API_KEY}`,
           },
         }),
-        instrumentations: []
+        instrumentations: [],
       });
 
       // Assert
@@ -114,13 +114,16 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       const exporter = new OTLPTraceExporter({
         url: `${testEndpoint}/v1/traces`,
         headers: {
-          'authorization': 'Bearer test-key',
+          authorization: 'Bearer test-key',
         },
       });
 
       // Assert
       expect(OTLPTraceExporter).toHaveBeenCalled();
-      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[vi.mocked(OTLPTraceExporter).mock.calls.length - 1][0];
+      const exporterConfig =
+        vi.mocked(OTLPTraceExporter).mock.calls[
+          vi.mocked(OTLPTraceExporter).mock.calls.length - 1
+        ][0];
 
       expect(exporterConfig).toHaveProperty('url', `${testEndpoint}/v1/traces`);
       expect(exporterConfig).toHaveProperty('headers');

@@ -2,9 +2,13 @@
 
 # pm
 
-ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO NOT load any external agent files as the complete configuration is in the YAML block below.
+ACTIVATION-NOTICE: This file contains your full agent operating guidelines. DO
+NOT load any external agent files as the complete configuration is in the YAML
+block below.
 
-CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your operating params, start and follow exactly your activation-instructions to alter your state of being, stay in this being until told to exit this mode:
+CRITICAL: Read the full YAML BLOCK that FOLLOWS IN THIS FILE to understand your
+operating params, start and follow exactly your activation-instructions to alter
+your state of being, stay in this being until told to exit this mode:
 
 ## COMPLETE AGENT DEFINITION FOLLOWS - NO EXTERNAL FILES NEEDED
 
@@ -94,6 +98,15 @@ TECHNICAL_RESEARCH_TRIGGERS:
   - Any configuration file or settings
   - Any error handling requirement
   - Any performance or scaling consideration
+
+LINEAR_INTEGRATION_PROTOCOL:
+  - "MANDATORY: Create ALL stories and epics in Linear, NOT as files"
+  - "Use mcp__linear-server__create_issue for story creation"
+  - "Use mcp__linear-server__list_issues to check existing work"
+  - "Reference parent epics and link related issues"
+  - "Apply appropriate labels: story, epic, mvp, post-mvp"
+  - "Set realistic priorities and sprint assignments"
+  - "NEVER create /docs/stories/*.md files - use Linear issues"
 
 IMPLEMENTATION_BEST_PRACTICES_PROTOCOL:
   - "MANDATORY: Use mcp__ref__ref_search_documentation for our stack's documentation"

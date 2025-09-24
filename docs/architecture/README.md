@@ -2,7 +2,8 @@
 
 ## Document Structure
 
-This architecture documentation provides comprehensive technical guidance for building and maintaining the FLRTS system integrated with OpenProject.
+This architecture documentation provides comprehensive technical guidance for
+building and maintaining the FLRTS system integrated with OpenProject.
 
 ### 📐 [Architecture Overview](./architecture-overview.md)
 
@@ -58,24 +59,24 @@ This architecture documentation provides comprehensive technical guidance for bu
 
 ### Key Architectural Decisions
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| **Backend Platform** | OpenProject API v3 | Enterprise features, custom fields, team collaboration |
-| **NLP Engine** | OpenAI GPT-4o | Quality, ease of integration, rapid development |
-| **Architecture** | Microservices in Monorepo | Service isolation with coordinated deployment |
-| **Primary Language** | TypeScript | Type safety across full stack |
-| **Database** | SQLite → PostgreSQL | Simple start, clear migration path |
-| **Deployment** | Docker + Kubernetes | Industry standard, scalable |
+| Decision             | Choice                    | Rationale                                              |
+| -------------------- | ------------------------- | ------------------------------------------------------ |
+| **Backend Platform** | OpenProject API v3        | Enterprise features, custom fields, team collaboration |
+| **NLP Engine**       | OpenAI GPT-4o             | Quality, ease of integration, rapid development        |
+| **Architecture**     | Microservices in Monorepo | Service isolation with coordinated deployment          |
+| **Primary Language** | TypeScript                | Type safety across full stack                          |
+| **Database**         | SQLite → PostgreSQL       | Simple start, clear migration path                     |
+| **Deployment**       | Docker + Kubernetes       | Industry standard, scalable                            |
 
 ### Service Endpoints
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| NLP Service | 3000 | Natural language parsing |
-| OpenProject Gateway | 3001 | OpenProject API integration |
-| Preference Service | 3002 | User preferences and analytics |
-| Web UI | 3003 | Next.js application |
-| Telegram Bot | 3004 | Telegram Mini App |
+| Service             | Port | Purpose                        |
+| ------------------- | ---- | ------------------------------ |
+| NLP Service         | 3000 | Natural language parsing       |
+| OpenProject Gateway | 3001 | OpenProject API integration    |
+| Preference Service  | 3002 | User preferences and analytics |
+| Web UI              | 3003 | Next.js application            |
+| Telegram Bot        | 3004 | Telegram Mini App              |
 
 ### Development Commands
 
@@ -94,7 +95,14 @@ npm run test:e2e
 
 # Build for production
 npm run build
-docker-compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.supabase.yml build
+
+## Supabase-Only Architecture Links
+
+- ADRs
+  - [ADR-001: n8n Deployment Mode](./adr/ADR-001-n8n-deployment-mode.md)
+  - [ADR-002: OpenProject Migration Pattern](./adr/ADR-002-openproject-migration-pattern.md)
+- [System Connections & Health](./system-connections.md)
 
 # Deploy to production
 npm run deploy:prod
@@ -104,9 +112,11 @@ npm run deploy:prod
 
 1. **API-First Design**: All functionality exposed through documented REST APIs
 2. **Schema-Driven Development**: Zod schemas define contracts between services
-3. **Fail-Safe Defaults**: System degrades gracefully when external services unavailable
+3. **Fail-Safe Defaults**: System degrades gracefully when external services
+   unavailable
 4. **Security by Design**: Zero-trust architecture with encrypted communication
-5. **Observable Systems**: Comprehensive logging, metrics, and distributed tracing
+5. **Observable Systems**: Comprehensive logging, metrics, and distributed
+   tracing
 
 ## Reading Guide
 
@@ -114,7 +124,8 @@ npm run deploy:prod
 
 **Backend Developers**
 
-1. Start with [Implementation Guide](./implementation-guide.md) for service patterns
+1. Start with [Implementation Guide](./implementation-guide.md) for service
+   patterns
 2. Review [Coding Standards](./coding-standards.md) for best practices
 3. Reference [Source Tree](./source-tree.md) for file organization
 
@@ -126,7 +137,8 @@ npm run deploy:prod
 
 **DevOps Engineers**
 
-1. Focus on [Architecture Overview](./architecture-overview.md) Deployment section
+1. Focus on [Architecture Overview](./architecture-overview.md) Deployment
+   section
 2. Review [Implementation Guide](./implementation-guide.md) CI/CD pipeline
 3. Study monitoring setup in [Architecture Overview](./architecture-overview.md)
 
@@ -154,12 +166,12 @@ npm run deploy:prod
 
 ## Performance Targets
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| API Response | < 200ms p95 | Prometheus metrics |
-| Parse Time | < 2s | OpenAI response time |
-| Task Creation | < 5s end-to-end | User experience |
-| Availability | 99.9% | Uptime monitoring |
+| Metric        | Target          | Measurement          |
+| ------------- | --------------- | -------------------- |
+| API Response  | < 200ms p95     | Prometheus metrics   |
+| Parse Time    | < 2s            | OpenAI response time |
+| Task Creation | < 5s end-to-end | User experience      |
+| Availability  | 99.9%           | Uptime monitoring    |
 
 ## Security Considerations
 

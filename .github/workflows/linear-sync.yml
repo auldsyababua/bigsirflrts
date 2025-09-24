@@ -1,0 +1,193 @@
+name: Linear Sync
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Every 30 minutes
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync-linear-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm install @linear/sdk @actions/github @actions/core
+
+      - name: Sync Linear to GitHub
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          LINEAR_TEAM_ID: ${{ secrets.LINEAR_TEAM_ID }}
+          LINEAR_PROJECT_ID: ${{ secrets.LINEAR_PROJECT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node --input-type=module << 'EOF'
+          import { LinearClient } from '@linear/sdk';
+          import { context, getOctokit } from '@actions/github';
+          import { info, warning, error as logError } from '@actions/core';
+
+          const linear = new LinearClient({
+            apiKey: process.env.LINEAR_API_KEY
+          });
+
+          const github = getOctokit(process.env.GITHUB_TOKEN);
+
+          const TEAM_ID = process.env.LINEAR_TEAM_ID || 'YOUR_LINEAR_PROJECT_ID';
+          const PROJECT_ID = process.env.LINEAR_PROJECT_ID || '9d089be4-a284-4879-9b67-f472abecf998';
+
+          async function syncIssues() {
+            info('Starting Linear sync...');
+
+            // Get issues updated in the last hour
+            const since = new Date(Date.now() - 60 * 60 * 1000);
+
+            const project = await linear.project(PROJECT_ID);
+            const issues = await project.issues({
+              filter: {
+                updatedAt: { gte: since }
+              }
+            });
+
+            info(`Found ${issues.nodes.length} recently updated issues`);
+
+            for (const issue of issues.nodes) {
+              try {
+                await processIssue(issue);
+              } catch (err) {
+                logError(`Failed to process issue ${issue.identifier}: ${err.message}`);
+              }
+            }
+
+            info('Linear sync completed');
+          }
+
+          async function processIssue(issue) {
+            const state = await issue.state;
+            const assignee = await issue.assignee;
+
+            info(`Processing ${issue.identifier}: ${issue.title} (${state.name})`);
+
+            // Create branch for issues that are assigned and in progress
+            if (state.name === 'In Progress' && assignee) {
+              await ensureBranch(issue);
+            }
+
+            // Update PR description if PR exists
+            if (state.name === 'In Review') {
+              await updatePullRequest(issue);
+            }
+          }
+
+          async function ensureBranch(issue) {
+            const branchName = `linear/${issue.identifier.toLowerCase()}-${issue.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .substring(0, 50)}`;
+
+            try {
+              // Check if branch exists
+              await github.rest.repos.getBranch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: branchName
+              });
+              info(`Branch ${branchName} already exists`);
+            } catch (e) {
+              if (e.status === 404) {
+                // Create branch from main
+                try {
+                  const { data: ref } = await github.rest.git.getRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: 'heads/main'
+                  });
+
+                  await github.rest.git.createRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `refs/heads/${branchName}`,
+                    sha: ref.object.sha
+                  });
+
+                  info(`Created branch ${branchName}`);
+
+                  // Add comment to Linear issue
+                  await linear.createComment({
+                    issueId: issue.id,
+                    body: `🌿 Created GitHub branch: \`${branchName}\``
+                  });
+                } catch (createError) {
+                  warning(`Could not create branch: ${createError.message}`);
+                }
+              }
+            }
+          }
+
+          async function updatePullRequest(issue) {
+            // Find PRs that mention this issue
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+
+            for (const pr of pulls) {
+              if (pr.body && pr.body.includes(issue.identifier)) {
+                // Update PR with Linear issue link
+                const linearUrl = issue.url || `https://linear.app/team/issue/${issue.identifier}`;
+                const updatedBody = pr.body.includes(linearUrl)
+                  ? pr.body
+                  : `${pr.body}\n\n---\n📋 Linear Issue: [${issue.identifier}](${linearUrl})`;
+
+                if (updatedBody !== pr.body) {
+                  await github.rest.pulls.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: pr.number,
+                    body: updatedBody
+                  });
+
+                  info(`Updated PR #${pr.number} with Linear link`);
+                }
+              }
+            }
+          }
+
+          // Run the sync
+          syncIssues().catch((err) => {
+            logError('Sync failed: ' + err.message);
+            process.exit(1);
+          });
+          EOF
+
+      - name: Create PR descriptions for new branches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        run: |
+          # Check for branches without PRs
+          for branch in $(git branch -r | grep 'origin/linear/' | sed 's/origin\///'); do
+            # Check if PR exists
+            PR_EXISTS=$(gh pr list --head "$branch" --json number --jq length)
+
+            if [ "$PR_EXISTS" -eq "0" ]; then
+              echo "No PR found for branch $branch"
+
+              # Extract issue ID from branch name
+              ISSUE_ID=$(echo "$branch" | sed 's/linear\///' | cut -d'-' -f1-2 | tr '[:lower:]' '[:upper:]')
+
+              # Could create PR here if needed
+              echo "Issue ID: $ISSUE_ID (PR creation can be automated)"
+            fi
+          done

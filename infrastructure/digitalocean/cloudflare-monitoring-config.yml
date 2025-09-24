@@ -1,0 +1,53 @@
+# Enhanced Cloudflare Tunnel Configuration for Monitoring Services
+# Extends existing OpenProject tunnel with monitoring endpoints
+
+tunnel: ${TUNNEL_ID} # Use existing tunnel ID
+credentials-file: /etc/cloudflared/creds.json
+
+ingress:
+  # OpenProject main application (existing)
+  - hostname: ${OPENPROJECT_SUBDOMAIN}.${CLOUDFLARE_DOMAIN}
+    service: http://openproject:80
+    noTLSVerify: true
+    originRequest:
+      connectTimeout: 30s
+      httpHostHeader: ${OPENPROJECT_SUBDOMAIN}.${CLOUDFLARE_DOMAIN}
+      chunkedEncoding: true
+      noHappyEyeballs: true
+
+  # Monitoring Services (new)
+  - hostname: prometheus.monitoring.${CLOUDFLARE_DOMAIN}
+    service: http://prometheus:9090
+    noTLSVerify: true
+    originRequest:
+      connectTimeout: 15s
+      httpHostHeader: prometheus.monitoring.${CLOUDFLARE_DOMAIN}
+
+  - hostname: grafana.monitoring.${CLOUDFLARE_DOMAIN}
+    service: http://grafana:3000
+    noTLSVerify: true
+    originRequest:
+      connectTimeout: 30s
+      httpHostHeader: grafana.monitoring.${CLOUDFLARE_DOMAIN}
+
+  - hostname: jaeger.monitoring.${CLOUDFLARE_DOMAIN}
+    service: http://jaeger:16686
+    noTLSVerify: true
+    originRequest:
+      connectTimeout: 15s
+      httpHostHeader: jaeger.monitoring.${CLOUDFLARE_DOMAIN}
+
+  - hostname: n8n-monitor.monitoring.${CLOUDFLARE_DOMAIN}
+    service: http://n8n-monitor:3002
+    noTLSVerify: true
+    originRequest:
+      connectTimeout: 15s
+      httpHostHeader: n8n-monitor.monitoring.${CLOUDFLARE_DOMAIN}
+
+  # Health check endpoint (existing)
+  - hostname: health-${OPENPROJECT_SUBDOMAIN}.${CLOUDFLARE_DOMAIN}
+    service: http://openproject:80/health_checks/all
+    noTLSVerify: true
+
+  # Catch-all rule
+  - service: http_status:404

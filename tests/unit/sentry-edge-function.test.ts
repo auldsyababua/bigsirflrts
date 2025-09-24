@@ -49,9 +49,9 @@ const mockScope = {
 // Mock Deno globals for testing
 global.Deno = {
   env: {
-    get: vi.fn()
+    get: vi.fn(),
   },
-  serve: vi.fn()
+  serve: vi.fn(),
 } as any;
 
 // Mock fetch
@@ -60,10 +60,10 @@ global.fetch = vi.fn();
 // Mock crypto (handle read-only property)
 Object.defineProperty(global, 'crypto', {
   value: {
-    randomUUID: vi.fn().mockReturnValue('test-uuid-123')
+    randomUUID: vi.fn().mockReturnValue('test-uuid-123'),
   },
   writable: true,
-  configurable: true
+  configurable: true,
 });
 
 describe('@P0 Sentry Edge Function Tests', () => {
@@ -71,15 +71,15 @@ describe('@P0 Sentry Edge Function Tests', () => {
     // Setup Deno environment variables
     vi.mocked(Deno.env.get).mockImplementation((key: string) => {
       const envVars: Record<string, string> = {
-        'SENTRY_DSN': 'https://test@sentry.io/project',
-        'SB_REGION': 'us-east-1',
-        'SB_EXECUTION_ID': 'test-execution-123',
-        'SUPABASE_ENVIRONMENT': 'test',
-        'SUPABASE_FUNCTION_VERSION': '1.0.0-test',
-        'SUPABASE_URL': 'https://test.supabase.co',
-        'SUPABASE_SERVICE_ROLE_KEY': 'test-service-key',
-        'OPENAI_API_KEY': 'test-openai-key',
-        'N8N_WEBHOOK_URL': 'https://test.n8n.webhook'
+        SENTRY_DSN: 'https://test@sentry.io/project',
+        SB_REGION: 'us-east-1',
+        SB_EXECUTION_ID: 'test-execution-123',
+        SUPABASE_ENVIRONMENT: 'test',
+        SUPABASE_FUNCTION_VERSION: '1.0.0-test',
+        SUPABASE_URL: 'https://test.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'test-service-key',
+        OPENAI_API_KEY: 'test-openai-key',
+        N8N_WEBHOOK_URL: 'https://test.n8n.webhook',
       };
       return envVars[key];
     });
@@ -96,7 +96,7 @@ describe('@P0 Sentry Edge Function Tests', () => {
     // Mock the actual file being tested instead of the external Sentry module
     vi.doMock('../../supabase/functions/parse-request/sentry-index.ts', () => ({
       default: mockSentry,
-      ...mockSentry
+      ...mockSentry,
     }));
   });
 
@@ -162,7 +162,7 @@ describe('@P0 Sentry Edge Function Tests', () => {
       // Assert
       expect(mockSentry.init).toHaveBeenCalledWith(
         expect.objectContaining({
-          dsn: undefined
+          dsn: undefined,
         })
       );
     });
@@ -171,11 +171,11 @@ describe('@P0 Sentry Edge Function Tests', () => {
       // Arrange
       vi.mocked(Deno.env.get).mockImplementation((key: string) => {
         const defaults: Record<string, string | undefined> = {
-          'SENTRY_DSN': 'https://test@sentry.io/project',
-          'SB_REGION': undefined,
-          'SB_EXECUTION_ID': undefined,
-          'SUPABASE_ENVIRONMENT': undefined,
-          'SUPABASE_FUNCTION_VERSION': undefined,
+          SENTRY_DSN: 'https://test@sentry.io/project',
+          SB_REGION: undefined,
+          SB_EXECUTION_ID: undefined,
+          SUPABASE_ENVIRONMENT: undefined,
+          SUPABASE_FUNCTION_VERSION: undefined,
         };
         return defaults[key];
       });
@@ -211,11 +211,11 @@ describe('@P0 Sentry Edge Function Tests', () => {
       const testRequest = new Request('https://test.com/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invalidJson: 'missing_bracket' })
+        body: JSON.stringify({ invalidJson: 'missing_bracket' }),
       });
 
       // Mock scope behavior for error context
-      let capturedContext: any = {};
+      const capturedContext: any = {};
       mockScope.setContext.mockImplementation((key, value) => {
         capturedContext[key] = value;
       });
@@ -293,7 +293,9 @@ describe('@P0 Sentry Edge Function Tests', () => {
 
       // Assert
       expect(mockSentry.captureMessage).toHaveBeenCalledWith(warningMessage, 'warning');
-      expect(mockScope.setContext).toHaveBeenCalledWith('validation', { missingField: 'input' });
+      expect(mockScope.setContext).toHaveBeenCalledWith('validation', {
+        missingField: 'input',
+      });
     });
 
     it('should set user context for authentication tracking', async () => {
@@ -304,14 +306,14 @@ describe('@P0 Sentry Edge Function Tests', () => {
       await mockSentry.withScope(async (scope) => {
         scope.setUser({
           id: 'authenticated',
-          authMethod: 'supabase_jwt'
+          authMethod: 'supabase_jwt',
         });
       });
 
       // Assert
       expect(mockScope.setUser).toHaveBeenCalledWith({
         id: 'authenticated',
-        authMethod: 'supabase_jwt'
+        authMethod: 'supabase_jwt',
       });
     });
 
@@ -380,7 +382,9 @@ describe('@P0 Sentry Edge Function Tests', () => {
       });
 
       // Assert
-      expect(mockScope.setContext).toHaveBeenCalledWith('performance', { responseTime });
+      expect(mockScope.setContext).toHaveBeenCalledWith('performance', {
+        responseTime,
+      });
     });
   });
 

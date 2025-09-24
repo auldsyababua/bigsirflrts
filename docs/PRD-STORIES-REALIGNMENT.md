@@ -1,8 +1,7 @@
 # PRD & Stories Realignment Plan
 
-**Date:** December 13, 2024
-**Status:** IN PROGRESS
-**Context Loss Protection:** This document enables any PM to continue realignment work
+**Date:** December 13, 2024 **Status:** IN PROGRESS **Context Loss Protection:**
+This document enables any PM to continue realignment work
 
 ---
 
@@ -47,11 +46,14 @@
 
 5. **OpenAI MVP Approach (Context Injection)**
    - **INPUT**: Natural language + ALL valid options hardcoded in prompt
-   - **INCLUDES**: Complete lists of users (with IDs/timezones), sites (with aliases), contractors
+   - **INCLUDES**: Complete lists of users (with IDs/timezones), sites (with
+     aliases), contractors
    - **INCLUDES**: Current UTC timestamp for relative date parsing
    - **OUTPUT**: Matched IDs and structured JSON for OpenProject API
    - **NO PREPROCESSING**: Let OpenAI handle everything for MVP
-   - **Assigner is ALWAYS user**: The assigner of a new task IS ALWAYS the person who submitted it. OpenAI does not need to determine this. We will know it based on the telegram userID tied to the flrts_user,
+   - **Assigner is ALWAYS user**: The assigner of a new task IS ALWAYS the
+     person who submitted it. OpenAI does not need to determine this. We will
+     know it based on the telegram userID tied to the flrts_user,
    - **POST-MVP**: Add @mentions and /commands preprocessing
 
 6. **Timezone Handling (Only Processing We Do)**
@@ -168,10 +170,13 @@ grep -r "single.*Supabase\|openproject schema" docs/architecture/
 
 ## ⚠️ CRITICAL REMINDERS
 
-1. **NEVER write code from training data** - Always use MCP tools to get current docs
+1. **NEVER write code from training data** - Always use MCP tools to get current
+   docs
 2. **PostgreSQL is 15.8** - Not 16+, this is final
-3. **Single Supabase database** - OpenProject uses separate schema, not separate DB
-4. **OpenAI parses, doesn't write** - All DB writes go through OpenProject REST API
+3. **Single Supabase database** - OpenProject uses separate schema, not separate
+   DB
+4. **OpenAI parses, doesn't write** - All DB writes go through OpenProject REST
+   API
 5. **Edge Functions for speed** - Only for <500ms operations (Telegram acks)
 6. **n8n for everything else** - Complex logic, API calls, OpenAI integration
 
@@ -179,34 +184,36 @@ grep -r "single.*Supabase\|openproject schema" docs/architecture/
 
 ## 📊 PROGRESS TRACKING
 
-| Task | Status | Completed By | Date |
-|------|--------|--------------|------|
-| Analyze current state | ✅ DONE | PM John | 2024-12-13 |
-| Create realignment doc | ✅ DONE | PM John | 2024-12-13 |
-| Remove PG 16+ refs | ✅ DONE | Claude | 2024-12-13 |
-| Reorganize stories | ✅ DONE | Claude | 2024-12-13 |
-| Update PRD | ⏳ TODO | - | - |
-| Create priority stories | ✅ DONE | Claude | 2025-01-13 |
-| Enrich with current docs | ✅ DONE | Claude | 2025-01-13 |
-| Create list management stories | ✅ DONE | PM John | 2025-01-13 |
+| Task                           | Status  | Completed By | Date       |
+| ------------------------------ | ------- | ------------ | ---------- |
+| Analyze current state          | ✅ DONE | PM John      | 2024-12-13 |
+| Create realignment doc         | ✅ DONE | PM John      | 2024-12-13 |
+| Remove PG 16+ refs             | ✅ DONE | Claude       | 2024-12-13 |
+| Reorganize stories             | ✅ DONE | Claude       | 2024-12-13 |
+| Update PRD                     | ⏳ TODO | -            | -          |
+| Create priority stories        | ✅ DONE | Claude       | 2025-01-13 |
+| Enrich with current docs       | ✅ DONE | Claude       | 2025-01-13 |
+| Create list management stories | ✅ DONE | PM John      | 2025-01-13 |
 
 ---
 
 ## 🚀 NEXT STEPS
 
-1. ✅ ~~Update the PRD to match the story structure above~~ (Optional - stories exist)
+1. ✅ ~~Update the PRD to match the story structure above~~ (Optional - stories
+   exist)
 2. ✅ ~~Create the 3 remaining list feature stories (4.3, 4.4, 4.5)~~ COMPLETED
 3. Begin implementation of MVP based on ALL 23 completed stories
 
-**Note to next PM:** ALL 23 stories are now complete! The full story set provides:
+**Note to next PM:** ALL 23 stories are now complete! The full story set
+provides:
 
 - Infrastructure setup (Epic 1 - 7 stories)
 - Telegram bot functionality (Epic 2 - 6 stories)
 - OpenProject integration (Epic 3 - 5 stories)
 - Complete lists management (Epic 4 - 5 stories)
 
-**Story Creation Summary (Jan 13, 2025):**
-All 10 missing stories were created with:
+**Story Creation Summary (Jan 13, 2025):** All 10 missing stories were created
+with:
 
 - Production-ready TypeScript code examples
 - Comprehensive testing requirements
@@ -218,6 +225,9 @@ All 10 missing stories were created with:
 
 **List Management Stories (4.3-4.5) Features:**
 
-- **4.3 List Templates System**: Industry-specific templates, smart suggestions, template generation from lists
-- **4.4 List Sharing & Permissions**: Granular RBAC, delegation chains, shareable links, audit trails
-- **4.5 List Notifications**: Multi-channel delivery, quiet hours, smart batching, effectiveness tracking
+- **4.3 List Templates System**: Industry-specific templates, smart suggestions,
+  template generation from lists
+- **4.4 List Sharing & Permissions**: Granular RBAC, delegation chains,
+  shareable links, audit trails
+- **4.5 List Notifications**: Multi-channel delivery, quiet hours, smart
+  batching, effectiveness tracking

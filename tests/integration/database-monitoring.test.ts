@@ -9,15 +9,34 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { Client } from 'pg';
 
-describe('@P0 Database Monitoring Integration Tests', () => {
+// Determine if we have database configuration available
+const hasDbConfig = !!(
+  process.env.TEST_DATABASE_URL ||
+  (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) ||
+  process.env.DATABASE_URL ||
+  !process.env.CI // Allow local development
+);
+
+describe.skipIf(!hasDbConfig)('@P0 Database Monitoring Integration Tests', () => {
   let dbClient: Client;
   let testDatabaseUrl: string;
 
   beforeAll(async () => {
-    // Use test database URL - in CI this would be a test Supabase instance
-    testDatabaseUrl = process.env.TEST_DATABASE_URL ||
-      process.env.DATABASE_URL ||
-      'postgresql://postgres:password@localhost:5432/flrts_test';
+    // Try multiple sources for database configuration
+    if (process.env.TEST_DATABASE_URL) {
+      testDatabaseUrl = process.env.TEST_DATABASE_URL;
+    } else if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      // Build connection string from Supabase config
+      const supabaseUrl = new URL(process.env.SUPABASE_URL);
+      const projectRef = supabaseUrl.hostname.split('.')[0];
+      // Use pooler for better connection handling
+      testDatabaseUrl = `postgresql://postgres.${projectRef}:${process.env.SUPABASE_SERVICE_ROLE_KEY}@aws-0-us-east-1.pooler.supabase.com:6543/postgres?schema=openproject`;
+    } else if (process.env.DATABASE_URL) {
+      testDatabaseUrl = process.env.DATABASE_URL;
+    } else {
+      // Fallback to local database for development
+      testDatabaseUrl = 'postgresql://postgres:password@localhost:5432/flrts_test';
+    }
 
     dbClient = new Client({
       connectionString: testDatabaseUrl,
@@ -73,7 +92,7 @@ describe('@P0 Database Monitoring Integration Tests', () => {
       const testQueries = [
         'SELECT 1 as test_query_1;',
         'SELECT COUNT(*) FROM information_schema.tables;',
-        'SELECT current_timestamp;'
+        'SELECT current_timestamp;',
       ];
 
       // Act - Execute test queries
@@ -82,7 +101,7 @@ describe('@P0 Database Monitoring Integration Tests', () => {
       }
 
       // Allow brief time for stats collection
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Query pg_stat_statements
       const statsResult = await dbClient.query(`
@@ -103,11 +122,12 @@ describe('@P0 Database Monitoring Integration Tests', () => {
       expect(statsResult.rows.length).toBeGreaterThan(0);
 
       // Verify that our test queries were captured
-      const capturedQueries = statsResult.rows.map(row => row.query);
-      const hasTestQuery = capturedQueries.some(query =>
-        query.includes('test_query_1') ||
-        query.includes('information_schema.tables') ||
-        query.includes('current_timestamp')
+      const capturedQueries = statsResult.rows.map((row) => row.query);
+      const hasTestQuery = capturedQueries.some(
+        (query) =>
+          query.includes('test_query_1') ||
+          query.includes('information_schema.tables') ||
+          query.includes('current_timestamp')
       );
       expect(hasTestQuery).toBe(true);
 
@@ -129,7 +149,7 @@ describe('@P0 Database Monitoring Integration Tests', () => {
         await dbClient.query(testQuery);
       }
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Query performance stats
       const perfResult = await dbClient.query(`
@@ -174,7 +194,7 @@ describe('@P0 Database Monitoring Integration Tests', () => {
 
       // Act
       await dbClient.query(ioQuery);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Query I/O stats
       const ioResult = await dbClient.query(`
@@ -239,10 +259,10 @@ describe('@P0 Database Monitoring Integration Tests', () => {
         'active_connections',
         'slow_queries',
         'table_stats',
-        'performance_summary'
+        'performance_summary',
       ];
 
-      const actualViews = viewsResult.rows.map(row => row.table_name);
+      const actualViews = viewsResult.rows.map((row) => row.table_name);
 
       for (const expectedView of expectedViews) {
         expect(actualViews).toContain(expectedView);
@@ -269,9 +289,10 @@ describe('@P0 Database Monitoring Integration Tests', () => {
       expect(result.rows.length).toBeGreaterThan(0);
 
       // Verify our test connection is visible
-      const ourConnection = result.rows.find(row =>
-        row.database_name === dbClient.database &&
-        (row.application_name === '' || row.application_name === 'node-postgres')
+      const ourConnection = result.rows.find(
+        (row) =>
+          row.database_name === dbClient.database &&
+          (row.application_name === '' || row.application_name === 'node-postgres')
       );
 
       expect(ourConnection).toBeDefined();
@@ -285,7 +306,7 @@ describe('@P0 Database Monitoring Integration Tests', () => {
 
       // Act
       await dbClient.query(slowQuery);
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Query slow queries view
       const result = await dbClient.query(`
@@ -373,10 +394,10 @@ describe('@P0 Database Monitoring Integration Tests', () => {
         'cache_hit_ratio',
         'total_queries',
         'slow_queries_count',
-        'database_size_mb'
+        'database_size_mb',
       ];
 
-      const actualMetrics = result.rows.map(row => row.metric_name);
+      const actualMetrics = result.rows.map((row) => row.metric_name);
 
       for (const expectedMetric of expectedMetrics) {
         expect(actualMetrics).toContain(expectedMetric);
@@ -408,7 +429,7 @@ describe('@P0 Database Monitoring Integration Tests', () => {
         'monitoring.active_connections',
         'monitoring.slow_queries',
         'monitoring.table_stats',
-        'monitoring.performance_summary'
+        'monitoring.performance_summary',
       ];
 
       // Act & Assert - Each view should be queryable
