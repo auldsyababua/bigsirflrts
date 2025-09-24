@@ -1,12 +1,15 @@
 # 🚨 Disaster Recovery Plan - FLRTS Project
 
 ## Current Situation
+
 - Cloned repo from GitHub but lost all gitignored files
 - Missing: node_modules, complete .env files, build artifacts
 - Have: Partial .env with some values recovered
 
 ## Phase 1: Discovery ✅
-### Missing Items Identified:
+
+### Missing Items Identified
+
 1. **Environment Files**
    - Main .env (partial exists)
    - .env.local, .env.production, .env.development
@@ -27,6 +30,7 @@
 ## Phase 2: Recovery Steps
 
 ### Step 1: Install All Dependencies
+
 ```bash
 # Install root dependencies
 npm install
@@ -39,6 +43,7 @@ cd infrastructure/digitalocean/monitoring && npm install && cd ../../..
 ```
 
 ### Step 2: Complete Environment Variables
+
 Add these missing variables to .env:
 
 ```env
@@ -57,12 +62,15 @@ Add these missing variables to .env:
 ```
 
 ### Step 3: Update Script References
+
 Files that need updating to use main .env:
+
 - [x] `supabase/secrets-sync-telegram.sh` - Updated
-- [ ] `supabase/deploy-telegram-webhook.sh` - Pending
+- [x] `supabase/deploy-telegram-webhook.sh` - Updated
 - [ ] Any other scripts referencing .env.supabase or .env.telegram
 
 ### Step 4: Create Missing Config Files
+
 ```bash
 # Create test environment file
 cp .env .env.test
@@ -76,6 +84,7 @@ cp .env .env.local
 ## Phase 3: Validation
 
 ### Service Testing Checklist
+
 - [ ] Supabase connection: `npm run test:supabase`
 - [ ] n8n webhooks: Test with curl to webhook endpoints
 - [ ] Telegram bot: Send test message
@@ -83,6 +92,7 @@ cp .env .env.local
 - [ ] Build processes: `npm run build`
 
 ### Quick Validation Script
+
 ```bash
 #!/bin/bash
 echo "🔍 Validating environment setup..."
@@ -141,11 +151,13 @@ npm run build 2>/dev/null || echo "Build script may need configuration"
 ```
 
 ## Critical Production Info (from CLAUDE.md)
+
 - **OpenProject**: SSH to `root@165.227.216.172`
 - **Admin**: admin / mqsgyCQNQ2q*NCMT8QARXKJqz
-- **Live URL**: https://ops.10nz.tools
+- **Live URL**: `https://ops.10nz.tools`
 
 ## Next Actions
+
 1. Complete missing environment variables in .env
 2. Run dependency installation commands
 3. Update remaining script references
