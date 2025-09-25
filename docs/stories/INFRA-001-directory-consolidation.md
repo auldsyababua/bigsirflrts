@@ -2,7 +2,7 @@
 
 ## Story ID: INFRA-001
 
-**Priority**: Medium **Estimated Effort**: 3 hours
+**Priority**: Medium **Estimated Effort**: 3 hours **Status**: PARTIALLY COMPLETE
 
 ## Story Title
 
@@ -23,16 +23,16 @@ maintenance overhead.
 
 ## Acceptance Criteria
 
-### AC1: Monitoring Directory Consolidation
+### AC1: Monitoring Directory Consolidation ✅ COMPLETE
 
-- [ ] Create unified `/infrastructure/monitoring/` structure with
+- [x] Create unified `/infrastructure/monitoring/` structure with
       subdirectories:
   - `/infrastructure/monitoring/local/` - Local development monitoring configs
   - `/infrastructure/monitoring/production/` - Production monitoring configs
   - `/infrastructure/monitoring/shared/` - Shared monitoring components
-- [ ] Migrate content from `/monitoring/` to appropriate subdirectories
-- [ ] Update all references in docker-compose files and scripts
-- [ ] Remove original `/monitoring/` directory after migration
+- [x] Migrate content from `/monitoring/` to appropriate subdirectories
+- [x] Update all references in docker-compose files and scripts
+- [x] Remove original `/monitoring/` directory after migration
 
 ### AC2: Scripts Directory Organization
 
@@ -45,7 +45,7 @@ maintenance overhead.
 
 ### AC3: Documentation and References
 
-- [ ] Update all docker-compose files that reference monitoring configs
+- [x] Update all docker-compose files that reference monitoring configs
 - [ ] Update documentation to reflect new structure
 - [ ] Update any CI/CD pipelines or automation that references old paths
 
@@ -142,9 +142,9 @@ source ./infrastructure/scripts/health-check.sh
 
 ## Testing Requirements
 
-- [ ] All docker-compose configurations build successfully
-- [ ] Monitoring services start correctly
-- [ ] All scripts execute without path errors
+- [x] All docker-compose configurations build successfully (validated)
+- [ ] Monitoring services start correctly (pending deployment test)
+- [x] All scripts execute without path errors
 - [ ] CI/CD pipelines continue to work
 
 ## Dependencies
@@ -205,6 +205,34 @@ Error: Unable to connect to n8n Cloud dashboard
 - [ ] All references updated and working
 - [ ] Documentation reflects new structure
 - [ ] All tests pass
+
+## Dev Agent Record
+
+### Completion Date: 2025-09-25
+
+### Work Completed:
+
+#### Monitoring Consolidation ✅
+- Created `/infrastructure/monitoring/` structure with `local/`, `production/`, and `shared/` subdirectories
+- Migrated all files from `/monitoring/` to `/infrastructure/monitoring/local/`
+- Migrated all files from `/infrastructure/digitalocean/monitoring/` to `/infrastructure/monitoring/production/`
+- Updated `infrastructure/docker/docker-compose.monitoring.yml` to use `../monitoring/local/` paths
+- Updated `infrastructure/digitalocean/docker-compose.monitoring.prod.yml` to use `../monitoring/production/` paths
+- Updated `scripts/deploy-monitoring-remote.sh` to deploy from new production path
+- Validated both docker-compose configurations successfully
+- Removed old monitoring directories after successful migration
+
+#### Files Modified:
+- `infrastructure/docker/docker-compose.monitoring.yml` (3 path updates)
+- `infrastructure/digitalocean/docker-compose.monitoring.prod.yml` (3 path updates)  
+- `scripts/deploy-monitoring-remote.sh` (1 path update)
+
+#### Remaining Work:
+- Scripts directory organization (AC2)
+- Documentation updates
+- CI/CD pipeline updates (if any exist)
+
+### Commit: ae97805
 
 ## Rollback Plan
 
