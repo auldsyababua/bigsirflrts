@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # OpenProject Community Edition with PostgreSQL 16 Backend
@@ -68,7 +68,7 @@ services:
     networks:
       - flrts_network
     ports:
-      - "127.0.0.1:8080:80"  # Only bind to localhost
+      - "127.0.0.1:8080:80" # Only bind to localhost
     depends_on:
       openproject-db:
         condition: service_healthy
@@ -83,10 +83,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2.0'
+          cpus: "2.0"
           memory: 4G
         reservations:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 2G
 
   # PostgreSQL 16 Database for OpenProject
@@ -127,10 +127,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 2G
         reservations:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 1G
 
   # Memcached for OpenProject Rails Cache
@@ -149,10 +149,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 384M
         reservations:
-          cpus: '0.125'
+          cpus: "0.125"
           memory: 256M
 
   # Cloudflare Tunnel for Zero-Trust Access
@@ -170,10 +170,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 256M
         reservations:
-          cpus: '0.125'
+          cpus: "0.125"
           memory: 128M
 
   # PostgreSQL Backup Service (runs daily at 2 AM)
@@ -201,7 +201,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 256M
 
   # Health Monitor (Uptime Kuma - Optional)
@@ -220,7 +220,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 256M
 
 networks:

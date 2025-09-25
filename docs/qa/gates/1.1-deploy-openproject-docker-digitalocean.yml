@@ -7,7 +7,7 @@ gate_decision: PASS
 story_id: "1.1"
 epic: "Epic 1 - OpenProject Integration Foundation"
 review_date: "2025-09-24T15:40:58-07:00"
-quality_score: 85  # Significant improvements since last review
+quality_score: 85 # Significant improvements since last review
 
 summary: |
   CRITICAL IMPROVEMENTS VERIFIED
@@ -106,7 +106,7 @@ requirements_coverage:
 quality_assessment:
   architecture: PASS
   implementation: PASS
-  testing: CONCERNS  # Some tests require SSH access
+  testing: CONCERNS # Some tests require SSH access
   documentation: PASS
   security: PASS
   operational_readiness: PASS

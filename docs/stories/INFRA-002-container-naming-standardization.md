@@ -1,25 +1,34 @@
 # User Story: Container Naming Standardization
 
 ## Story ID: INFRA-002
-**Priority**: HIGH - Blocks testing and deployment reliability
-**Estimated Effort**: 5.5 hours
+
+**Priority**: HIGH - Blocks testing and deployment reliability **Estimated
+Effort**: 5.5 hours
 
 ## Story Title
-As a DevOps engineer, I need to standardize Docker container naming across all environments to eliminate test failures and ensure consistent operations.
+
+As a DevOps engineer, I need to standardize Docker container naming across all
+environments to eliminate test failures and ensure consistent operations.
 
 ## Background
-Critical container naming inconsistency causes test failures and operational issues. Three different naming patterns exist:
+
+Critical container naming inconsistency causes test failures and operational
+issues. Three different naming patterns exist:
+
 - `flrts-*` (correct, explicit container names)
 - `docker-*-1` (auto-generated, problematic)
 - `bigsirflrts-*` (found in health-check.sh)
 
-This breaks integration tests, monitoring scripts, and remote service configurations.
+This breaks integration tests, monitoring scripts, and remote service
+configurations.
 
-**Detailed Report**: `/infrastructure/qa-evidence/container-naming-remediation-report.md`
+**Detailed Report**:
+`/infrastructure/qa-evidence/container-naming-remediation-report.md`
 
 ## Acceptance Criteria
 
 ### AC1: Environment Configuration Standardization
+
 - [ ] Add `COMPOSE_PROJECT_NAME=flrts` to all .env files:
   - `/.env`
   - `/infrastructure/docker/.env`
@@ -28,16 +37,19 @@ This breaks integration tests, monitoring scripts, and remote service configurat
 - [ ] Verify environment inheritance in all docker-compose contexts
 
 ### AC2: Docker Compose File Updates
+
 - [ ] Add explicit `container_name` fields to all services missing them
 - [ ] All container names must follow `flrts-*` pattern
 - [ ] Verify with `docker-compose config`
 
 ### AC3: Code Reference Updates
+
 - [ ] Update test files to use environment variables
 - [ ] Update shell scripts with correct container names
 - [ ] Remove all hardcoded container references
 
 ### AC4: Remote Service Configuration Updates
+
 - [ ] Update n8n Cloud webhook URLs if affected
 - [ ] Update Supabase webhook configurations
 - [ ] Update monitoring configurations
@@ -46,6 +58,7 @@ This breaks integration tests, monitoring scripts, and remote service configurat
 ## Technical Implementation Details
 
 ### Current Problem Analysis
+
 ```typescript
 // PROBLEMATIC: Hardcoded in tests
 const N8N_CONTAINER = 'docker-n8n-1';        // Should be 'flrts-n8n'
@@ -60,6 +73,7 @@ docker exec bigsirflrts-postgres-1 ... // Third pattern!
 ### Files Requiring Updates
 
 #### Test Files
+
 ```typescript
 // /tests/integration/n8n-operational-resilience.test.ts
 // Lines 25-27: Update container names
@@ -69,6 +83,7 @@ const NGINX_CONTAINER = process.env.NGINX_CONTAINER || 'flrts-nginx';
 ```
 
 #### Shell Scripts
+
 ```bash
 # /infrastructure/scripts/run-resilience-tests.sh
 # Lines 125, 131, 150, 159, 202, 217, 312
@@ -80,19 +95,21 @@ const NGINX_CONTAINER = process.env.NGINX_CONTAINER || 'flrts-nginx';
 ```
 
 #### Docker Compose Updates
+
 ```yaml
 # /infrastructure/docker/docker-compose.single.yml
 services:
   postgres:
-    container_name: flrts-postgres  # Add this
+    container_name: flrts-postgres # Add this
     # ...existing config...
 
   n8n:
-    container_name: flrts-n8n  # Add this
+    container_name: flrts-n8n # Add this
     # ...existing config...
 ```
 
 ### Container Names Configuration
+
 ```bash
 # Create /infrastructure/config/container-names.env
 export N8N_CONTAINER="flrts-n8n"
@@ -104,6 +121,7 @@ export NGINX_CONTAINER="flrts-nginx"
 ## Dev Notes
 
 ### Implementation Sequence
+
 1. **Environment Setup** (30 min)
    - Add COMPOSE_PROJECT_NAME to all .env files
    - Create container-names.env configuration
@@ -129,6 +147,7 @@ export NGINX_CONTAINER="flrts-nginx"
    - Verify monitoring
 
 ### Verification Commands
+
 ```bash
 # Stop everything
 docker-compose down
@@ -153,12 +172,14 @@ npm run test:resilience
 ```
 
 ## Risk Assessment
+
 - **HIGH RISK**: Production downtime during container rename
 - **MEDIUM RISK**: Remote webhook failures until URLs updated
 - **MEDIUM RISK**: Monitoring disruption during transition
 - **LOW RISK**: Test failures during development
 
 ### Mitigation Strategy
+
 - Test all changes in development first
 - Create rollback script before production changes
 - Schedule maintenance window
@@ -168,23 +189,27 @@ npm run test:resilience
 ## Testing Requirements
 
 ### Pre-Implementation
+
 - [ ] Backup all docker-compose files
 - [ ] Document current container names
 - [ ] List all remote webhook URLs
 - [ ] Create rollback script
 
 ### During Implementation
+
 - [ ] Verify container names after each phase
 - [ ] Test after each major change
 - [ ] Keep detailed change log
 
 ### Post-Implementation
-- [ ] All containers use flrts-* pattern
+
+- [ ] All containers use flrts-\* pattern
 - [ ] All tests pass
 - [ ] Remote services connected
 - [ ] Monitoring operational
 
 ## Dependencies and Blockers
+
 - **Dependency**: Access to n8n Cloud dashboard
 - **Dependency**: Access to Supabase dashboard
 - **Blocker**: Production maintenance window required
@@ -192,6 +217,7 @@ npm run test:resilience
 ## Environment Files & Secrets
 
 ### Required .env Files
+
 **ALL of these files need to be updated with `COMPOSE_PROJECT_NAME=flrts`:**
 
 ```bash
@@ -205,6 +231,7 @@ npm run test:resilience
 ```
 
 ### Critical Secrets Required
+
 The following secrets must be available in the .env files:
 
 ```bash
@@ -232,6 +259,7 @@ COMPOSE_PROJECT_NAME=flrts  # ADD THIS TO ALL .env FILES
 **STOP AND ASK FOR HELP if you encounter ANY of these situations:**
 
 1. **Missing Secrets or .env Files:**
+
    ```bash
    # If any of these fail, STOP:
    test -f .env || echo "STOP: .env file missing"
@@ -246,6 +274,7 @@ COMPOSE_PROJECT_NAME=flrts  # ADD THIS TO ALL .env FILES
    - Webhook URL updates fail
 
 3. **Container Naming Conflicts:**
+
    ```bash
    # If this shows unexpected names, STOP:
    docker ps --format "{{.Names}}" | grep -v "flrts-"
@@ -257,6 +286,7 @@ COMPOSE_PROJECT_NAME=flrts  # ADD THIS TO ALL .env FILES
    - Monitoring loses connection to services
 
 **DO NOT:**
+
 - Create new .env files without explicit approval
 - Modify existing secrets or generate new API keys
 - Skip steps due to missing access credentials
@@ -285,6 +315,7 @@ echo "STOP: Need manual access to update Supabase webhook configurations"
 ```
 
 ### Required Manual Access Points
+
 **The following require manual intervention - STOP and request help:**
 
 1. **n8n Cloud Dashboard:**
@@ -302,6 +333,7 @@ echo "STOP: Need manual access to update Supabase webhook configurations"
    - If using other CI: Request access details
 
 ## Rollback Plan
+
 ```bash
 #!/bin/bash
 # rollback-container-names.sh
@@ -325,7 +357,8 @@ git checkout HEAD -- infrastructure/scripts/*.sh
 ```
 
 ## Definition of Done
-- [ ] All containers consistently use flrts-* naming
+
+- [ ] All containers consistently use flrts-\* naming
 - [ ] All integration and resilience tests pass
 - [ ] Remote webhook configurations updated and tested
 - [ ] Monitoring systems operational
@@ -333,6 +366,8 @@ git checkout HEAD -- infrastructure/scripts/*.sh
 - [ ] Rollback procedure verified
 
 ## Support Resources
-- Container naming report: `/infrastructure/qa-evidence/container-naming-remediation-report.md`
+
+- Container naming report:
+  `/infrastructure/qa-evidence/container-naming-remediation-report.md`
 - Current audit: `docker ps --format "table {{.Names}}\t{{.Status}}"`
 - Test command: `npm run test:resilience`

@@ -46,34 +46,67 @@ architecture:
 | 2025-01-12 | 1.0     | Initial PRD creation with single-database architecture                            | John (PM Agent) |
 | 2025-01-13 | 2.0     | Major update: PostgreSQL 15.8, n8n-first hybrid architecture, Lists feature       | John (PM Agent) |
 | 2025-09-15 | 2.1     | Architecture revision: Single-instance n8n for 10-user scale, deferred queue mode | John (PM Agent) |
+| 2025-09-25 | 3.0     | MVP scope reduction: Focus on CREATE operations only for rapid demo               | John (PM Agent) |
+
+## MVP Demo Scope (v3.0)
+
+### Critical Path to Demo
+
+**Goal**: Deliver a working NLP task/list creation demo ASAP
+
+**In Scope (CREATE Only):**
+
+- Natural language task creation via Telegram
+- Natural language list creation via Telegram
+- OpenAI parsing of messages to structured data
+- Creation of tasks/lists in OpenProject via API
+- Simple confirmation messages back to users
+- Basic error handling for unparseable input
+
+**Out of Scope (Deferred to Post-MVP):**
+
+- READ operations (viewing tasks/lists)
+- UPDATE operations (editing tasks/lists)
+- ARCHIVE/DELETE operations
+- Complex timezone conversions
+- Task reminders and notifications
+- Inline keyboards and UI refinements
+- Batch operations
+- Advanced error recovery
+- User context management
+
+**Rationale**: By focusing solely on CREATE operations, we can demonstrate the
+core NLP capability and OpenProject integration without the complexity of
+bidirectional sync, state management, or UI complications. Users can create
+tasks naturally via Telegram, then manage them in OpenProject's full UI.
 
 ## Requirements
 
 ### Functional Requirements
 
 • **FR1:** The system shall parse natural language task commands into structured
-JSON using OpenAI GPT-4o API with a single comprehensive prompt • **FR2:** The
-system shall support CREATE, READ, UPDATE, and ARCHIVE operations for work
-packages via natural language commands (DELETE operations are
-soft-delete/archive only to maintain audit trail) • **FR3:** The system shall
-parse time references to identify context (sender's time, assignee's time, or
-absolute time), then convert times to assignee's local timezone using
-application-layer timezone logic (OpenAI provides time_context field, FLRTS
-performs actual conversion) • **FR4:** The system shall recognize @mentions for
-task assignees and map them to OpenProject user IDs • **FR5:** The system shall
-parse relative dates and times ("tomorrow at 2pm", "next Monday", "in 3 days")
-into absolute timestamps • **FR6:** The system shall display a confirmation UI
-showing the parsed JSON before executing any operation against the OpenProject
-API • **FR7:** The system shall integrate with OpenProject's REST API to execute
-ALL task management operations (no direct database writes) • **FR8:** The system
-shall provide error messages with suggested manual entry when parsing fails •
-**FR9:** The system shall support /commands for explicit operation types
-(/create, /update, /archive, /list) • **FR10:** The system shall send task
-reminder notifications to both Telegram and email channels • **FR11:** The
-system shall maintain user access to the full OpenProject UI alongside the NLP
-interface • **FR12:** The system shall maintain a complete audit trail by
-implementing soft-delete/archive operations only - true deletions are restricted
-to admin users (Colin) via direct database access
+JSON using OpenAI GPT-4o API with a single comprehensive prompt • **FR2 (MVP):**
+The system shall support CREATE operations for tasks and lists via natural
+language commands (READ, UPDATE, and ARCHIVE operations deferred to post-MVP
+phase) • **FR3 (Post-MVP):** The system shall parse time references to identify
+context (sender's time, assignee's time, or absolute time), then convert times
+to assignee's local timezone using application-layer timezone logic (OpenAI
+provides time_context field, FLRTS performs actual conversion) • **FR4:** The
+system shall recognize @mentions for task assignees and map them to OpenProject
+user IDs • **FR5:** The system shall parse relative dates and times ("tomorrow
+at 2pm", "next Monday", "in 3 days") into absolute timestamps • **FR6 (MVP):**
+The system shall display a simple confirmation message showing the created
+task/list title and assignee • **FR7:** The system shall integrate with
+OpenProject's REST API to execute ALL task management operations (no direct
+database writes) • **FR8:** The system shall provide error messages with
+suggested manual entry when parsing fails • **FR9 (MVP):** The system shall
+support /create command for explicit task/list creation (other commands like
+/update, /archive, /list deferred to post-MVP) • **FR10 (Post-MVP):** The system
+shall send task reminder notifications to both Telegram and email channels •
+**FR11:** The system shall maintain user access to the full OpenProject UI
+alongside the NLP interface • **FR12 (Post-MVP):** The system shall maintain a
+complete audit trail by implementing soft-delete/archive operations only - true
+deletions are restricted to admin users (Colin) via direct database access
 
 ### Non-Functional Requirements
 
