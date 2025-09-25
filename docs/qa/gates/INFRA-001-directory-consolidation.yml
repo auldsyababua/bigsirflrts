@@ -1,0 +1,26 @@
+schema: 1
+story: 'INFRA-001'
+gate: PASS
+status_reason: 'All issues resolved. Directory consolidation complete with documentation and backward compatibility.'
+reviewer: 'Quinn'
+updated: '2025-09-25T16:00:00Z'
+resolved_issues:
+  - id: 'IMPL-001'
+    resolution: 'Moved deploy-monitoring-remote.sh to infrastructure/scripts and created README documentation for both directories'
+  - id: 'DOC-001'
+    resolution: 'Updated infrastructure/README.md and created scripts/README.md with clear separation of responsibilities'
+  - id: 'IMPL-002'
+    resolution: 'Old /monitoring/ directory successfully removed'
+  - id: 'TEST-001'
+    resolution: 'Docker-compose configs validated. Symlinks added for backward compatibility to prevent deployment issues'
+verification_tests:
+  - test: 'Directory structure verification'
+    result: 'PASS - All directories created and old ones removed'
+  - test: 'Docker-compose validation'
+    result: 'PASS - Both local and production configs valid'
+  - test: 'Script accessibility'
+    result: 'PASS - All scripts executable in correct locations'
+  - test: 'Backward compatibility'
+    result: 'PASS - Symlinks created for moved resources'
+waiver:
+  active: false
