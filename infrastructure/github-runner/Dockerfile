@@ -45,9 +45,9 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /
 RUN npx -y playwright install-deps chromium
 
 # Create runner user
+# Security fix: Removed NOPASSWD sudo access to prevent privilege escalation
 RUN useradd -m -s /bin/bash runner \
-    && usermod -aG sudo runner \
-    && echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    && usermod -aG docker runner
 
 # Set up runner directory
 WORKDIR /home/runner

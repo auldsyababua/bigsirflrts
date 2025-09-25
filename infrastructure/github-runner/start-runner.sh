@@ -21,14 +21,14 @@ if [ ! -f .runner ]; then
     RUNNER_LABELS=${RUNNER_LABELS:-"self-hosted,local,fast,docker"}
     
     # Configure the runner
+    # Security fix: Removed --replace and --ephemeral flags to prevent token hijacking
+    # Runners will now persist between runs for better security
     ./config.sh \
         --url "https://github.com/${GITHUB_REPOSITORY}" \
         --token "${GITHUB_TOKEN}" \
         --name "${RUNNER_NAME}" \
         --labels "${RUNNER_LABELS}" \
-        --unattended \
-        --replace \
-        --ephemeral
+        --unattended
 else
     echo "Runner already configured, starting..."
 fi
