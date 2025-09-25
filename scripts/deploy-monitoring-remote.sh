@@ -43,7 +43,7 @@ ssh -o StrictHostKeyChecking=no "$REMOTE_HOST" "mkdir -p /root/monitoring /root/
 
 echo "[2/6] Syncing compose and monitoring assets…"
 scp -o StrictHostKeyChecking=no infrastructure/digitalocean/docker-compose.monitoring.prod.yml "$REMOTE_HOST":/root/docker-compose.monitoring.prod.yml
-scp -o StrictHostKeyChecking=no -r monitoring/* "$REMOTE_HOST":/root/monitoring/
+scp -o StrictHostKeyChecking=no -r infrastructure/monitoring/production/* "$REMOTE_HOST":/root/monitoring/
 
 echo "[3/6] Bringing up monitoring stack…"
 ssh -o StrictHostKeyChecking=no "$REMOTE_HOST" "docker compose -f /root/docker-compose.monitoring.prod.yml up -d"

@@ -1,0 +1,98 @@
+{
+  "webhookMonitoring": {
+    "description": "n8n v1.105.2 webhook monitoring configuration for FLRTS Story 1.7",
+    "source": "https://github.com/n8n-io/n8n",
+    "webhookResponseTemplate": {
+      "responseMode": "responseNode",
+      "responseData": {
+        "status": 200,
+        "headers": {
+          "x-response-time": "{{Date.now() - $json.request_start_time}}",
+          "x-workflow-id": "{{$workflow.id}}",
+          "x-execution-id": "{{$execution.id}}",
+          "x-workflow-name": "{{$workflow.name}}",
+          "x-n8n-version": "1.105.2",
+          "content-type": "application/json"
+        },
+        "body": {
+          "success": true,
+          "processing_time_ms": "{{Date.now() - $json.request_start_time}}",
+          "workflow": "{{$workflow.name}}",
+          "workflow_id": "{{$workflow.id}}",
+          "execution_id": "{{$execution.id}}",
+          "items_processed": "{{$json.items ? $json.items.length : 1}}",
+          "timestamp": "{{new Date().toISOString()}}",
+          "region": "{{$env.N8N_REGION || 'local'}}",
+          "instance": "{{$env.N8N_INSTANCE_ID || 'default'}}"
+        }
+      }
+    },
+    "metricsCollectionTemplate": {
+      "description": "HTTP Request node configuration for metrics collection",
+      "method": "POST",
+      "url": "http://localhost:3001/metrics/n8n",
+      "headers": {
+        "Content-Type": "application/json",
+        "X-N8N-Source": "workflow-metrics"
+      },
+      "body": {
+        "workflow_id": "{{$workflow.id}}",
+        "workflow_name": "{{$workflow.name}}",
+        "execution_id": "{{$execution.id}}",
+        "timestamp": "{{Date.now()}}",
+        "success": "{{$json.success !== false}}",
+        "duration_ms": "{{$json.duration_ms || 0}}",
+        "items_count": "{{$json.items ? $json.items.length : 0}}",
+        "error_message": "{{$json.error || null}}",
+        "node_types": "{{$workflow.nodes.map(n => n.type).join(',')}}",
+        "trigger_type": "{{$workflow.nodes.find(n => n.type.includes('Trigger')).type}}",
+        "environment": "{{$env.NODE_ENV || 'development'}}",
+        "region": "{{$env.N8N_REGION || 'local'}}"
+      }
+    },
+    "errorHandlingTemplate": {
+      "description": "Error capture configuration for failed workflows",
+      "onError": {
+        "method": "POST",
+        "url": "http://localhost:3001/metrics/n8n/errors",
+        "headers": {
+          "Content-Type": "application/json",
+          "X-N8N-Source": "workflow-error"
+        },
+        "body": {
+          "workflow_id": "{{$workflow.id}}",
+          "workflow_name": "{{$workflow.name}}",
+          "execution_id": "{{$execution.id}}",
+          "error_message": "{{$json.error.message}}",
+          "error_stack": "{{$json.error.stack}}",
+          "failed_node": "{{$json.error.node}}",
+          "timestamp": "{{new Date().toISOString()}}",
+          "environment": "{{$env.NODE_ENV || 'development'}}"
+        }
+      }
+    }
+  },
+  "performanceTargets": {
+    "webhook_response_time_ms": 2000,
+    "workflow_completion_time_ms": 5000,
+    "error_rate_threshold": 0.01,
+    "success_rate_target": 0.99
+  },
+  "alertingRules": {
+    "high_response_time": {
+      "condition": "response_time_ms > 2000",
+      "severity": "warning",
+      "notification": "slack"
+    },
+    "workflow_failure": {
+      "condition": "success == false",
+      "severity": "error",
+      "notification": "slack,email"
+    },
+    "high_error_rate": {
+      "condition": "error_rate > 0.05 over 5m",
+      "severity": "critical",
+      "notification": "slack,email,pagerduty"
+    }
+  }
+}
