@@ -1,0 +1,71 @@
+name: BMAD QA Gate (Fast)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  qa-gate:
+    # Use self-hosted runner if available, fallback to GitHub-hosted
+    runs-on: ${{ github.repository == 'auldsyababua/bigsirflrts' && github.actor == 'auldsyababua' && 'self-hosted' || 'ubuntu-latest' }}
+    timeout-minutes: 15
+    
+    # Continue on GitHub-hosted if self-hosted is unavailable
+    continue-on-error: ${{ matrix.runner == 'self-hosted' }}
+    
+    steps:
+      - name: Runner Info
+        run: |
+          echo "Running on: ${{ runner.os }} - ${{ runner.name }}"
+          echo "Runner labels: ${{ join(runner.labels, ', ') }}"
+          
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Cache Dependencies
+        if: runner.labels[0] != 'self-hosted'
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Install tools (GitHub-hosted only)
+        if: runner.labels[0] != 'self-hosted'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep shellcheck
+
+      - name: Install Playwright (GitHub-hosted only)
+        if: runner.labels[0] != 'self-hosted'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run BMAD QA Gate
+        run: npm run qa:gate
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NODE_ENV: "test"
+          CI: "true"
+          RUNNER_TYPE: ${{ runner.labels[0] }}
+
+      - name: Performance Report
+        if: always()
+        run: |
+          echo "Workflow completed in $SECONDS seconds"
+          echo "Runner type: ${{ runner.labels[0] }}"
