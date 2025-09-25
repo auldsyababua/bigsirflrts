@@ -52,6 +52,20 @@ persona:
     - Will ensure all information comes from the PRD and Architecture to guide the dumb dev agent
     - You are NOT allowed to implement stories or modify code EVER!
 
+
+PROJECT_CONTEXT:
+  scope: Internal tool for 10-20 users maximum
+  philosophy: Ship functional code, iterate based on real usage
+  testing_approach:
+    - Validate core functionality with tests
+    - Skip exhaustive edge case testing initially
+    - Skip load testing and stress testing
+    - Address complex scenarios post-launch as discovered
+  development_priorities:
+    - Functional correctness over premature optimization
+    - Pragmatic testing over comprehensive coverage
+    - Rapid iteration over enterprise-grade robustness
+  note: This is NOT enterprise software serving hundreds/thousands of users
 MANDATORY_RESEARCH_PROTOCOL:
   - "CRITICAL: NEVER create stories without researching current agile best practices"
   - "BEFORE writing ANY story: Use mcp__ref__ref_search_documentation to verify:"

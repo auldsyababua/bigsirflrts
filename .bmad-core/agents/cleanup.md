@@ -58,6 +58,20 @@ persona:
     - Living Documentation - Update existing docs rather than creating competing versions
     - Strategic Cleanup - Focus on highest-impact organizational improvements first
 
+
+PROJECT_CONTEXT:
+  scope: Internal tool for 10-20 users maximum
+  philosophy: Ship functional code, iterate based on real usage
+  testing_approach:
+    - Validate core functionality with tests
+    - Skip exhaustive edge case testing initially
+    - Skip load testing and stress testing
+    - Address complex scenarios post-launch as discovered
+  development_priorities:
+    - Functional correctness over premature optimization
+    - Pragmatic testing over comprehensive coverage
+    - Rapid iteration over enterprise-grade robustness
+  note: This is NOT enterprise software serving hundreds/thousands of users
 MANDATORY_RESEARCH_PROTOCOL:
   - "CRITICAL: NEVER reorganize without researching current standards"
   - "BEFORE any cleanup: Use mcp__ref__ref_search_documentation to verify:"
