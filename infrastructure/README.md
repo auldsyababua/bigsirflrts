@@ -38,14 +38,19 @@ infrastructure/
 
 ### Note on Script Organization
 
-- **Infrastructure Scripts** (`/infrastructure/scripts/`): Infrastructure-specific operations like deployment, health checks, and resilience testing
-- **Utility Scripts** (`/scripts/`): General-purpose tools for Cloudflare, Linear, and other integrations (see `/scripts/README.md`)
+- **Infrastructure Scripts** (`/infrastructure/scripts/`):
+  Infrastructure-specific operations like deployment, health checks, and
+  resilience testing
+- **Utility Scripts** (`/scripts/`): General-purpose tools for Cloudflare,
+  Linear, and other integrations (see `/scripts/README.md`)
 
 ### Backward Compatibility
 
 Symlinks are maintained for moved resources:
+
 - `/monitoring` → `/infrastructure/monitoring/local` (for legacy references)
-- `/scripts/deploy-monitoring-remote.sh` → `/infrastructure/scripts/deploy-monitoring-remote.sh`
+- `/scripts/deploy-monitoring-remote.sh` →
+  `/infrastructure/scripts/deploy-monitoring-remote.sh`
 
 ## Current Deployment Status
 

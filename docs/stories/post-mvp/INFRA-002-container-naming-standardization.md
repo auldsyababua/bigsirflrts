@@ -268,8 +268,8 @@ COMPOSE_PROJECT_NAME=flrts  # ADD THIS TO ALL .env FILES
    ```
 
 2. **Remote Service Access Issues:**
-   - Cannot access n8n Cloud dashboard at https://app.n8n.cloud
-   - Cannot access Supabase dashboard at https://app.supabase.com
+   - Cannot access n8n Cloud dashboard at <https://app.n8n.cloud>
+   - Cannot access Supabase dashboard at <https://app.supabase.com>
    - API authentication failures
    - Webhook URL updates fail
 
@@ -319,12 +319,12 @@ echo "STOP: Need manual access to update Supabase webhook configurations"
 **The following require manual intervention - STOP and request help:**
 
 1. **n8n Cloud Dashboard:**
-   - URL: https://app.n8n.cloud
+   - URL: <https://app.n8n.cloud>
    - Need: Update webhook URLs if they reference container names
    - Need: Verify workflow configurations after container rename
 
 2. **Supabase Dashboard:**
-   - URL: https://app.supabase.com
+   - URL: <https://app.supabase.com>
    - Need: Update webhook endpoint configurations
    - Need: Verify database connection strings
 

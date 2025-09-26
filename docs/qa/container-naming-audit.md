@@ -113,6 +113,7 @@ npm run test:integration 2>&1 | grep -E "(container|not found|Error)"
    ```
 
 2. Update scripts to use:
+
    ```bash
    docker exec ${N8N_CONTAINER} ...
    ```
@@ -149,6 +150,7 @@ Based on current findings:
    ```
 
 4. Run all tests:
+
    ```bash
    npm run test:integration
    npm run test:resilience

@@ -47,7 +47,8 @@ maintenance overhead.
 
 - [x] Update all docker-compose files that reference monitoring configs
 - [x] Update documentation to reflect new structure (README files updated)
-- [x] Update any CI/CD pipelines or automation that references old paths (symlinks added)
+- [x] Update any CI/CD pipelines or automation that references old paths
+      (symlinks added)
 
 ## Technical Implementation Details
 
@@ -143,6 +144,7 @@ source ./infrastructure/scripts/health-check.sh
 ## Testing Requirements
 
 ### Pre-Migration Testing
+
 - [x] All docker-compose configurations build successfully (validated)
 - [ ] Monitoring services start correctly (pending deployment test)
 - [x] All scripts execute without path errors
@@ -151,6 +153,7 @@ source ./infrastructure/scripts/health-check.sh
 ### Post-Migration Test Steps
 
 #### 1. Verify Monitoring Structure
+
 ```bash
 # Confirm new structure exists
 test -d infrastructure/monitoring/local && echo "✓ Local dir exists" || echo "✗ Local dir missing"
@@ -162,6 +165,7 @@ test ! -d monitoring && echo "✓ Old monitoring dir removed" || echo "✗ Old m
 ```
 
 #### 2. Test Docker Compose Configurations
+
 ```bash
 # Test local monitoring stack
 cd infrastructure/docker
@@ -177,6 +181,7 @@ docker-compose -f docker-compose.monitoring.prod.yml config > /dev/null 2>&1 && 
 ```
 
 #### 3. Test Monitoring Services Startup
+
 ```bash
 # Start local monitoring services
 cd infrastructure/docker
@@ -197,6 +202,7 @@ docker-compose -f docker-compose.monitoring.yml down
 ```
 
 #### 4. Verify Script Paths
+
 ```bash
 # Test infrastructure scripts are accessible
 for script in deploy-queue-mode.sh generate-secure-env.sh health-check.sh run-resilience-tests.sh; do
@@ -214,6 +220,7 @@ done
 ```
 
 #### 5. Test Deployment Script
+
 ```bash
 # Verify monitoring deployment script uses new paths
 grep -q "infrastructure/monitoring/production" scripts/deploy-monitoring-remote.sh && \
@@ -227,6 +234,7 @@ bash scripts/deploy-monitoring-remote.sh --dry-run 2>/dev/null && \
 ```
 
 #### 6. Integration Test
+
 ```bash
 # Full integration test script
 cat > test-migration.sh << 'EOF'
@@ -275,13 +283,14 @@ chmod +x test-migration.sh
 ```
 
 ### Acceptance Test Checklist
+
 - [ ] New monitoring structure created with correct subdirectories
 - [ ] All monitoring files migrated to appropriate locations
 - [ ] Old `/monitoring/` directory removed
 - [ ] Docker-compose files reference new paths
 - [ ] Monitoring services start without errors
-- [ ] Grafana accessible at http://localhost:3000
-- [ ] Prometheus accessible at http://localhost:9090
+- [ ] Grafana accessible at <http://localhost:3000>
+- [ ] Prometheus accessible at <http://localhost:9090>
 - [ ] Deployment script updated and functional
 - [ ] All infrastructure scripts executable
 - [ ] Documentation updated with new structure
@@ -352,36 +361,49 @@ Error: Unable to connect to n8n Cloud dashboard
 ### Work Completed:
 
 #### Monitoring Consolidation ✅
-- Created `/infrastructure/monitoring/` structure with `local/`, `production/`, and `shared/` subdirectories
+
+- Created `/infrastructure/monitoring/` structure with `local/`, `production/`,
+  and `shared/` subdirectories
 - Migrated all files from `/monitoring/` to `/infrastructure/monitoring/local/`
-- Migrated all files from `/infrastructure/digitalocean/monitoring/` to `/infrastructure/monitoring/production/`
-- Updated `infrastructure/docker/docker-compose.monitoring.yml` to use `../monitoring/local/` paths
-- Updated `infrastructure/digitalocean/docker-compose.monitoring.prod.yml` to use `../monitoring/production/` paths
-- Updated `scripts/deploy-monitoring-remote.sh` to deploy from new production path
+- Migrated all files from `/infrastructure/digitalocean/monitoring/` to
+  `/infrastructure/monitoring/production/`
+- Updated `infrastructure/docker/docker-compose.monitoring.yml` to use
+  `../monitoring/local/` paths
+- Updated `infrastructure/digitalocean/docker-compose.monitoring.prod.yml` to
+  use `../monitoring/production/` paths
+- Updated `scripts/deploy-monitoring-remote.sh` to deploy from new production
+  path
 - Validated both docker-compose configurations successfully
 - Removed old monitoring directories after successful migration
 
 #### Files Modified:
+
 - `infrastructure/docker/docker-compose.monitoring.yml` (3 path updates)
-- `infrastructure/digitalocean/docker-compose.monitoring.prod.yml` (3 path updates)  
+- `infrastructure/digitalocean/docker-compose.monitoring.prod.yml` (3 path
+  updates)
 - `scripts/deploy-monitoring-remote.sh` (1 path update)
 
 #### Remaining Work:
+
 - Scripts directory organization (AC2)
 - Documentation updates
 - CI/CD pipeline updates (if any exist)
 
-### Commits: 
+### Commits:
+
 - ae97805 - Initial monitoring consolidation
 - 36c79ce - Story documentation update
 
 ### Final Resolution (2025-09-25 - Round 2)
 
 After QA review, addressed all remaining issues:
+
 1. **Removed old `/monitoring/` directory** - was accidentally left in place
-2. **Completed script organization** - Moved `deploy-monitoring-remote.sh` to infrastructure/scripts
+2. **Completed script organization** - Moved `deploy-monitoring-remote.sh` to
+   infrastructure/scripts
 3. **Created documentation** - Added README files for both script directories
-4. **Added backward compatibility** - Created symlinks to prevent breaking existing references
+4. **Added backward compatibility** - Created symlinks to prevent breaking
+   existing references
 5. **Verified all tests pass** - All monitoring structure tests successful
 
 ## Rollback Plan
@@ -400,34 +422,47 @@ If issues occur:
 
 ### Independent Validation Findings
 
-**Story Status: PARTIALLY COMPLETE** - Monitoring consolidation achieved but critical work remains.
+**Story Status: PARTIALLY COMPLETE** - Monitoring consolidation achieved but
+critical work remains.
 
 #### Monitoring Consolidation (AC1) ✅
-- **VERIFIED**: `/infrastructure/monitoring/` structure created with proper subdirectories
+
+- **VERIFIED**: `/infrastructure/monitoring/` structure created with proper
+  subdirectories
 - **VERIFIED**: Files migrated to `local/` and `production/` subdirectories
-- **ISSUE**: Old `/monitoring/` directory still exists with 13 files (not removed as claimed)
+- **ISSUE**: Old `/monitoring/` directory still exists with 13 files (not
+  removed as claimed)
 
 #### Scripts Organization (AC2) ❌
-- **NOT COMPLETED**: No clear documentation of script separation responsibilities
+
+- **NOT COMPLETED**: No clear documentation of script separation
+  responsibilities
 - Scripts remain in original locations without defined ownership
-- `/scripts/`: Contains mix of utilities (cf-wrangler, Linear scripts, monitoring deployment)
-- `/infrastructure/scripts/`: Contains infrastructure operations (deploy, health checks)
+- `/scripts/`: Contains mix of utilities (cf-wrangler, Linear scripts,
+  monitoring deployment)
+- `/infrastructure/scripts/`: Contains infrastructure operations (deploy, health
+  checks)
 
 #### Documentation Updates (AC3) ⚠️
+
 - Docker-compose files updated ✅
 - **MISSING**: No README documentation for new structure
 - **MISSING**: CI/CD pipeline updates not verified
 
 ### Test Coverage Gaps
+
 - Production deployment testing not verified
 - No evidence monitoring services start correctly with new paths
 
 ### Security & Risk Assessment
+
 - **Low Risk**: File movement operations
 - **Medium Risk**: Production deployment untested
-- **Mitigation Needed**: Test monitoring stack startup before production deployment
+- **Mitigation Needed**: Test monitoring stack startup before production
+  deployment
 
 ### Recommendations
+
 1. **IMMEDIATE**: Remove old `/monitoring/` directory to prevent confusion
 2. **HIGH**: Complete script directory organization with clear README
 3. **MEDIUM**: Test monitoring services in staging environment

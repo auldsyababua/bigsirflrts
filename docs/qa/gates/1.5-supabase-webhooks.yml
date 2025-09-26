@@ -8,7 +8,7 @@ gate_decision: PASS
 story_id: "1.5"
 epic: "Epic 1 - Infrastructure & Core Systems"
 review_date: "2025-09-25T01:05:00-07:00"
-quality_score: 85  # PRODUCTION ISSUE RESOLVED - VALIDATED OPERATIONAL
+quality_score: 85 # PRODUCTION ISSUE RESOLVED - VALIDATED OPERATIONAL
 
 summary: |
   CRITICAL PRODUCTION FAILURE RESOLVED
@@ -138,8 +138,8 @@ testing_after_fix:
 quality_score_breakdown:
   total_points: 100
   deductions:
-    - incomplete_documentation: -10  # "Story still shows conflicting status"
-    - missing_integration_test: -5  # "Should have caught payload structure issue"
+    - incomplete_documentation: -10 # "Story still shows conflicting status"
+    - missing_integration_test: -5 # "Should have caught payload structure issue"
   final_score: 85
 
 historical_context:
