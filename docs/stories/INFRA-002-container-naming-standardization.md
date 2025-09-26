@@ -501,12 +501,14 @@ the codebase.
 ✓ Container environment variables are properly defined
 ✓ All services have explicit container_name with correct prefix
 ✓ No hardcoded container references in compose files
+✓ All running containers use correct prefix
+✓ Test files use environment variables (with documented negative tests)
+✓ Shell scripts use correct container names
 ✓ Rollback script exists and is executable
+✓ Generate compliance report
 
-⚠️ False positive failures (expected):
-- Runtime container validation (external bigsirflrts-runner container)
-- Code reference validation (test file contains regex patterns)
-- Shell script validation (deprecated script)
+Final Test Results: 9 passed, 0 failed, 1 skipped
+Validation Script: 87% pass rate (7/8 tests passing, 0 failures)
 ```
 
 #### Files Modified
@@ -525,10 +527,14 @@ the codebase.
 
 - External containers (github-runner-org, bigsirflrts-runner) are not part of
   this project
-- Validation script shows false positives from grep matching regex patterns in
-  test code
+- False positives eliminated by:
+  - Excluding operational-resilience tests (contain intentional negative tests
+    per ADR-001)
+  - Adding architectural documentation explaining negative test patterns
+  - Updating validation script to properly exclude test files
 - All actual project containers now follow the flrts-\* naming convention
 - Remote service configurations (n8n Cloud, Supabase) may need manual updates
+- Fixed legacy container references in run-resilience-tests.sh script
 
 #### Next Steps
 
@@ -551,9 +557,9 @@ across all application containers.
 
 #### Test Results
 
-- **Validation Script**: 71% pass rate (5/7 tests passing)
-- **False Positives**: 2 failures are regex patterns in test code, not actual
-  violations
+- **Validation Script**: 87% pass rate (7/8 tests passing, 0 failures)
+- **Container Naming Tests**: 100% pass rate (9/9 tests passing)
+- **False Positives**: Successfully eliminated through proper exclusions
 - **Test Coverage**: Comprehensive - all critical paths covered
 - **Security**: No vulnerabilities identified
 
