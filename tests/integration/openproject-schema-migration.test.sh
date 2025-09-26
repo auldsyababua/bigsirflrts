@@ -14,7 +14,7 @@ DB_PASS="${SUPABASE_DB_PASS}"  # Must be provided via environment
 SSH_HOST="${SSH_HOST:-root@165.227.216.172}"
 OPENPROJECT_URL="${OPENPROJECT_URL:-https://ops.10nz.tools}"
 ADMIN_USER="${OPENPROJECT_ADMIN_USER:-admin}"
-ADMIN_PASS="${OPENPROJECT_ADMIN_PASS:-mqsgyCQNQ2q*NCMT8QARXKJqz}"
+ADMIN_PASS="${OPENPROJECT_ADMIN_PASS}"  # Must be provided via environment - no default for security
 
 # Color codes for output
 RED='\033[0;31m'
@@ -28,6 +28,17 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 CRITICAL_FAILURES=""
 TEST_LOG="/tmp/openproject-migration-test-$(date +%Y%m%d-%H%M%S).log"
+
+# Validate required environment variables
+if [ -z "$DB_PASS" ]; then
+    echo -e "${RED}ERROR: SUPABASE_DB_PASS environment variable not set${NC}"
+    exit 1
+fi
+
+if [ -z "$ADMIN_PASS" ]; then
+    echo -e "${RED}ERROR: OPENPROJECT_ADMIN_PASS environment variable not set${NC}"
+    exit 1
+fi
 
 echo "============================================="
 echo "OpenProject Schema Migration Test Suite"
@@ -221,18 +232,15 @@ TEST_TABLE=$(exec_sql "
 ")
 
 if [ -n "$TEST_TABLE" ]; then
-    # Check if we can perform ALTER TABLE
+    # Check if we can perform ALTER TABLE using direct privilege check
     CAN_ALTER=$(exec_sql "
-        SELECT pg_has_role('$DB_USER', 
-            (SELECT tableowner FROM pg_tables 
-             WHERE schemaname = 'public' 
-             AND tablename = '$TEST_TABLE'), 'USAGE');
+        SELECT has_table_privilege('$DB_USER', 'public.$TEST_TABLE', 'ALTER');
     " 2>&1)
     
-    if [[ "$CAN_ALTER" == *"t"* ]] || [[ "$CAN_ALTER" == *"ERROR"* ]]; then
-        record_result "Table Alter Rights" "PASS" "User can potentially alter tables"
+    if [[ "$CAN_ALTER" == *"t"* ]]; then
+        record_result "Table Alter Rights" "PASS" "User has ALTER privileges on table"
     else
-        record_result "Table Alter Rights" "FAIL" "User cannot alter table ownership"
+        record_result "Table Alter Rights" "FAIL" "User cannot alter table (returned: $CAN_ALTER)"
     fi
 else
     record_result "Table Alter Rights" "PASS" "No test table available (expected in some cases)"

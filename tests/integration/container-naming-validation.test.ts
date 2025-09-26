@@ -13,7 +13,7 @@
  * - Performance optimizations
  */
 
-import { describe, expect, beforeEach, test, vi } from 'vitest';
+import { describe, expect, beforeEach, test, vi, afterAll } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';

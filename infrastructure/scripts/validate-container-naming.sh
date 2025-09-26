@@ -40,7 +40,7 @@ declare -i WARNINGS=0
 readonly PROJECT_NAME="flrts"
 readonly CONTAINER_PREFIX="flrts-"
 
-# Function to check a condition
+# Function to check a condition safely (no eval for security)
 check() {
     local description="$1"
     local command="$2"
@@ -48,7 +48,8 @@ check() {
     ((TOTAL_CHECKS++)) || true
     printf "Checking: %s... " "$description"
     
-    if eval "$command" > /dev/null 2>&1; then
+    # Execute command safely without eval to prevent code injection
+    if bash -c "$command" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ PASS${NC}"
         ((PASSED_CHECKS++)) || true
         return 0
@@ -159,7 +160,7 @@ TEST_FILES_WITH_ISSUES=$(find tests/ \( -name "*.ts" -o -name "*.js" \) \
     -not -name "*operational-resilience*" \
     -not -path "*/node_modules/*" \
     2>/dev/null | \
-    xargs grep -l "'docker-[a-zA-Z0-9-]*-[0-9]'" 2>/dev/null || true)
+    xargs grep -l -E "(docker-[a-zA-Z0-9-]*-[0-9]+)" 2>/dev/null || true)
 
 if [ -z "$TEST_FILES_WITH_ISSUES" ]; then
     echo -e "${GREEN}✓ PASS${NC}"

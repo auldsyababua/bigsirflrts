@@ -1,47 +1,47 @@
 schema: 1
-story: '1.9'
-story_title: 'OpenProject Schema Migration'
+story: "1.9"
+story_title: "OpenProject Schema Migration"
 gate: PASS
-status_reason: 'Comprehensive test suite created with 25 tests covering all migration phases and edge cases'
-reviewer: 'Quinn (Test Architect)'
-updated: '2025-09-26T10:00:00Z'
+status_reason: "Comprehensive test suite created with 25 tests covering all migration phases and edge cases"
+reviewer: "Quinn (Test Architect)"
+updated: "2025-09-26T10:00:00Z"
 
 top_issues: []
 waiver: { active: false }
 
-quality_score: 95  # High score due to comprehensive test coverage and clear migration strategy
-expires: '2025-10-10T10:00:00Z'  # Valid for 2 weeks
+quality_score: 95 # High score due to comprehensive test coverage and clear migration strategy
+expires: "2025-10-10T10:00:00Z" # Valid for 2 weeks
 
 evidence:
   tests_reviewed: 25
   risks_identified: 5
   trace:
-    ac_covered: [1, 2, 3, 4]  # All acceptance criteria have test coverage
-    ac_gaps: []  # No gaps identified
+    ac_covered: [1, 2, 3, 4] # All acceptance criteria have test coverage
+    ac_gaps: [] # No gaps identified
 
 nfr_validation:
   security:
     status: PASS
-    notes: 'Database credentials externalized, SSH security measures in place. Admin credential rotation recommended post-migration.'
+    notes: "Database credentials externalized, SSH security measures in place. Admin credential rotation recommended post-migration."
   performance:
     status: PASS
-    notes: 'Migration strategy includes index preservation and concurrent access testing. Maintenance window recommended.'
+    notes: "Migration strategy includes index preservation and concurrent access testing. Maintenance window recommended."
   reliability:
     status: PASS
-    notes: 'Transaction-based migration with rollback capability. Comprehensive backup strategy included.'
+    notes: "Transaction-based migration with rollback capability. Comprehensive backup strategy included."
   maintainability:
     status: PASS
-    notes: 'Clear migration SQL commands documented. Test suite provides validation framework.'
+    notes: "Clear migration SQL commands documented. Test suite provides validation framework."
 
 test_suite_assessment:
-  coverage: 'COMPREHENSIVE'
+  coverage: "COMPREHENSIVE"
   adversarial_tests: true
   edge_cases_covered:
-    - 'Special characters in data'
-    - 'Large object migration'
-    - 'Concurrent access during migration'
-    - 'Permission inheritance'
-    - 'Cross-schema references'
+    - "Special characters in data"
+    - "Large object migration"
+    - "Concurrent access during migration"
+    - "Permission inheritance"
+    - "Cross-schema references"
   pre_migration_tests: 6
   migration_tests: 4
   post_migration_tests: 5
@@ -50,38 +50,38 @@ test_suite_assessment:
 
 migration_risks:
   identified:
-    - risk: 'Data loss during migration'
-      severity: 'HIGH'
-      mitigation: 'Transaction-based migration with mandatory backup'
-    - risk: 'Application downtime'
-      severity: 'MEDIUM'
-      mitigation: 'Current fallback configuration allows gradual migration'
-    - risk: 'Foreign key violations'
-      severity: 'MEDIUM'
-      mitigation: 'Pre-migration FK analysis (Test 4)'
-    - risk: 'Permission issues'
-      severity: 'LOW'
-      mitigation: 'Permission structure analysis included (Test 19)'
-    - risk: 'Incomplete migration'
-      severity: 'MEDIUM'
-      mitigation: 'Post-migration validation suite (Tests 21-25)'
+    - risk: "Data loss during migration"
+      severity: "HIGH"
+      mitigation: "Transaction-based migration with mandatory backup"
+    - risk: "Application downtime"
+      severity: "MEDIUM"
+      mitigation: "Current fallback configuration allows gradual migration"
+    - risk: "Foreign key violations"
+      severity: "MEDIUM"
+      mitigation: "Pre-migration FK analysis (Test 4)"
+    - risk: "Permission issues"
+      severity: "LOW"
+      mitigation: "Permission structure analysis included (Test 19)"
+    - risk: "Incomplete migration"
+      severity: "MEDIUM"
+      mitigation: "Post-migration validation suite (Tests 21-25)"
 
 recommendations:
-  immediate:  # Should be done before migration
-    - action: 'Run full test suite before starting migration'
-      refs: ['tests/integration/openproject-schema-migration.test.sh']
-    - action: 'Create verified database backup in Supabase'
-      refs: ['Test 13: Backup Capability Check']
-    - action: 'Schedule maintenance window for migration'
-      refs: ['Production access may be affected']
-  
-  future:  # Can be addressed after successful migration
-    - action: 'Rotate admin credentials post-migration'
-      refs: ['CLAUDE.md contains hardcoded credentials']
-    - action: 'Add automated backup verification'
-      refs: ['Manual backup verification currently']
-    - action: 'Implement migration performance benchmarks'
-      refs: ['No baseline performance metrics']
+  immediate: # Should be done before migration
+    - action: "Run full test suite before starting migration"
+      refs: ["tests/integration/openproject-schema-migration.test.sh"]
+    - action: "Create verified database backup in Supabase"
+      refs: ["Test 13: Backup Capability Check"]
+    - action: "Schedule maintenance window for migration"
+      refs: ["Production access may be affected"]
+
+  future: # Can be addressed after successful migration
+    - action: "Rotate admin credentials post-migration"
+      refs: ["CLAUDE.md contains hardcoded credentials"]
+    - action: "Add automated backup verification"
+      refs: ["Manual backup verification currently"]
+    - action: "Implement migration performance benchmarks"
+      refs: ["No baseline performance metrics"]
 
 test_execution_notes: |
   Test suite designed with adversarial mindset to prevent test gaming.
