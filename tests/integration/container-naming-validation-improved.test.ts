@@ -13,6 +13,7 @@
  * - Performance optimizations
  */
 
+import { describe, it, expect, beforeEach, afterAll, test, vi } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
@@ -83,7 +84,7 @@ async function isExecutable(filePath: string): Promise<boolean> {
 
 // Setup and teardown
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('Container Naming Standardization Tests', () => {
