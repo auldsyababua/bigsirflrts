@@ -25,6 +25,33 @@ configurations.
 **Detailed Report**:
 `/infrastructure/qa-evidence/container-naming-remediation-report.md`
 
+### Real-World Impact Example: GitHub Actions Branch Protection
+
+**Date**: 2025-09-25 **Issue**: PR #7 was blocked from merging despite all CI
+checks passing
+
+**Root Cause**: Inconsistent naming between workflow jobs and branch protection
+rules
+
+- Branch protection expected: `"BMAD QA Gate / qa-gate"`
+- Workflows created: `"qa-gate"`
+
+This mismatch caused a phantom "waiting for status to be reported" check that
+blocked PR merging. The issue required manual intervention to update branch
+protection rules.
+
+**Lesson**: Without standardization, even successful operations can fail due to
+name mismatches. This applies to:
+
+- Container names in Docker
+- Job names in CI/CD workflows
+- Check names in branch protection
+- Service names in monitoring
+- Webhook endpoints in external services
+
+Standardization prevents these silent failures that waste developer time and
+block deployments.
+
 ## Acceptance Criteria
 
 ### AC1: Environment Configuration Standardization
