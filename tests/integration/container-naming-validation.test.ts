@@ -13,7 +13,7 @@
  * - Performance optimizations
  */
 
-import { describe, it, expect, beforeEach, afterAll, test, vi } from 'vitest';
+import { describe, expect, beforeEach, test, vi } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
@@ -35,11 +35,7 @@ interface ComplianceReport {
   };
 }
 
-interface TestFile {
-  path: string;
-  required: boolean;
-  pattern?: RegExp;
-}
+// TestFile interface removed - was unused
 
 // Test configuration
 const TEST_CONFIG = {
