@@ -6,12 +6,9 @@ on:
 
 jobs:
   qa-gate:
-    # Use self-hosted runner if available, fallback to GitHub-hosted
-    runs-on: ${{ github.repository == 'auldsyababua/bigsirflrts' && github.actor == 'auldsyababua' && 'self-hosted' || 'ubuntu-latest' }}
+    # Temporarily use GitHub-hosted runner until self-hosted is properly configured
+    runs-on: ubuntu-latest
     timeout-minutes: 15
-    
-    # Continue on GitHub-hosted if self-hosted is unavailable
-    continue-on-error: ${{ matrix.runner == 'self-hosted' }}
     
     steps:
       - name: Runner Info
