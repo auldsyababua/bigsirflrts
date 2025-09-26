@@ -82,6 +82,20 @@ block deployments.
 - [ ] Update monitoring configurations
 - [ ] Document all remote configuration changes
 
+### AC5: Automated Test Validation
+
+- [ ] Configuration validation tests pass (COMPOSE_PROJECT_NAME in all .env
+      files)
+- [ ] Docker Compose validation tests pass (all services have flrts- prefix)
+- [ ] Runtime container validation tests pass (no docker-_-1 or bigsirflrts-_
+      patterns)
+- [ ] Code reference validation tests pass (no hardcoded container names)
+- [ ] Integration connectivity tests pass (services connect with new names)
+- [ ] Rollback validation tests pass (rollback script exists and is executable)
+- [ ] Test suite execution:
+      `npm test tests/integration/container-naming-validation.test.ts`
+- [ ] Container naming compliance report generated successfully
+
 ## Technical Implementation Details
 
 ### Current Problem Analysis
@@ -215,25 +229,54 @@ npm run test:resilience
 
 ## Testing Requirements
 
+### Automated Test Suite
+
+- [ ] Run full test suite:
+      `npm test tests/integration/container-naming-validation.test.ts`
+- [ ] All configuration validation tests pass
+- [ ] All Docker Compose validation tests pass
+- [ ] All runtime container validation tests pass
+- [ ] All code reference validation tests pass
+- [ ] All integration connectivity tests pass
+- [ ] All rollback validation tests pass
+
 ### Pre-Implementation
 
 - [ ] Backup all docker-compose files
 - [ ] Document current container names
 - [ ] List all remote webhook URLs
 - [ ] Create rollback script
+- [ ] Run baseline test to document current state:
+  ```bash
+  docker ps --format "{{.Names}}" | grep -E "(docker-|bigsirflrts-)" > baseline.txt
+  ```
 
 ### During Implementation
 
 - [ ] Verify container names after each phase
 - [ ] Test after each major change
 - [ ] Keep detailed change log
+- [ ] Run validation tests after each component update:
+
+  ```bash
+  # Validate environment files
+  grep -l "COMPOSE_PROJECT_NAME=flrts" .env infrastructure/docker/.env tests/.env.test
+
+  # Verify docker-compose configuration
+  docker-compose config | grep "container_name:" | grep -v "flrts-" && echo "FAIL" || echo "PASS"
+
+  # Check container runtime names
+  docker ps --format "{{.Names}}" | grep -v "^flrts-" && echo "Non-compliant containers found"
+  ```
 
 ### Post-Implementation
 
 - [ ] All containers use flrts-\* pattern
-- [ ] All tests pass
+- [ ] All tests pass (integration, resilience, and new validation tests)
 - [ ] Remote services connected
 - [ ] Monitoring operational
+- [ ] Container naming compliance report generated
+- [ ] No references to `docker-*-1` or `bigsirflrts-*` patterns remain
 
 ## Dependencies and Blockers
 
