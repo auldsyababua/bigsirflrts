@@ -122,13 +122,13 @@ test_container_resilience() {
 
     # Stop container
     echo "Stopping n8n container..."
-    docker stop docker-n8n-1 &> /dev/null
+    docker stop flrts-n8n &> /dev/null
 
     # Wait for auto-restart
     sleep 5
 
     # Check if container restarted
-    if [ "$(docker inspect -f '{{.State.Status}}' docker-n8n-1 2>/dev/null)" == "running" ]; then
+    if [ "$(docker inspect -f '{{.State.Status}}' flrts-n8n 2>/dev/null)" == "running" ]; then
         # Test new webhook
         if curl -X POST http://localhost:5678/webhook-test/after-restart \
             -H "Content-Type: application/json" \

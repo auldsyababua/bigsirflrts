@@ -19,6 +19,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15.8-alpine
+    container_name: flrts-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -44,6 +45,7 @@ services:
   # n8n Single Instance (handles everything)
   n8n:
     image: docker.n8n.io/n8nio/n8n:1.20.0
+    container_name: flrts-n8n
     restart: unless-stopped
     ports:
       - "5678:5678"
@@ -103,6 +105,7 @@ services:
   # Nginx Reverse Proxy (simpler configuration)
   nginx:
     image: nginx:alpine
+    container_name: flrts-nginx
     restart: unless-stopped
     ports:
       - "80:80"

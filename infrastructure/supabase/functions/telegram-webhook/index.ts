@@ -2,7 +2,7 @@
 // Provides sub-200ms response times for immediate acknowledgment
 // Queues messages to n8n for complex processing
 
-import { serve } from 'https://deno.land/std@0.208.0/http/server.ts';
+// serve import removed - using Deno.serve directly
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 
 // Environment variables

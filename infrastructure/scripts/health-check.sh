@@ -17,7 +17,7 @@ echo "n8n Queue Mode Health Check (legacy)"
 
 # Check PostgreSQL
 echo -n "PostgreSQL: "
-if docker exec bigsirflrts-postgres-1 pg_isready -U n8n &>/dev/null; then
+if docker exec flrts-postgres pg_isready -U n8n &>/dev/null; then
     echo -e "${GREEN}✓ Healthy${NC}"
 else
     echo -e "${RED}✗ Down${NC}"
@@ -25,11 +25,11 @@ fi
 
 # Check Redis
 echo -n "Redis: "
-if docker exec bigsirflrts-redis-1 redis-cli --pass ${REDIS_PASSWORD} ping &>/dev/null; then
+if docker exec flrts-redis redis-cli --pass ${REDIS_PASSWORD} ping &>/dev/null; then
     echo -e "${GREEN}✓ Healthy${NC}"
 
     # Check queue length
-    QUEUE_LENGTH=$(docker exec bigsirflrts-redis-1 redis-cli --pass ${REDIS_PASSWORD} llen bull:queue:default 2>/dev/null)
+    QUEUE_LENGTH=$(docker exec flrts-redis redis-cli --pass ${REDIS_PASSWORD} llen bull:queue:default 2>/dev/null)
     echo "  Queue Length: ${QUEUE_LENGTH:-0} jobs"
 else
     echo -e "${RED}✗ Down${NC}"
