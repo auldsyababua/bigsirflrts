@@ -121,6 +121,13 @@ infrastructure/digitalocean/*.sh
 infrastructure/digitalocean/docker-compose.migration-fix.yml
 infrastructure/digitalocean/docker-compose.simple.yml
 
+# === SECURITY ===
+# Never commit test registration scripts with tokens
+infrastructure/github-runner/test-*.sh
+
 # === ADR DIRECTORY (if using different location) ===
 # Uncomment if ADRs should be in docs/architecture/adr instead
 # docs/adr/DISASTER_RECOVERY.md
+infrastructure/github-runner/.env
+infrastructure/github-runner/work/
+infrastructure/github-runner/_work/

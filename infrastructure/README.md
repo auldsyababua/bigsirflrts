@@ -11,13 +11,46 @@ for the FLRTS OpenProject deployment on Digital Ocean.
 infrastructure/
 ├── digitalocean/               # Digital Ocean specific configurations
 │   ├── docker-compose.supabase.yml # Canonical Supabase-based Docker Compose
+│   ├── docker-compose.monitoring.prod.yml # Production monitoring stack
 │   ├── .env.production             # Environment variables template
 │   └── DEPLOYMENT_GUIDE.md        # Complete deployment documentation
-├── scripts/                    # Deployment and maintenance scripts
-│   ├── setup-server.sh        # Server initialization script
-│   └── deploy.sh              # Automated deployment script
+├── docker/                     # Local development Docker configurations
+│   ├── docker-compose.yml     # Main development compose
+│   └── docker-compose.monitoring.yml # Local monitoring stack
+├── monitoring/                 # Consolidated monitoring configurations
+│   ├── local/                # Development monitoring configs
+│   │   ├── prometheus.yml    # Local Prometheus config
+│   │   ├── grafana/          # Local Grafana dashboards
+│   │   └── n8n-webhook-monitor.js # Webhook monitoring
+│   ├── production/           # Production monitoring configs
+│   │   ├── prometheus.prod.yml # Production Prometheus
+│   │   ├── grafana/          # Production Grafana dashboards
+│   │   └── n8n-monitor.js    # Production n8n monitoring
+│   └── shared/               # Shared monitoring components
+├── scripts/                    # Infrastructure operation scripts
+│   ├── deploy-queue-mode.sh  # Queue mode deployment
+│   ├── deploy-monitoring-remote.sh # Monitoring deployment
+│   ├── generate-secure-env.sh # Secure environment generation
+│   ├── health-check.sh       # Health check utilities
+│   └── run-resilience-tests.sh # Resilience testing
 └── README.md                  # This file
 ```
+
+### Note on Script Organization
+
+- **Infrastructure Scripts** (`/infrastructure/scripts/`):
+  Infrastructure-specific operations like deployment, health checks, and
+  resilience testing
+- **Utility Scripts** (`/scripts/`): General-purpose tools for Cloudflare,
+  Linear, and other integrations (see `/scripts/README.md`)
+
+### Backward Compatibility
+
+Symlinks are maintained for moved resources:
+
+- `/monitoring` → `/infrastructure/monitoring/local` (for legacy references)
+- `/scripts/deploy-monitoring-remote.sh` →
+  `/infrastructure/scripts/deploy-monitoring-remote.sh`
 
 ## Current Deployment Status
 

@@ -10,7 +10,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../monitoring/local/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -35,7 +35,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana:/etc/grafana/provisioning
+      - ../monitoring/local/grafana:/etc/grafana/provisioning
     restart: unless-stopped
     depends_on:
       - prometheus
@@ -81,7 +81,7 @@ services:
   # n8n Webhook Monitor (custom service)
   n8n-monitor:
     build:
-      context: ./monitoring
+      context: ../monitoring/local
       dockerfile: Dockerfile.n8n-monitor
     container_name: flrts-n8n-monitor
     ports:
