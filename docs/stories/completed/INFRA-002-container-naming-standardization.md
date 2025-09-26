@@ -2,6 +2,8 @@
 
 ## Story ID: INFRA-002
 
+**Linear Issue:** [10N-161](https://linear.app/10netzero/issue/10N-161)
+
 **Priority**: HIGH - Blocks testing and deployment reliability **Estimated
 Effort**: 5.5 hours
 

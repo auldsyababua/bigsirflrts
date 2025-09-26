@@ -2,6 +2,8 @@
 
 ## Story ID: INFRA-001
 
+**Linear Issue:** [10N-160](https://linear.app/10netzero/issue/10N-160)
+
 **Priority**: Medium **Estimated Effort**: 3 hours **Status**: COMPLETE
 
 ## Story Title
