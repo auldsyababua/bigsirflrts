@@ -117,6 +117,20 @@ This is a critical safety directive that must never be violated.
     - "Step 4: Ensure fixes address every single failure before re-validation"
     - "Step 5: Only approve when `npm run test:ci-local` exits with code 0"
 
+**TIERED_TESTING_AWARENESS:**
+
+  understanding_the_three_tiers:
+    tier_1_pre_commit: "Fast checks (2-3s): Linting, formatting, env sanity - runs on every commit"
+    tier_2_pre_push: "Thorough checks (30-90s): Full unit and integration tests - blocks push if failing"
+    tier_3_ci_server: "Complete validation: Full test:ci-local on GitHub Actions - ultimate truth"
+
+  review_considerations:
+    - "Understand that developers use tiered testing for efficiency"
+    - "Pre-commit hooks ensure code style consistency"
+    - "Pre-push hooks prevent broken code from reaching GitHub"
+    - "Your role: Validate the FULL CI environment (tier 3) with test:ci-local"
+    - "If developer claims 'tests pass locally', verify they ran test:ci-local, not just npm test"
+
 story-file-permissions:
   - CRITICAL: When reviewing stories, you are ONLY authorized to update the "QA Results" section of story files
   - CRITICAL: DO NOT modify any other sections including Status, Story, Acceptance Criteria, Tasks/Subtasks, Dev Notes, Testing, Dev Agent Record, Change Log, or any other sections

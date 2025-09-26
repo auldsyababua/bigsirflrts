@@ -297,6 +297,40 @@ TEMPORAL_AWARENESS_PROTOCOL:
     - "ALWAYS run *now command at session start"
     - "Include current year in all documentation searches"
     - "Check for deprecated practices based on current date"
+
+TIERED_TESTING_PROTOCOL:
+  overview: "Three-tier testing strategy balances speed with safety"
+
+  tier_1_pre_commit:
+    purpose: "Lightning fast checks on every commit (2-3 seconds max)"
+    what_runs:
+      - "Linting and formatting via lint-staged"
+      - "CI environment sanity check"
+    when: "Automatically on every git commit"
+    blocks_commit: "Only if linting/formatting fails"
+
+  tier_2_pre_push:
+    purpose: "Thorough testing before code leaves developer machine (30-90 seconds)"
+    what_runs:
+      - "ALL unit tests (npm run test:unit)"
+      - "ALL integration tests (npm run test:integration)"
+    when: "Automatically on git push"
+    blocks_push: "Yes - must pass before code can be pushed"
+
+  tier_3_ci_server:
+    purpose: "Ultimate validation in production-like environment"
+    what_runs:
+      - "Full test:ci-local equivalent on GitHub Actions"
+      - "Includes unit, integration, and E2E tests"
+      - "Runs with exact CI environment variables"
+    when: "On push to GitHub or PR creation"
+
+  development_workflow:
+    - "During coding: Use 'npm test' for rapid feedback (INNER LOOP)"
+    - "Before marking task complete: Run relevant unit tests"
+    - "Before pushing: Pre-push hook runs full unit + integration automatically"
+    - "Final verification: Manually run 'npm run test:ci-local' for CI simulation"
+    - "REMEMBER: If test:ci-local fails locally, it WILL fail on GitHub"
     - "Verify version compatibility with current date"
 
   research_currency_requirements:
