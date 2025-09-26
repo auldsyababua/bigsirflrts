@@ -120,12 +120,12 @@ immediate_action_required:
   fix_complexity: "Trivial"
 
   steps_to_fix:
-    1. "Open n8n workflow editor"
-    2. "Navigate to 'Process Webhook Data' node"
-    3. "Change line 7 from: const table = webhookData.table;"
-    4. "Change to: const table = webhookData.body.table;"
-    5. "Save and activate workflow"
-    6. "Test with sample webhook to verify fix"
+    - "Open n8n workflow editor"
+    - "Navigate to 'Process Webhook Data' node"
+    - "Change line 7 from: const table = webhookData.table;"
+    - "Change to: const table = webhookData.body.table;"
+    - "Save and activate workflow"
+    - "Test with sample webhook to verify fix"
 
 testing_after_fix:
   verification_steps:
