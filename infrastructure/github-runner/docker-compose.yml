@@ -8,7 +8,8 @@ services:
     container_name: bigsirflrts-runner
     environment:
       # These will be loaded from .env file
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GITHUB_PAT=${GITHUB_PAT}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
       - GITHUB_REPOSITORY=${GITHUB_REPOSITORY:-auldsyababua/bigsirflrts}
       - RUNNER_NAME=${RUNNER_NAME:-local-fast-runner}
       - RUNNER_LABELS=${RUNNER_LABELS:-self-hosted,local,fast,docker}
