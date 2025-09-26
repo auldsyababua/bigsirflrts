@@ -71,9 +71,10 @@ RUN mkdir -p /home/runner/.npm-cache && chown -R runner:runner /home/runner/.npm
 # Switch to runner user
 USER runner
 
-# Copy startup script
+# Copy startup scripts (both repo and org versions)
 COPY --chown=runner:runner start-runner.sh /home/runner/start-runner.sh
-RUN chmod +x /home/runner/start-runner.sh
+COPY --chown=runner:runner start-runner-org.sh /home/runner/start-runner-org.sh
+RUN chmod +x /home/runner/start-runner.sh /home/runner/start-runner-org.sh
 
 # Set environment for faster npm operations
 ENV JOBS=max
