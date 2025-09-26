@@ -46,7 +46,9 @@ RUN npx -y playwright install-deps chromium
 
 # Create runner user
 # Security fix: Removed NOPASSWD sudo access to prevent privilege escalation
-RUN useradd -m -s /bin/bash runner \
+# Create docker group first, then add runner to it
+RUN groupadd -f docker \
+    && useradd -m -s /bin/bash runner \
     && usermod -aG docker runner
 
 # Set up runner directory
@@ -54,9 +56,9 @@ WORKDIR /home/runner
 
 # Download and extract GitHub Actions runner
 ENV RUNNER_VERSION=2.320.0
-RUN curl -o actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
-    && tar xzf ./actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
-    && rm actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz \
+RUN curl -o actions-runner-linux-arm64-${RUNNER_VERSION}.tar.gz -L https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-arm64-${RUNNER_VERSION}.tar.gz \
+    && tar xzf ./actions-runner-linux-arm64-${RUNNER_VERSION}.tar.gz \
+    && rm actions-runner-linux-arm64-${RUNNER_VERSION}.tar.gz \
     && chown -R runner:runner /home/runner
 
 # Install runner dependencies
