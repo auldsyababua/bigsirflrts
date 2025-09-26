@@ -11,3 +11,5 @@ build/
 .bmad-core/
 tools/
 infrastructure/digitalocean/monitoring/
+infrastructure/github-runner/work/
+infrastructure/github-runner/_work/

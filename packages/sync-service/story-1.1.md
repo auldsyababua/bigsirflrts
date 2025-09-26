@@ -67,29 +67,29 @@ Rails) cannot run on Cloudflare Workers and requires traditional VM hosting.
 
 ### Performance Requirements
 
-8. **Response Time**: OpenProject web interface responds within 200ms for 95th
+1. **Response Time**: OpenProject web interface responds within 200ms for 95th
    percentile of requests
-9. **Uptime**: Service demonstrates 99.9% availability over 24-hour test period
-10. **Resource Usage**: VM resource utilization stays below 80% CPU and memory
-    under normal load
+2. **Uptime**: Service demonstrates 99.9% availability over 24-hour test period
+3. **Resource Usage**: VM resource utilization stays below 80% CPU and memory
+   under normal load
 
 ### Security Requirements
 
-11. **Zero-Trust Access**: No direct port exposure on Digital Ocean VM (only
-    Cloudflare Tunnel outbound connections)
-12. **Database Security**: PostgreSQL configured with secure passwords and
-    restricted access
-13. **API Security**: OpenProject API v3 endpoints accessible only through HTTPS
-    with proper authentication
+1. **Zero-Trust Access**: No direct port exposure on Digital Ocean VM (only
+   Cloudflare Tunnel outbound connections)
+2. **Database Security**: PostgreSQL configured with secure passwords and
+   restricted access
+3. **API Security**: OpenProject API v3 endpoints accessible only through HTTPS
+   with proper authentication
 
 ### Operational Requirements
 
-14. **Monitoring**: Basic health checks configured for all containers with
-    automatic restart on failure
-15. **Backup Readiness**: Database configured for automated backup capability
-    (implementation in later story)
-16. **Documentation**: Complete deployment guide with all configuration files
-    and environment variables documented
+1. **Monitoring**: Basic health checks configured for all containers with
+   automatic restart on failure
+2. **Backup Readiness**: Database configured for automated backup capability
+   (implementation in later story)
+3. **Documentation**: Complete deployment guide with all configuration files and
+   environment variables documented
 
 ## Technical Implementation Details
 
@@ -161,7 +161,7 @@ services:
 - [x] docker-compose.yml created with all required services
 - [x] Environment variables properly configured and secured
 - [x] OpenProject accessible via HTTPS through Cloudflare Tunnel (COMPLETED -
-      https://ops.10nz.tools)
+      <https://ops.10nz.tools>)
 - [x] PostgreSQL database initializes correctly with OpenProject schema
       (deployment script ready)
 - [ ] File upload/download via Cloudflare R2 (DEFERRED; validate in follow-up)
@@ -375,7 +375,7 @@ Based on OpenProject system requirements research:
 - ✅ Complete deployment automation script created (deploy-openproject.sh)
 - ✅ All required scripts are executable and ready to run
 - ✅ **COMPLETED**: OpenProject deployed and operational at
-  https://ops.10nz.tools
+  <https://ops.10nz.tools>
 - ✅ Container running with image: openproject/openproject:14
 - ✅ All smoke tests passing (service available, login page loads, API
   responding)
@@ -405,9 +405,9 @@ Based on OpenProject system requirements research:
 2. ✅ Docker and Docker Compose installed on server
 3. ✅ OpenProject container deployed with correct image
    (openproject/openproject:14)
-4. ✅ Service accessible at http://165.227.216.172:8080 (direct HTTP)
+4. ✅ Service accessible at <http://165.227.216.172:8080> (direct HTTP)
 5. ✅ Cloudflare Tunnel deployed and configured
-6. ✅ HTTPS access enabled via https://ops.10nz.tools
+6. ✅ HTTPS access enabled via <https://ops.10nz.tools>
 7. ✅ Login page loads successfully
 8. ✅ API endpoint responding (401 for unauthenticated requests as expected)
 9. ✅ Container health verified
@@ -415,8 +415,8 @@ Based on OpenProject system requirements research:
 
 ### Access Information
 
-- **Production URL (HTTPS)**: https://ops.10nz.tools
-- **Direct Access (HTTP)**: http://165.227.216.172:8080
+- **Production URL (HTTPS)**: <https://ops.10nz.tools>
+- **Direct Access (HTTP)**: <http://165.227.216.172:8080>
 - **Default Admin Credentials**: admin / admin
 - **Container Name**: openproject
 - **Cloudflare Tunnel**: openproject-flrts (active)

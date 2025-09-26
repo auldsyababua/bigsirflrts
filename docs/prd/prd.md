@@ -260,15 +260,19 @@ operations • **Lists Management** as core feature alongside Tasks
 ## Epic List
 
 ### MVP Stories (Active)
-• **Epic 1: Infrastructure Foundation** - ✅ COMPLETE (Stories 1.1-1.5)
-• **Epic 2: Telegram Interface** - Stories 2.1 (Task Creation) and 2.2 (Command Parser - CREATE only)
-• **Epic 3: Integration Layer** - Stories 3.1 (OpenProject API - CREATE only) and 3.2 (OpenAI Context Injection)
+
+• **Epic 1: Infrastructure Foundation** - ✅ COMPLETE (Stories 1.1-1.5) • **Epic
+2: Telegram Interface** - Stories 2.1 (Task Creation) and 2.2 (Command Parser -
+CREATE only) • **Epic 3: Integration Layer** - Stories 3.1 (OpenProject API -
+CREATE only) and 3.2 (OpenAI Context Injection)
 
 ### Post-MVP Stories (Deferred)
-• **Epic 1 Extensions** - Monitoring, Redis Queue, Schema Migration ([See post-MVP stories](./stories/post-mvp/))
-• **Epic 2 Extensions** - Reminders, Inline Keyboards, Error Recovery, User Context
-• **Epic 3 Extensions** - Webhooks, Batch Sync, Timezone Logic
-• **Epic 4: Lists Management** - Full CRUD for lists with templates and sharing
+
+• **Epic 1 Extensions** - Monitoring, Redis Queue, Schema Migration
+([See post-MVP stories](./stories/post-mvp/)) • **Epic 2 Extensions** -
+Reminders, Inline Keyboards, Error Recovery, User Context • **Epic 3
+Extensions** - Webhooks, Batch Sync, Timezone Logic • **Epic 4: Lists
+Management** - Full CRUD for lists with templates and sharing
 
 ## Epic 1: Infrastructure Foundation
 
@@ -676,13 +680,15 @@ informed about shared work.
 ## Minimal MVP Checklist (v3.0 - CREATE Operations Only)
 
 ### ✅ Completed Infrastructure (Epic 1)
+
 1. **DB:** Supabase PostgreSQL 15.8 configured and running
-2. **App:** OpenProject deployed at https://ops.10nz.tools
+2. **App:** OpenProject deployed at <https://ops.10nz.tools>
 3. **Storage:** Cloudflare R2 configured for file storage
 4. **Edge:** Cloudflare Tunnel active with zero-trust access
 5. **n8n:** Single-instance mode deployed and operational
 
 ### 🚧 MVP Implementation (5-Day Sprint)
+
 1. **Day 1-2:** Story 2.1 - Telegram webhook activation and basic bot
 2. **Day 2-3:** Story 3.1 - OpenProject CREATE API workflow in n8n
 3. **Day 3-4:** Story 3.2 - OpenAI context injection with hardcoded entities
@@ -690,37 +696,44 @@ informed about shared work.
 5. **Day 5:** Integration testing and demo preparation
 
 ### ❌ Deferred to Post-MVP
+
 - All READ, UPDATE, DELETE operations
 - Complex timezone conversion logic
 - Reminder systems and notifications
 - Inline keyboards and UI enhancements
 - Lists management (Epic 4)
 
-7. **Backup:** Daily snapshots enabled; take manual snapshot before cutover.
+1. **Backup:** Daily snapshots enabled; take manual snapshot before cutover.
 
 ## Post-MVP Stories and Enhancements
 
 ### Deferred Stories
-The following stories have been moved to post-MVP to focus on core CREATE functionality:
+
+The following stories have been moved to post-MVP to focus on core CREATE
+functionality:
 
 #### Infrastructure Extensions (Epic 1)
+
 - [1.6 Redis Queue Configuration](./stories/post-mvp/1.6.redis-queue-configuration.md)
 - [1.7 Monitoring and Observability](./stories/post-mvp/1.7.monitoring-observability.md)
 - [1.8 Migrate Monitoring to DigitalOcean](./stories/post-mvp/1.8.migrate-monitoring-digitalocean.md)
 - [1.9 OpenProject Schema Migration](./stories/post-mvp/1.9.openproject-schema-migration.md)
 
 #### Telegram Interface Extensions (Epic 2)
+
 - [2.2 Telegram Reminder System](./stories/post-mvp/2.2.telegram-reminder-system.md)
 - [2.3 Telegram Inline Keyboards](./stories/post-mvp/2.3.telegram-inline-keyboards.md)
 - [2.4 Error Recovery](./stories/post-mvp/2.4.error-recovery.md)
 - [2.6 Telegram User Context](./stories/post-mvp/2.6.telegram-user-context.md)
 
 #### Integration Layer Extensions (Epic 3)
+
 - [3.2 OpenProject Webhooks](./stories/post-mvp/3.2.openproject-webhooks.md)
 - [3.3 Batch Sync Workflows](./stories/post-mvp/3.3.batch-sync-workflows.md)
 - [3.5 Timezone Conversion Logic](./stories/post-mvp/3.5.timezone-conversion-logic.md)
 
 #### Lists Management (Epic 4)
+
 - [4.1 Lists Interface](./stories/post-mvp/4.1.lists-interface.md)
 - [4.2 List Commands](./stories/post-mvp/4.2.list-commands.md)
 - [4.3 List Templates System](./stories/post-mvp/4.3.list-templates-system.md)
@@ -728,6 +741,7 @@ The following stories have been moved to post-MVP to focus on core CREATE functi
 - [4.5 List Notifications](./stories/post-mvp/4.5.list-notifications.md)
 
 #### Infrastructure Improvements
+
 - [INFRA-001 Directory Consolidation](./stories/post-mvp/INFRA-001-directory-consolidation.md)
 - [INFRA-002 Container Naming Standardization](./stories/post-mvp/INFRA-002-container-naming-standardization.md)
 

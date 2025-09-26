@@ -33,7 +33,8 @@
     "nlp:build": "npm run build --workspace=nlp-service",
     "nlp:start": "npm run start --workspace=nlp-service",
     "nlp:test": "npm run test --workspace=nlp-service",
-    "qa:gate": "bash scripts/bmad-qa-gate.sh"
+    "qa:gate": "bash scripts/bmad-qa-gate.sh",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@opentelemetry/resources": "^2.1.0",
@@ -47,7 +48,9 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
+    "husky": "^9.1.7",
     "js-yaml": "^4.1.0",
+    "lint-staged": "^16.2.1",
     "markdownlint-cli": "^0.39.0",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",
@@ -56,6 +59,17 @@
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ],
+    "*.{js,jsx,ts,tsx,json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.md": [
+      "markdownlint --fix --config .markdownlint.json --ignore-path .markdownlintignore"
+    ]
   },
   "engines": {
     "node": ">=18"

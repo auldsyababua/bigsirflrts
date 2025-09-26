@@ -137,10 +137,10 @@ coverage
 
 ### Phase 2: High Risk Coverage (Week 3-4)
 
-5. **Story 2.4** (Error Recovery) - System resilience
-6. **Story 3.1** (OpenProject API) - Core integration
-7. **Story 3.2** (OpenProject Webhooks) - Event sync
-8. **Story 4.4** (List Permissions) - Security
+1. **Story 2.4** (Error Recovery) - System resilience
+2. **Story 3.1** (OpenProject API) - Core integration
+3. **Story 3.2** (OpenProject Webhooks) - Event sync
+4. **Story 4.4** (List Permissions) - Security
 
 ### Phase 3: Production Readiness (Week 5-8)
 
