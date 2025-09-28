@@ -705,32 +705,39 @@ OpenTelemetry test infrastructure fully operational
 
 ### Session: 2025-09-28
 
-**Agent**: Claude Code (claude-opus-4-1-20250805)
-**Final Status**: MERGED ✅ via PR #10
-**Merge Date**: 2025-09-28
+**Agent**: Claude Code (claude-opus-4-1-20250805) **Final Status**: MERGED ✅
+via PR #10 **Merge Date**: 2025-09-28
 
 #### Complete Issue Resolution Journey
 
 ##### The E2E Test Bug Discovery
 
-**Initial Bug Report**: E2E tests were not being skipped in CI environment as designed, causing the QA gate to run expensive E2E tests that required running services.
+**Initial Bug Report**: E2E tests were not being skipped in CI environment as
+designed, causing the QA gate to run expensive E2E tests that required running
+services.
 
-**Root Cause Analysis** (Documented in: `/Users/colinaulds/Desktop/bigsirflrts/docs/qa/assessments/e2e-test-bug-investigation-report.md`):
+**Root Cause Analysis** (Documented in:
+`/Users/colinaulds/Desktop/bigsirflrts/docs/qa/assessments/e2e-test-bug-investigation-report.md`):
 
-1. Skip condition in tests was checking `process.env.CI` as a boolean, but environment variables are always strings
-2. The `bmad-qa-gate.sh` script wasn't setting the required environment variables
-3. Even with correct string comparison in tests, the qa:gate script needed to source `.env.test`
+1. Skip condition in tests was checking `process.env.CI` as a boolean, but
+   environment variables are always strings
+2. The `bmad-qa-gate.sh` script wasn't setting the required environment
+   variables
+3. Even with correct string comparison in tests, the qa:gate script needed to
+   source `.env.test`
 
 **The Fix Journey**:
 
-1. **First Discovery** - Found the skip condition issue in monitoring-e2e.test.ts:
+1. **First Discovery** - Found the skip condition issue in
+   monitoring-e2e.test.ts:
 
    ```javascript
    // WRONG - was treating env var as boolean
    const skipCondition = process.env.CI && !process.env.ENABLE_E2E_TESTS;
-   
+
    // CORRECT - string comparison
-   const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
+   const skipCondition =
+     process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
    ```
 
 2. **Second Issue** - qa:gate script wasn't setting environment:
@@ -746,15 +753,18 @@ OpenTelemetry test infrastructure fully operational
    fi
    ```
 
-3. **Additional Discovery** - New testing tools were documented but file was lost:
-   - Originally documented in `docs/qa/ADDITIONAL_TESTING_TOOLS.md` (file no longer exists)
+3. **Additional Discovery** - New testing tools were documented but file was
+   lost:
+   - Originally documented in `docs/qa/ADDITIONAL_TESTING_TOOLS.md` (file no
+     longer exists)
    - Added depcheck configuration (`.depcheckrc`)
    - Added Docker validation scripts
    - Added environment validation tools
 
 ##### Dependency Validation Configuration
 
-**Problem**: depcheck was reporting ~20+ false positives for "unused" dependencies
+**Problem**: depcheck was reporting ~20+ false positives for "unused"
+dependencies
 
 **Investigation & Resolution**:
 
@@ -763,12 +773,15 @@ OpenTelemetry test infrastructure fully operational
    - **@linear/sdk** - Used in `lib/linear-integration.js`
    - **dotenv** - Used in `scripts/linear-cli.js`
    - **glob** - Used in `scripts/migrate-to-linear.js`
-   - **gray-matter** - Used in `scripts/migrate-to-linear.js` (imported as `matter`)
-   - **axios** - Used in integration tests (`n8n-operational-resilience.test.ts`)
+   - **gray-matter** - Used in `scripts/migrate-to-linear.js` (imported as
+     `matter`)
+   - **axios** - Used in integration tests
+     (`n8n-operational-resilience.test.ts`)
    - **js-yaml** - Used in `tests/integration/n8n-config-fixes.test.ts`
    - **pg** - Used in `tests/integration/database-monitoring.test.ts`
 
-All were legitimate dependencies that depcheck couldn't detect due to dynamic imports or test-only usage.
+All were legitimate dependencies that depcheck couldn't detect due to dynamic
+imports or test-only usage.
 
 ##### Tiered Git Hooks Implementation
 
@@ -830,9 +843,13 @@ Implemented multi-level validation strategy:
 
    ```javascript
    // Proper E2E test skip pattern
-   const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
+   const skipCondition =
+     process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
    test.describe('@P0 Test Suite', () => {
-     test.skip(skipCondition, 'Skipping E2E tests in CI - requires running services');
+     test.skip(
+       skipCondition,
+       'Skipping E2E tests in CI - requires running services'
+     );
    });
    ```
 
@@ -860,7 +877,7 @@ Implemented multi-level validation strategy:
 npm run test:ci-local
 
 # Run QA gate (what PR checks run)
-npm run qa:gate  
+npm run qa:gate
 
 # Verify CI environment simulation
 CI=true npm run test:mvp
@@ -868,22 +885,28 @@ CI=true npm run test:mvp
 
 #### Issues Encountered During Implementation
 
-1. **Branch Confusion**: PR #9 and #10 pointed to different branches but contained same commits
-2. **Lost Documentation**: ADDITIONAL_TESTING_TOOLS.md file disappeared (likely never committed)
-3. **False Positives**: Initial depcheck run showed 20+ unused dependencies that were actually used
-4. **CI vs Local**: Tests passed locally but failed in CI due to environment differences
-5. **Pre-push Hook Delays**: Full test suite in pre-push hook takes 30-90 seconds
+1. **Branch Confusion**: PR #9 and #10 pointed to different branches but
+   contained same commits
+2. **Lost Documentation**: ADDITIONAL_TESTING_TOOLS.md file disappeared (likely
+   never committed)
+3. **False Positives**: Initial depcheck run showed 20+ unused dependencies that
+   were actually used
+4. **CI vs Local**: Tests passed locally but failed in CI due to environment
+   differences
+5. **Pre-push Hook Delays**: Full test suite in pre-push hook takes 30-90
+   seconds
 
 #### Final Test Results
 
 - **Unit Tests**: 25 passed, 1 skipped ✅
-- **Integration Tests**: 17 passed, 144 skipped ✅  
+- **Integration Tests**: 17 passed, 144 skipped ✅
 - **E2E Tests**: Properly skipped in CI ✅
 - **All CI Checks**: PASSED ✅
 
 #### Handoff Information
 
-For complete setup instructions for the GitHub runner local project, see the handoff documentation provided inline during the session. Key points:
+For complete setup instructions for the GitHub runner local project, see the
+handoff documentation provided inline during the session. Key points:
 
 - Replicate exact environment variable handling
 - Use string comparison for all env var checks
@@ -893,4 +916,6 @@ For complete setup instructions for the GitHub runner local project, see the han
 
 ### Final Note
 
-All changes from both PR #9 and PR #10 have been successfully merged to main. The container naming standardization, E2E test fixes, dependency validation, and tiered Git hooks are all now in production.
+All changes from both PR #9 and PR #10 have been successfully merged to main.
+The container naming standardization, E2E test fixes, dependency validation, and
+tiered Git hooks are all now in production.

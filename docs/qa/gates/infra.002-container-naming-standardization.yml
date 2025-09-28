@@ -62,7 +62,6 @@ recommendations:
       refs: ["infrastructure/config/"]
     - action: "Update documentation to reflect new validation procedures"
       refs: ["docs/testing-strategy.md"]
-
 # Validation Tools Added During Story Development
 validation_tools_added:
   documentation: "docs/qa/ADDITIONAL_TESTING_TOOLS.md"
@@ -71,19 +70,19 @@ validation_tools_added:
     During INFRA-002 development, we encountered Docker build failures due to missing
     Dockerfiles and out-of-sync package-lock.json files. These issues prompted the
     addition of several validation tools to catch configuration problems early:
-    
+
     1. Docker Configuration Validator - Prevents missing Dockerfile errors
     2. Environment Variable Validator - Catches .env file issues
     3. Test Environment Validator - Ensures CI/test environment consistency
     4. Dependency Checker (depcheck) - Finds unused/missing dependencies
-    
+
     These tools were critical in resolving the "tsc not found" and "npm ci" errors
     that blocked the initial Docker builds for nlp-service.
   tools_added:
     - name: "validate-docker-config.sh"
       purpose: "Validates Docker configurations before build"
       catches: ["Missing Dockerfiles", "Out-of-sync package-lock.json"]
-    - name: "validate-env.sh"  
+    - name: "validate-env.sh"
       purpose: "Validates environment variable files"
       catches: ["Duplicate keys", "Empty required values", "Format issues"]
     - name: "validate-test-env.sh"
