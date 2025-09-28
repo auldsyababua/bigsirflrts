@@ -716,6 +716,7 @@ OpenTelemetry test infrastructure fully operational
 **Initial Bug Report**: E2E tests were not being skipped in CI environment as designed, causing the QA gate to run expensive E2E tests that required running services.
 
 **Root Cause Analysis** (Documented in: `/Users/colinaulds/Desktop/bigsirflrts/docs/qa/assessments/e2e-test-bug-investigation-report.md`):
+
 1. Skip condition in tests was checking `process.env.CI` as a boolean, but environment variables are always strings
 2. The `bmad-qa-gate.sh` script wasn't setting the required environment variables
 3. Even with correct string comparison in tests, the qa:gate script needed to source `.env.test`
@@ -723,6 +724,7 @@ OpenTelemetry test infrastructure fully operational
 **The Fix Journey**:
 
 1. **First Discovery** - Found the skip condition issue in monitoring-e2e.test.ts:
+
    ```javascript
    // WRONG - was treating env var as boolean
    const skipCondition = process.env.CI && !process.env.ENABLE_E2E_TESTS;
@@ -732,6 +734,7 @@ OpenTelemetry test infrastructure fully operational
    ```
 
 2. **Second Issue** - qa:gate script wasn't setting environment:
+
    ```bash
    # scripts/bmad-qa-gate.sh was missing:
    # Load test environment variables to properly skip E2E tests
@@ -754,6 +757,7 @@ OpenTelemetry test infrastructure fully operational
 **Problem**: depcheck was reporting ~20+ false positives for "unused" dependencies
 
 **Investigation & Resolution**:
+
 1. Created `.depcheckrc` configuration file to reduce false positives
 2. Manually verified each "unused" dependency:
    - **@linear/sdk** - Used in `lib/linear-integration.js`
@@ -769,6 +773,7 @@ All were legitimate dependencies that depcheck couldn't detect due to dynamic im
 ##### Tiered Git Hooks Implementation
 
 Implemented multi-level validation strategy:
+
 1. **Level 1 (pre-commit)**: Basic linting and formatting
 2. **Level 2 (pre-push)**: Unit and integration tests
 3. **Level 3 (CI/GitHub)**: Full test suite including E2E
@@ -776,11 +781,13 @@ Implemented multi-level validation strategy:
 #### Pull Request Journey
 
 **PR #9** (`test/infra-002-container-naming-tests` branch):
+
 - Created initially for container naming standardization
 - Accumulated multiple fixes and improvements
 - Never merged directly
 
 **PR #10** (`test/infra-002-tiered-git-hooks` branch):
+
 - Created as a sub-branch containing all PR #9 commits
 - Added E2E test fixes and tiered hooks implementation
 - Successfully passed all CI checks:
@@ -811,6 +818,7 @@ Implemented multi-level validation strategy:
    - This is a common JavaScript pitfall
 
 2. **Script Environment Loading**:
+
    ```bash
    # Proper way to load and export env vars:
    set -a
@@ -819,6 +827,7 @@ Implemented multi-level validation strategy:
    ```
 
 3. **Test Skipping Pattern**:
+
    ```javascript
    // Proper E2E test skip pattern
    const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
