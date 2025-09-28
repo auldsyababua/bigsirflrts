@@ -34,6 +34,9 @@
     "nlp:start": "npm run start --workspace=nlp-service",
     "nlp:test": "npm run test --workspace=nlp-service",
     "qa:gate": "bash scripts/bmad-qa-gate.sh",
+    "test:ci-local": "bash scripts/test-like-github.sh",
+    "test:ci-validate": "bash scripts/validate-test-env.sh",
+    "test:ci-debug": "CI=true NODE_ENV=test npm run test:mvp -- --reporter=verbose",
     "prepare": "husky"
   },
   "devDependencies": {
