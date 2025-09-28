@@ -9,7 +9,7 @@
 import { test, expect, Page, BrowserContext } from '@playwright/test';
 
 // Skip in CI unless explicitly enabled
-const skipCondition = process.env.CI && !process.env.ENABLE_E2E_TESTS;
+const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
 
 test.describe('@P0 Monitoring End-to-End Tests', () => {
   test.skip(skipCondition, 'Skipping E2E tests in CI - requires running services');
