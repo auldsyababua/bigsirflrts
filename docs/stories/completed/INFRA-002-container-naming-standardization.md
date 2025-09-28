@@ -700,3 +700,188 @@ NFR assessment: docs/qa/assessments/infra.002-nfr-20250926.md
 
 ✓ **Ready for Done** - Container naming standardization complete and
 OpenTelemetry test infrastructure fully operational
+
+## Final Implementation & Merge Report
+
+### Session: 2025-09-28
+
+**Agent**: Claude Code (claude-opus-4-1-20250805)
+**Final Status**: MERGED ✅ via PR #10
+**Merge Date**: 2025-09-28
+
+#### Complete Issue Resolution Journey
+
+##### The E2E Test Bug Discovery
+
+**Initial Bug Report**: E2E tests were not being skipped in CI environment as designed, causing the QA gate to run expensive E2E tests that required running services.
+
+**Root Cause Analysis** (Documented in: `/Users/colinaulds/Desktop/bigsirflrts/docs/qa/assessments/e2e-test-bug-investigation-report.md`):
+1. Skip condition in tests was checking `process.env.CI` as a boolean, but environment variables are always strings
+2. The `bmad-qa-gate.sh` script wasn't setting the required environment variables
+3. Even with correct string comparison in tests, the qa:gate script needed to source `.env.test`
+
+**The Fix Journey**:
+
+1. **First Discovery** - Found the skip condition issue in monitoring-e2e.test.ts:
+   ```javascript
+   // WRONG - was treating env var as boolean
+   const skipCondition = process.env.CI && !process.env.ENABLE_E2E_TESTS;
+   
+   // CORRECT - string comparison
+   const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
+   ```
+
+2. **Second Issue** - qa:gate script wasn't setting environment:
+   ```bash
+   # scripts/bmad-qa-gate.sh was missing:
+   # Load test environment variables to properly skip E2E tests
+   if [[ -f .env.test ]]; then
+     set -a
+     source .env.test
+     set +a
+     echo "Loaded .env.test (CI=$CI, ENABLE_E2E_TESTS=${ENABLE_E2E_TESTS:-not set})"
+   fi
+   ```
+
+3. **Additional Discovery** - New testing tools were documented but file was lost:
+   - Originally documented in `docs/qa/ADDITIONAL_TESTING_TOOLS.md` (file no longer exists)
+   - Added depcheck configuration (`.depcheckrc`)
+   - Added Docker validation scripts
+   - Added environment validation tools
+
+##### Dependency Validation Configuration
+
+**Problem**: depcheck was reporting ~20+ false positives for "unused" dependencies
+
+**Investigation & Resolution**:
+1. Created `.depcheckrc` configuration file to reduce false positives
+2. Manually verified each "unused" dependency:
+   - **@linear/sdk** - Used in `lib/linear-integration.js`
+   - **dotenv** - Used in `scripts/linear-cli.js`
+   - **glob** - Used in `scripts/migrate-to-linear.js`
+   - **gray-matter** - Used in `scripts/migrate-to-linear.js` (imported as `matter`)
+   - **axios** - Used in integration tests (`n8n-operational-resilience.test.ts`)
+   - **js-yaml** - Used in `tests/integration/n8n-config-fixes.test.ts`
+   - **pg** - Used in `tests/integration/database-monitoring.test.ts`
+
+All were legitimate dependencies that depcheck couldn't detect due to dynamic imports or test-only usage.
+
+##### Tiered Git Hooks Implementation
+
+Implemented multi-level validation strategy:
+1. **Level 1 (pre-commit)**: Basic linting and formatting
+2. **Level 2 (pre-push)**: Unit and integration tests
+3. **Level 3 (CI/GitHub)**: Full test suite including E2E
+
+#### Pull Request Journey
+
+**PR #9** (`test/infra-002-container-naming-tests` branch):
+- Created initially for container naming standardization
+- Accumulated multiple fixes and improvements
+- Never merged directly
+
+**PR #10** (`test/infra-002-tiered-git-hooks` branch):
+- Created as a sub-branch containing all PR #9 commits
+- Added E2E test fixes and tiered hooks implementation
+- Successfully passed all CI checks:
+  - BMAD QA Gate ✅
+  - BMAD QA Gate (Fast) ✅
+  - All 4 CI runs passed
+- **MERGED**: 2025-09-28
+
+#### Files Modified in Final Implementation
+
+1. **Environment Loading Fix**:
+   - `/scripts/bmad-qa-gate.sh` - Added .env.test sourcing
+
+2. **Dependency Configuration**:
+   - `/.depcheckrc` - Created to eliminate false positives
+
+3. **Test Fixes**:
+   - `/tests/e2e/monitoring-e2e.test.ts` - Fixed skip condition
+
+4. **Validation Scripts**:
+   - `/scripts/validate-docker-config.sh` - Docker validation
+   - `/scripts/validate-env.sh` - Environment validation
+
+#### Critical Learnings
+
+1. **Environment Variables Are Strings**:
+   - Always use `process.env.VAR === 'true'` not `process.env.VAR`
+   - This is a common JavaScript pitfall
+
+2. **Script Environment Loading**:
+   ```bash
+   # Proper way to load and export env vars:
+   set -a
+   source .env.test
+   set +a
+   ```
+
+3. **Test Skipping Pattern**:
+   ```javascript
+   // Proper E2E test skip pattern
+   const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
+   test.describe('@P0 Test Suite', () => {
+     test.skip(skipCondition, 'Skipping E2E tests in CI - requires running services');
+   });
+   ```
+
+4. **Dependency Detection**:
+   - depcheck has limitations with dynamic imports
+   - Test-only dependencies often show as unused
+   - Manual verification is essential
+
+#### Configuration Files for GitHub Runner
+
+**Essential files to replicate in `github-runner-local` project**:
+
+1. `.env.test` - Test environment variables
+2. `scripts/bmad-qa-gate.sh` - QA validation script
+3. `.depcheckrc` - Dependency check configuration
+4. `.github/workflows/bmad-qa-gate.yml` - CI workflow
+5. Test configuration files:
+   - `tests/config/vitest.config.ts`
+   - `playwright.config.ts`
+
+#### Testing Commands
+
+```bash
+# Test like GitHub CI
+npm run test:ci-local
+
+# Run QA gate (what PR checks run)
+npm run qa:gate  
+
+# Verify CI environment simulation
+CI=true npm run test:mvp
+```
+
+#### Issues Encountered During Implementation
+
+1. **Branch Confusion**: PR #9 and #10 pointed to different branches but contained same commits
+2. **Lost Documentation**: ADDITIONAL_TESTING_TOOLS.md file disappeared (likely never committed)
+3. **False Positives**: Initial depcheck run showed 20+ unused dependencies that were actually used
+4. **CI vs Local**: Tests passed locally but failed in CI due to environment differences
+5. **Pre-push Hook Delays**: Full test suite in pre-push hook takes 30-90 seconds
+
+#### Final Test Results
+
+- **Unit Tests**: 25 passed, 1 skipped ✅
+- **Integration Tests**: 17 passed, 144 skipped ✅  
+- **E2E Tests**: Properly skipped in CI ✅
+- **All CI Checks**: PASSED ✅
+
+#### Handoff Information
+
+For complete setup instructions for the GitHub runner local project, see the handoff documentation provided inline during the session. Key points:
+
+- Replicate exact environment variable handling
+- Use string comparison for all env var checks
+- Source .env.test with proper export syntax
+- Implement @P0 test tagging for priority tests
+- Configure skip conditions for expensive tests
+
+### Final Note
+
+All changes from both PR #9 and PR #10 have been successfully merged to main. The container naming standardization, E2E test fixes, dependency validation, and tiered Git hooks are all now in production.
