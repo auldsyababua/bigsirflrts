@@ -189,9 +189,9 @@ describe('Supabase Webhook Retry Mechanisms', () => {
             // Allow for 50% variance due to jitter and processing time
             const tolerance = expectedDelay * 0.5;
             expect(
-              Math.abs(actualDelay - expectedDelay).toBeTruthy() <= tolerance,
+              Math.abs(actualDelay - expectedDelay) <= tolerance,
               `Retry delay ${i + 1} should follow exponential backoff: expected ~${expectedDelay}ms, got ${actualDelay}ms`
-            );
+            ).toBeTruthy();
           }
 
           console.log(

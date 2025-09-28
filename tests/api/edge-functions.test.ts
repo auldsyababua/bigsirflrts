@@ -27,7 +27,7 @@ describe('Supabase Edge Functions', () => {
         body: JSON.stringify({ input: 'test input' }),
       });
 
-      expect(response.status).toBe(401, 'Should return 401 for unauthorized request');
+      expect(response.status, 'Should return 401 for unauthorized request').toBe(401);
     });
 
     it('should accept valid parse request with anon key', async () => {
@@ -69,7 +69,7 @@ describe('Supabase Edge Functions', () => {
       });
 
       // Should return 400 for invalid input
-      expect(response.status).toBe(400, 'Should return 400 for empty input');
+      expect(response.status, 'Should return 400 for empty input').toBe(400);
 
       const data = await response.json();
       expect(
@@ -133,7 +133,7 @@ describe('Supabase Edge Functions', () => {
         body: JSON.stringify({ message: { text: 'test' } }),
       });
 
-      expect(response.status).toBe(401, 'Should return 401 for unauthorized request');
+      expect(response.status, 'Should return 401 for unauthorized request').toBe(401);
     });
 
     it('should handle webhook structure validation', async () => {
@@ -161,9 +161,9 @@ describe('Configuration Validation', () => {
   });
 
   it('should construct valid endpoint URLs', () => {
-    expect(testConfig.endpoints.parseRequest.includes('functions/v1/parse-request').toBeTruthy());
-    expect(
-      testConfig.endpoints.telegramWebhook.includes('functions/v1/telegram-webhook').toBeTruthy()
+    expect(testConfig.endpoints.parseRequest.includes('functions/v1/parse-request')).toBe(true);
+    expect(testConfig.endpoints.telegramWebhook.includes('functions/v1/telegram-webhook')).toBe(
+      true
     );
   });
 

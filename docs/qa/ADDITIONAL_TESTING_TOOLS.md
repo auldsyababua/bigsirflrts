@@ -1,12 +1,14 @@
 # Additional Linting and Validation Tools
 
-This document outlines all the code quality, linting, and validation tools available in the BIGSIRFLRTS project.
+This document outlines all the code quality, linting, and validation tools
+available in the BIGSIRFLRTS project.
 
 ## Code Quality Tools
 
 ### 1. Dependency Checker (depcheck)
 
-- **Purpose**: Finds unused dependencies, missing dependencies, and phantom dependencies in package.json
+- **Purpose**: Finds unused dependencies, missing dependencies, and phantom
+  dependencies in package.json
 - **Installation**: Already added to devDependencies
 - **Run Command**: `npm run lint:deps`
 - **Script Added**: `"lint:deps": "depcheck"`
@@ -19,7 +21,8 @@ This document outlines all the code quality, linting, and validation tools avail
 
 ### 1. Docker Configuration Validator
 
-- **Purpose**: Validates Docker setup and catches missing Dockerfiles, out-of-sync package-lock files
+- **Purpose**: Validates Docker setup and catches missing Dockerfiles,
+  out-of-sync package-lock files
 - **Location**: scripts/validate-docker-config.sh
 - **Run Command**: `bash scripts/validate-docker-config.sh`
 - **What it checks**:
@@ -154,7 +157,9 @@ E2E tests will be SKIPPED in this configuration
 
 ## Summary
 
-These tools catch configuration issues early, before they cause failures in Docker builds or CI pipelines. Run them regularly during development to maintain code quality and prevent deployment issues.
+These tools catch configuration issues early, before they cause failures in
+Docker builds or CI pipelines. Run them regularly during development to maintain
+code quality and prevent deployment issues.
 
 ### When to Use Each Tool
 
@@ -183,4 +188,5 @@ bash scripts/validate-test-env.sh
 echo "All validation checks complete!"
 ```
 
-Save this as `scripts/validate-all.sh` and run with `bash scripts/validate-all.sh` for comprehensive validation.
+Save this as `scripts/validate-all.sh` and run with
+`bash scripts/validate-all.sh` for comprehensive validation.

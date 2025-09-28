@@ -12,6 +12,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["tests/**/*"],
+  "include": ["tests/**/*", "tests/types/**/*.d.ts"],
   "exclude": ["node_modules"]
 }

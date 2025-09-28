@@ -138,7 +138,9 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         data: testRequest,
       });
 
-      expect(response.status()).toBeInRange(200, 202);
+      const status = response.status();
+      expect(status).toBeGreaterThanOrEqual(200);
+      expect(status).toBeLessThanOrEqual(202);
 
       // If complex parsing was triggered, wait for n8n processing
       const responseData = await response.json();
@@ -189,7 +191,9 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         const responseTime = Date.now() - startTime;
 
         // Assert
-        expect(response.status()).toBeInRange(200, 202);
+        const status = response.status();
+        expect(status).toBeGreaterThanOrEqual(200);
+        expect(status).toBeLessThanOrEqual(202);
 
         const responseData = await response.json();
         expect(responseData).toHaveProperty('success', true);
@@ -228,7 +232,9 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         data: complexRequest,
       });
 
-      expect(response.status()).toBeInRange(200, 202);
+      const status = response.status();
+      expect(status).toBeGreaterThanOrEqual(200);
+      expect(status).toBeLessThanOrEqual(202);
       const responseData = await response.json();
 
       // Wait for distributed processing

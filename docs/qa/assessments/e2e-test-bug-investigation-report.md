@@ -6,28 +6,35 @@
 
 ## Executive Summary
 
-The E2E test skip condition has been partially fixed but significant issues remain in the test pipeline architecture. The root cause is a complex interaction between environment variable handling, script execution contexts, and inconsistent skip logic implementation across different test files.
+The E2E test skip condition has been partially fixed but significant issues
+remain in the test pipeline architecture. The root cause is a complex
+interaction between environment variable handling, script execution contexts,
+and inconsistent skip logic implementation across different test files.
 
 ## Bug Investigation Timeline
 
 ### 1. Initial Theory Formation
 
-**Theory:** Skip condition evaluates incorrectly due to JavaScript truthy/falsy semantics with string environment variables.
+**Theory:** Skip condition evaluates incorrectly due to JavaScript truthy/falsy
+semantics with string environment variables.
 
 **Research Findings:**
 
 - `process.env.ENABLE_E2E_TESTS` returns string `"false"` from `.env.test`
 - In JavaScript, the string `"false"` is truthy
-- `!process.env.ENABLE_E2E_TESTS` when value is `"false"` evaluates to `false` (not `true` as expected)
+- `!process.env.ENABLE_E2E_TESTS` when value is `"false"` evaluates to `false`
+  (not `true` as expected)
 
-**Validation:** Created `env-test-validation.js` script proving the string comparison issue.
+**Validation:** Created `env-test-validation.js` script proving the string
+comparison issue.
 
 ### 2. Current State Analysis
 
 **Fixed Code (monitoring-e2e.test.ts:13):**
 
 ```javascript
-const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
+const skipCondition =
+  process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
 ```
 
 This fix correctly handles string comparison, BUT...
@@ -45,7 +52,7 @@ This fix correctly handles string comparison, BUT...
 **database-monitoring.test.ts:18:**
 
 ```javascript
-(!process.env.CI && !process.env.GITHUB_ACTIONS) // Allow local development only
+!process.env.CI && !process.env.GITHUB_ACTIONS; // Allow local development only
 ```
 
 - Uses negation logic (inverted from E2E tests)
@@ -134,7 +141,8 @@ package.json scripts:
 ### Test Files with Skip Logic
 
 1. **tests/e2e/monitoring-e2e.test.ts**
-   - Uses: `process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true'`
+   - Uses:
+     `process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true'`
    - Status: ✅ FIXED
 
 2. **tests/integration/database-monitoring.test.ts**
@@ -208,24 +216,25 @@ export CI=true
 export NODE_ENV=test
 ```
 
-2. **Fix OpenTelemetry test skip condition:**
+1. **Fix OpenTelemetry test skip condition:**
 
 ```javascript
 // tests/integration/opentelemetry-tracing.test.ts:28
-const skipInCI = process.env.CI === 'true' && process.env.ENABLE_OTEL_TESTS !== 'true';
+const skipInCI =
+  process.env.CI === 'true' && process.env.ENABLE_OTEL_TESTS !== 'true';
 ```
 
 ### Priority 2: Consistency Improvements
 
-3. **Standardize skip conditions across all test files:**
+1. **Standardize skip conditions across all test files:**
 
 ```javascript
 // Create a shared utility
-export const shouldSkipE2ETests = () => 
+export const shouldSkipE2ETests = () =>
   process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
 ```
 
-4. **Fix database monitoring test logic:**
+1. **Fix database monitoring test logic:**
 
 ```javascript
 // tests/integration/database-monitoring.test.ts
@@ -234,7 +243,7 @@ const skipInCI = process.env.CI === 'true' && !process.env.TEST_DATABASE_URL;
 
 ### Priority 3: Documentation
 
-5. **Add environment variable documentation:**
+1. **Add environment variable documentation:**
    - Document all test-related environment variables
    - Clarify when each script should be used
    - Add troubleshooting guide for common issues
@@ -255,7 +264,10 @@ const skipInCI = process.env.CI === 'true' && !process.env.TEST_DATABASE_URL;
 
 ## Conclusion
 
-The E2E test skip bug is part of a larger pattern of environment variable handling issues in the test infrastructure. While the immediate fix in `monitoring-e2e.test.ts` is correct, the surrounding infrastructure needs alignment to ensure consistent behavior across all test execution paths.
+The E2E test skip bug is part of a larger pattern of environment variable
+handling issues in the test infrastructure. While the immediate fix in
+`monitoring-e2e.test.ts` is correct, the surrounding infrastructure needs
+alignment to ensure consistent behavior across all test execution paths.
 
 The root causes are:
 
@@ -264,4 +276,5 @@ The root causes are:
 3. Missing environment variable configuration in key scripts
 4. Lack of standardization in test skip patterns
 
-All identified issues should be addressed to ensure reliable test execution in both CI and local environments.
+All identified issues should be addressed to ensure reliable test execution in
+both CI and local environments.

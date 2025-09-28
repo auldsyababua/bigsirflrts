@@ -43,9 +43,9 @@ beforeAll(() => {
     'N8N_WEBHOOK_URL must be configured for Supabase webhook tests'
   ).toBeTruthy();
   expect(
-    N8N_WEBHOOK_URL.includes('supabase-tasks-webhook').toBeTruthy(),
+    N8N_WEBHOOK_URL.includes('supabase-tasks-webhook'),
     'N8N_WEBHOOK_URL should point to the correct webhook path'
-  );
+  ).toBeTruthy();
 });
 
 describe('Supabase Database Webhooks → n8n Integration', () => {
