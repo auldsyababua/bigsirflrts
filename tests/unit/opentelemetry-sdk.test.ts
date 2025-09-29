@@ -68,7 +68,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
 
       // Assert
       expect(NodeSDK).toHaveBeenCalledTimes(1);
-      const sdkConfig = vi.mocked(NodeSDK).mock.calls[0][0];
+      const sdkConfig = vi.mocked(NodeSDK).mock.calls[0]?.[0];
 
       // Verify SDK configuration structure
       expect(sdkConfig).toHaveProperty('traceExporter');
