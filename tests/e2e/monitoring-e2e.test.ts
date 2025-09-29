@@ -9,7 +9,7 @@
 import { test, expect, Page, BrowserContext } from '@playwright/test';
 
 // Skip in CI unless explicitly enabled
-const skipCondition = Boolean(process.env.CI && !process.env.ENABLE_E2E_TESTS);
+const skipCondition = process.env.CI === 'true' && process.env.ENABLE_E2E_TESTS !== 'true';
 
 test.describe('@P0 Monitoring End-to-End Tests', () => {
   test.skip(skipCondition, 'Skipping E2E tests in CI - requires running services');
@@ -138,8 +138,9 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         data: testRequest,
       });
 
-      expect(response.status()).toBeGreaterThanOrEqual(200);
-      expect(response.status()).toBeLessThanOrEqual(202);
+      const status = response.status();
+      expect(status).toBeGreaterThanOrEqual(200);
+      expect(status).toBeLessThanOrEqual(202);
 
       // If complex parsing was triggered, wait for n8n processing
       const responseData = await response.json();
@@ -190,8 +191,9 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         const responseTime = Date.now() - startTime;
 
         // Assert
-        expect(response.status()).toBeGreaterThanOrEqual(200);
-        expect(response.status()).toBeLessThanOrEqual(202);
+        const status = response.status();
+        expect(status).toBeGreaterThanOrEqual(200);
+        expect(status).toBeLessThanOrEqual(202);
 
         const responseData = await response.json();
         expect(responseData).toHaveProperty('success', true);
@@ -230,8 +232,9 @@ test.describe('@P0 Monitoring End-to-End Tests', () => {
         data: complexRequest,
       });
 
-      expect(response.status()).toBeGreaterThanOrEqual(200);
-      expect(response.status()).toBeLessThanOrEqual(202);
+      const status = response.status();
+      expect(status).toBeGreaterThanOrEqual(200);
+      expect(status).toBeLessThanOrEqual(202);
       const responseData = await response.json();
 
       // Wait for distributed processing

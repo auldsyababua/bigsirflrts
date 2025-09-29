@@ -26,7 +26,7 @@ import { createServer, Server } from 'http';
 import { IncomingMessage, ServerResponse } from 'http';
 
 // Skip in CI unless explicitly enabled
-const skipInCI = process.env.CI && !process.env.ENABLE_OTEL_TESTS;
+const skipInCI = process.env.CI === 'true' && process.env.ENABLE_OTEL_TESTS !== 'true';
 
 describe.skipIf(skipInCI)('@P0 OpenTelemetry Integration Tests', () => {
   let mockOTLPServer: Server;

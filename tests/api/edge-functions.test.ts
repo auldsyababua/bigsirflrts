@@ -27,7 +27,7 @@ describe('Supabase Edge Functions', () => {
         body: JSON.stringify({ input: 'test input' }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status, 'Should return 401 for unauthorized request').toBe(401);
     });
 
     it('should accept valid parse request with anon key', async () => {
@@ -69,7 +69,7 @@ describe('Supabase Edge Functions', () => {
       });
 
       // Should return 400 for invalid input
-      expect(response.status).toBe(400);
+      expect(response.status, 'Should return 400 for empty input').toBe(400);
 
       const data = await response.json();
       expect('error' in data || 'message' in data).toBe(true);
@@ -130,7 +130,7 @@ describe('Supabase Edge Functions', () => {
         body: JSON.stringify({ message: { text: 'test' } }),
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status, 'Should return 401 for unauthorized request').toBe(401);
     });
 
     it('should handle webhook structure validation', async () => {
