@@ -87,7 +87,9 @@ describe('n8n Minimal Resilience Tests', () => {
         (r) =>
           r.status === 'fulfilled' &&
           r.value.status &&
+          typeof r.value.status === 'number' &&
           r.value.status >= 200 &&
+          typeof r.value.status === 'number' &&
           r.value.status < 500
       );
 

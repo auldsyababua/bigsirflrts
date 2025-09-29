@@ -42,10 +42,7 @@ beforeAll(() => {
     N8N_WEBHOOK_URL,
     'N8N_WEBHOOK_URL must be configured for Supabase webhook tests'
   ).toBeTruthy();
-  expect(
-    N8N_WEBHOOK_URL.includes('supabase-tasks-webhook').toBeTruthy(),
-    'N8N_WEBHOOK_URL should point to the correct webhook path'
-  );
+  expect(N8N_WEBHOOK_URL.includes('supabase-tasks-webhook')).toBe(true);
 });
 
 describe('Supabase Database Webhooks → n8n Integration', () => {
@@ -86,10 +83,7 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
         return;
       }
 
-      expect(
-        response.status === 200 || response.status === 404,
-        `Webhook trigger check should succeed or indicate missing function, got ${response.status}`
-      ).toBeTruthy();
+      expect(response.status === 200 || response.status === 404).toBe(true);
     });
 
     it('should verify n8n webhook endpoint is reachable', async () => {
@@ -97,10 +91,7 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
         method: 'GET', // Health check
       });
 
-      expect(
-        response.status < 500,
-        `n8n webhook endpoint should be reachable, got ${response.status}`
-      ).toBeTruthy();
+      expect(response.status < 500).toBe(true);
     });
   });
 
@@ -192,7 +183,7 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
   });
 
   describe('UPDATE Operations - Database → Webhook → n8n', () => {
-    let testTaskId = null;
+    let testTaskId: string | null = null;
 
     beforeAll(async () => {
       // Create a task for UPDATE testing

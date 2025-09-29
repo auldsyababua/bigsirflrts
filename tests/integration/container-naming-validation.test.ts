@@ -174,7 +174,7 @@ describe('Container Naming Standardization Tests', () => {
 
             return { file, containerNames };
           } catch (error) {
-            return { file, error: error.message };
+            return { file, error: error instanceof Error ? error.message : String(error) };
           }
         })
       );
@@ -240,7 +240,10 @@ describe('Container Naming Standardization Tests', () => {
           }
         }
       } catch (error) {
-        console.error('Error checking containers:', error.message);
+        console.error(
+          'Error checking containers:',
+          error instanceof Error ? error.message : String(error)
+        );
         throw error;
       }
     });

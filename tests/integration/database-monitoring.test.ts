@@ -71,7 +71,10 @@ describe.skipIf(!hasDbConfig)('@P0 Database Monitoring Integration Tests', () =>
       await dbClient.query('SELECT pg_stat_reset();');
     } catch (error) {
       // Ignore errors if pg_stat_reset requires superuser privileges
-      console.warn('Could not reset pg_stat (may require superuser):', error.message);
+      console.warn(
+        'Could not reset pg_stat (may require superuser):',
+        error instanceof Error ? error.message : String(error)
+      );
     }
   });
 

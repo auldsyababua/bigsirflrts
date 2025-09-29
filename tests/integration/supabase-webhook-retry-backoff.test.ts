@@ -39,12 +39,17 @@ const RETRY_TEST_CONFIG = {
 
 // Utility functions for retry testing
 class RetryTestUtils {
-  static calculateExpectedDelay(attempt, baseDelay = 1000, multiplier = 2, maxDelay = 32000) {
+  static calculateExpectedDelay(
+    attempt: number,
+    baseDelay = 1000,
+    multiplier = 2,
+    maxDelay = 32000
+  ): number {
     const delay = Math.min(baseDelay * Math.pow(multiplier, attempt), maxDelay);
     return delay;
   }
 
-  static async waitForRetryAttempts(attempts = 3, baseDelay = 1000) {
+  static async waitForRetryAttempts(attempts = 3, baseDelay = 1000): Promise<void> {
     // Calculate total time for all retry attempts
     let totalTime = 0;
     for (let i = 0; i < attempts; i++) {
@@ -54,7 +59,7 @@ class RetryTestUtils {
     await new Promise((resolve) => setTimeout(resolve, totalTime + 5000));
   }
 
-  static async createTaskForRetryTest(suffix = Date.now()) {
+  static async createTaskForRetryTest(suffix: number | string = Date.now()): Promise<any> {
     const testTask = {
       title: `Retry Test Task ${suffix}`,
       description: `Task created for retry mechanism testing - ${new Date().toISOString()}`,
@@ -81,7 +86,7 @@ class RetryTestUtils {
     return task[0];
   }
 
-  static async cleanupTestTask(taskId) {
+  static async cleanupTestTask(taskId: string): Promise<void> {
     if (!taskId) return;
 
     try {
@@ -94,7 +99,7 @@ class RetryTestUtils {
     }
   }
 
-  static async checkWebhookDeliveryLogs(taskId, expectedAttempts = 1) {
+  static async checkWebhookDeliveryLogs(taskId: string, expectedAttempts = 1): Promise<any> {
     // Query Supabase webhook delivery logs
     const query = `
       SELECT
@@ -120,7 +125,7 @@ class RetryTestUtils {
       if (response.status === 404) {
         // RPC function doesn't exist, return mock data for testing
         return Array(expectedAttempts)
-          .fill()
+          .fill(null)
           .map((_, i) => ({
             created_at: new Date(Date.now() - (expectedAttempts - i) * 1000).toISOString(),
             status_code: i === expectedAttempts - 1 ? 200 : 500,

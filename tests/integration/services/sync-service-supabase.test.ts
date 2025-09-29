@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
 
 describe('Supabase Sync Service', () => {
-  let supabase;
+  let supabase: ReturnType<typeof createClient>;
   let isConfigured = false;
 
   beforeAll(() => {
