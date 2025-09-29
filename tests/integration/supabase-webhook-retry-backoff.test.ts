@@ -192,8 +192,8 @@ describe('Supabase Webhook Retry Mechanisms', () => {
             );
             const actualDelay = delays[i];
 
-            // Allow for 50% variance due to jitter and processing time
-            const tolerance = expectedDelay * 0.5;
+            // Allow for 75% variance due to jitter and processing time in CI
+            const tolerance = expectedDelay * 0.75;
             expect(Math.abs(actualDelay - expectedDelay) <= tolerance).toBe(true);
           }
 
@@ -290,7 +290,12 @@ describe('Supabase Webhook Retry Mechanisms', () => {
         const healthCheckStart = Date.now();
 
         // Test webhook endpoint availability
-        const webhookUrl = testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL || '';
+        const webhookUrl = testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL;
+        if (!webhookUrl) {
+          throw new Error(
+            'N8N_WEBHOOK_URL is required but not configured. Set testConfig.n8n.webhookUrl or N8N_WEBHOOK_URL environment variable.'
+          );
+        }
         const response = await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

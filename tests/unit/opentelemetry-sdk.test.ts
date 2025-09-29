@@ -139,6 +139,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       await import('../../packages/nlp-service/instrumentation');
 
       // Assert
+      expect(vi.mocked(OTLPTraceExporter)).toHaveBeenCalledTimes(1);
       const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0]?.[0];
       expect(exporterConfig?.headers).toHaveProperty('authorization', `Bearer ${testApiKey}`);
     });
@@ -153,7 +154,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
 
       // Assert
       expect(OTLPMetricExporter).toHaveBeenCalledTimes(1);
-      const metricExporterConfig = vi.mocked(OTLPMetricExporter).mock.calls[0]?.[0];
+      const metricExporterConfig = vi.mocked(OTLPMetricExporter).mock.calls[0][0];
 
       expect(metricExporterConfig).toHaveProperty('url', `${testEndpoint}/v1/metrics`);
     });
@@ -167,6 +168,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       await import('../../packages/nlp-service/instrumentation');
 
       // Assert
+      expect(vi.mocked(OTLPTraceExporter)).toHaveBeenCalled();
       const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0]?.[0];
       expect(exporterConfig?.headers).toHaveProperty('authorization', 'Bearer ');
     });
