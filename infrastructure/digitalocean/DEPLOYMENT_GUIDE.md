@@ -152,7 +152,21 @@ Configure tunnel ingress rules in Cloudflare Dashboard:
    - Domain: yourdomain.com
    - Service: <http://openproject:80>
 
-### 6. Deploy the Application
+### 6. Validate Environment Variables
+
+**IMPORTANT**: Validate your environment before deployment to prevent boot with empty credentials.
+
+```bash
+# On the server
+cd /root
+
+# Run validation script
+bash infrastructure/digitalocean/validate-env.sh
+
+# If validation passes, proceed with deployment
+```
+
+### 7. Deploy the Application
 
 ```bash
 # On the server
@@ -178,7 +192,7 @@ docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml ps
 3. `memcached` starts for Rails caching
 4. `cloudflared` starts the Cloudflare Tunnel
 
-### 7. Initial OpenProject Configuration
+### 8. Initial OpenProject Configuration
 
 Access OpenProject via Cloudflare Tunnel at `https://ops.10nz.tools`
 

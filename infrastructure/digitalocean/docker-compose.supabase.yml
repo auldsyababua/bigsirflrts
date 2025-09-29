@@ -2,6 +2,9 @@ version: "3.8"
 
 # OpenProject connected to Supabase PostgreSQL
 # Following PRD architecture: Single database with schema separation
+#
+# IMPORTANT: Run ./validate-env.sh before starting to ensure all required
+# environment variables are set. This prevents boot with empty credentials.
 
 services:
   openproject-migrate:
