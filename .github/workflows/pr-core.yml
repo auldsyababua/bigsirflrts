@@ -49,4 +49,5 @@ jobs:
             playwright-report/**/*.png
             coverage/**/*.html
             coverage/**/*.json
+          if-no-files-found: ignore
           retention-days: 7
