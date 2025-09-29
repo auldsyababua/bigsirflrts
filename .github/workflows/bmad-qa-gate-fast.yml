@@ -93,7 +93,7 @@ jobs:
 
       - name: Cache Playwright browsers
         if: "!contains(runner.name, 'local')"
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
@@ -109,8 +109,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ripgrep shellcheck
 
-      - name: Install Playwright (GitHub-hosted only)
-        if: "!contains(runner.name, 'local')"
+      - name: Install Playwright (GitHub-hosted only, when E2E will run)
+        if: |
+          !contains(runner.name, 'local') &&
+          (github.event_name == 'schedule' ||
+           github.event_name == 'workflow_dispatch' ||
+           contains(github.event.head_commit.message || '', '[e2e]'))
         run: npx playwright install --with-deps chromium
 
       - name: Unit tests
@@ -122,7 +126,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NODE_ENV: "test"
           CI: "true"
-          RUNNER_TYPE: ${{ runner.labels[0] }}
 
       - name: Integration tests
         run: npm run test:integration
@@ -133,7 +136,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NODE_ENV: "test"
           CI: "true"
-          RUNNER_TYPE: ${{ runner.labels[0] }}
 
       - name: E2E tests
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message || '', '[e2e]')
@@ -145,7 +147,6 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NODE_ENV: "test"
           CI: "true"
-          RUNNER_TYPE: ${{ runner.labels[0] }}
 
       - name: Upload test results on failure
         if: failure()
