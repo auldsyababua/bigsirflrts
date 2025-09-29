@@ -149,7 +149,7 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
 
         const verifiedTask = await verifyResponse.json();
         expect(verifiedTask.length === 1).toBeTruthy(); // Task should exist after INSERT;
-        expect(verifiedTask[0].title).toBe(testTask.title, 'Task title should match');
+        expect(verifiedTask[0].title).toBe(testTask.title);
       } finally {
         // Cleanup: Delete test task
         if (taskId) {
@@ -263,9 +263,9 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
 
       const updatedTask = await verifyResponse.json();
       expect(updatedTask.length === 1).toBeTruthy(); // Task should exist after UPDATE;
-      expect(updatedTask[0].title).toBe(updateData.title, 'Task title should be updated');
-      expect(updatedTask[0].status).toBe(updateData.status, 'Task status should be updated');
-      expect(updatedTask[0].priority).toBe(updateData.priority, 'Task priority should be updated');
+      expect(updatedTask[0].title).toBe(updateData.title);
+      expect(updatedTask[0].status).toBe(updateData.status);
+      expect(updatedTask[0].priority).toBe(updateData.priority);
     });
 
     it('should handle UPDATE with partial data correctly', async () => {
@@ -300,11 +300,8 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
       );
 
       const updatedTask = await verifyResponse.json();
-      expect(updatedTask[0].status).toBe('completed', 'Status should be updated');
-      expect(
-        updatedTask[0].title.includes('UPDATED').toBeTruthy(),
-        'Title should remain from previous update'
-      );
+      expect(updatedTask[0].status).toBe('completed');
+      expect(updatedTask[0].title.includes('UPDATED')).toBe(true);
     });
   });
 
@@ -369,7 +366,7 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
       );
 
       const deletedTasks = await verifyResponse.json();
-      expect(deletedTasks.length).toBe(0, 'Task should be deleted from database');
+      expect(deletedTasks.length).toBe(0);
     });
 
     it('should handle DELETE of non-existent task gracefully', async () => {
@@ -554,7 +551,7 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
           );
 
           const tasks = await verifyResponse.json();
-          expect(tasks.length).toBe(1, `Concurrent task ${taskId} should exist`);
+          expect(tasks.length).toBe(1);
         }
       } finally {
         // Cleanup: Delete all test tasks
@@ -650,7 +647,7 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
         });
       }
 
-      const results = await Promise.all(performanceTests.map((test) => it()));
+      const results = await Promise.all(performanceTests.map((test) => test()));
 
       // Clean up test tasks
       const cleanupPromises = results
@@ -666,27 +663,18 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
 
       // Verify performance
       const successfulTests = results.filter((result) => result.success);
-      expect(
-        successfulTests.length === testCount,
-        `All performance tests should succeed, got ${successfulTests.length}/${testCount}`
-      ).toBeTruthy();
+      expect(successfulTests.length === testCount).toBe(true);
 
       const avgTime =
         successfulTests.reduce((sum, result) => sum + result.totalTime, 0) / successfulTests.length;
-      expect(
-        avgTime < N8N_PROCESSING_THRESHOLD_MS + 500,
-        `Average processing time ${avgTime}ms should be under ${N8N_PROCESSING_THRESHOLD_MS + 500}ms`
-      ).toBeTruthy();
+      expect(avgTime < N8N_PROCESSING_THRESHOLD_MS + 500).toBe(true);
 
       // 90% of tests should be under the strict threshold
       const fastTests = successfulTests.filter(
         (result) => result.totalTime < N8N_PROCESSING_THRESHOLD_MS
       );
       const fastTestRatio = fastTests.length / successfulTests.length;
-      expect(
-        fastTestRatio >= 0.9,
-        `90% of tests should meet strict performance threshold, got ${(fastTestRatio * 100).toBeTruthy().toFixed(1)}%`
-      );
+      expect(fastTestRatio >= 0.9).toBe(true);
     });
   });
 });
@@ -694,12 +682,9 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
 describe('Test Infrastructure Validation', () => {
   it('should have all required environment variables for Supabase webhook testing', () => {
     expect(N8N_WEBHOOK_URL).toBeTruthy(); // N8N_WEBHOOK_URL should be configured;
-    expect(
-      N8N_WEBHOOK_URL.includes('supabase-tasks-webhook').toBeTruthy(),
-      'N8N_WEBHOOK_URL should be the correct webhook'
-    );
+    expect(N8N_WEBHOOK_URL.includes('supabase-tasks-webhook')).toBe(true);
     expect(testConfig.supabase.url).toBeTruthy(); // Supabase URL should be configured;
-    expect(testConfig.supabase.anonKey, 'Supabase anon key should be configured').toBeTruthy();
+    expect(testConfig.supabase.anonKey).toBeTruthy();
   });
 
   it('should have reasonable performance thresholds for Story 1.5 requirements', () => {

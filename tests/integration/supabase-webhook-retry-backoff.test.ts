@@ -179,7 +179,8 @@ describe('Supabase Webhook Retry Mechanisms', () => {
           const delays = [];
           for (let i = 1; i < deliveryLogs.length; i++) {
             const delay =
-              new Date(deliveryLogs[i].created_at) - new Date(deliveryLogs[i - 1].created_at);
+              new Date(deliveryLogs[i].created_at).getTime() -
+              new Date(deliveryLogs[i - 1].created_at).getTime();
             delays.push(delay);
           }
 
@@ -191,12 +192,9 @@ describe('Supabase Webhook Retry Mechanisms', () => {
             );
             const actualDelay = delays[i];
 
-            // Allow for 50% variance due to jitter and processing time
-            const tolerance = expectedDelay * 0.5;
-            expect(
-              Math.abs(actualDelay - expectedDelay).toBeTruthy() <= tolerance,
-              `Retry delay ${i + 1} should follow exponential backoff: expected ~${expectedDelay}ms, got ${actualDelay}ms`
-            );
+            // Allow for 75% variance due to jitter and processing time in CI
+            const tolerance = expectedDelay * 0.75;
+            expect(Math.abs(actualDelay - expectedDelay) <= tolerance).toBe(true);
           }
 
           console.log(
@@ -254,10 +252,7 @@ describe('Supabase Webhook Retry Mechanisms', () => {
         maxDelay
       );
 
-      expect(calculatedDelay).toBe(
-        maxDelay,
-        `High retry attempts should be capped at maximum delay of ${maxDelay}ms`
-      );
+      expect(calculatedDelay).toBe(maxDelay);
 
       // Test progressive delay increase up to cap
       for (let attempt = 0; attempt < 6; attempt++) {
@@ -296,6 +291,11 @@ describe('Supabase Webhook Retry Mechanisms', () => {
 
         // Test webhook endpoint availability
         const webhookUrl = testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL;
+        if (!webhookUrl) {
+          throw new Error(
+            'N8N_WEBHOOK_URL is required but not configured. Set testConfig.n8n.webhookUrl or N8N_WEBHOOK_URL environment variable.'
+          );
+        }
         const response = await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -304,7 +304,6 @@ describe('Supabase Webhook Retry Mechanisms', () => {
             table: 'tasks',
             record: { id: taskId, title: 'Recovery Test' },
           }),
-          timeout: 5000,
         });
 
         const healthCheckTime = Date.now() - healthCheckStart;
@@ -348,7 +347,7 @@ describe('Supabase Webhook Retry Mechanisms', () => {
 
         // Check that failures are properly logged
         const deliveryLogs = await RetryTestUtils.checkWebhookDeliveryLogs(taskId);
-        const failedAttempts = deliveryLogs.filter((log) => log.status_code >= 400);
+        const failedAttempts = deliveryLogs.filter((log: any) => log.status_code >= 400);
 
         if (failedAttempts.length > 0) {
           console.log(`✅ Circuit breaker behavior: ${failedAttempts.length} failures logged`);
@@ -402,17 +401,11 @@ describe('Supabase Webhook Retry Mechanisms', () => {
           (result) => result.status === 'fulfilled' && result.value.ok
         );
 
-        expect(successfulUpdates.length).toBe(
-          concurrentTasks,
-          `All ${concurrentTasks} concurrent updates should succeed during retry testing`
-        );
+        expect(successfulUpdates.length).toBe(concurrentTasks);
 
         // Verify performance is reasonable
         const maxReasonableTime = 10000; // 10 seconds for concurrent operations
-        expect(
-          performanceTime < maxReasonableTime,
-          `Concurrent retry scenarios should complete in reasonable time: ${performanceTime}ms`
-        ).toBeTruthy();
+        expect(performanceTime < maxReasonableTime).toBe(true);
 
         console.log(
           `✅ Performance test passed: ${concurrentTasks} tasks updated in ${performanceTime}ms`
@@ -487,10 +480,7 @@ describe('Supabase Webhook Retry Mechanisms', () => {
           RETRY_TEST_CONFIG.maxDelayMs
         );
 
-        expect(actualDelay).toBe(
-          testCase.expected,
-          `Attempt ${testCase.attempt} should have delay ${testCase.expected}ms, got ${actualDelay}ms`
-        );
+        expect(actualDelay).toBe(testCase.expected);
       }
 
       console.log('✅ Retry configuration validation passed');

@@ -136,11 +136,12 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_API_KEY = testApiKey;
 
       // Act
-      await import('../../packages/nlp-service/instrumentation.ts');
+      await import('../../packages/nlp-service/instrumentation');
 
       // Assert
-      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0][0];
-      expect(exporterConfig.headers).toHaveProperty('authorization', `Bearer ${testApiKey}`);
+      expect(vi.mocked(OTLPTraceExporter)).toHaveBeenCalledTimes(1);
+      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0]?.[0];
+      expect(exporterConfig?.headers).toHaveProperty('authorization', `Bearer ${testApiKey}`);
     });
 
     it('should configure metric exporter with correct endpoint', async () => {
@@ -149,7 +150,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_EXPORTER_OTLP_ENDPOINT = testEndpoint;
 
       // Act
-      await import('../../packages/nlp-service/instrumentation.ts');
+      await import('../../packages/nlp-service/instrumentation');
 
       // Assert
       expect(OTLPMetricExporter).toHaveBeenCalledTimes(1);
@@ -164,11 +165,12 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       // OTEL_API_KEY not set, should default to empty string
 
       // Act
-      await import('../../packages/nlp-service/instrumentation.ts');
+      await import('../../packages/nlp-service/instrumentation');
 
       // Assert
-      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0][0];
-      expect(exporterConfig.headers).toHaveProperty('authorization', 'Bearer ');
+      expect(vi.mocked(OTLPTraceExporter)).toHaveBeenCalled();
+      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0]?.[0];
+      expect(exporterConfig?.headers).toHaveProperty('authorization', 'Bearer ');
     });
   });
 
@@ -181,7 +183,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
 
       // Act & Assert - Import should not crash even if SDK start fails
       expect(async () => {
-        await import('../../packages/nlp-service/instrumentation.ts');
+        await import('../../packages/nlp-service/instrumentation');
       }).not.toThrow();
     });
   });

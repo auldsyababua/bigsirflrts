@@ -1,0 +1,81 @@
+{
+  "module": "Frontend & API Gateway",
+  "status": "complete",
+  "timestamp": "${ISO_TIMESTAMP}",
+  "scope": {
+    "services": [
+      {
+        "name": "nlp-service (Express)",
+        "endpoints": [
+          "POST /parse",
+          "GET /examples",
+          "GET /history",
+          "GET /health"
+        ]
+      },
+      {
+        "name": "sync-service (Express)",
+        "endpoints": [
+          "POST /webhook/task",
+          "POST /sync/task/:id",
+          "POST /sync/bulk",
+          "GET /health"
+        ]
+      },
+      {
+        "name": "Edge Functions",
+        "functions": [
+          "parse-request",
+          "telegram-webhook"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "FE-1",
+      "severity": "MEDIUM",
+      "title": "CORS is wide open (*) on edge parse-request and NLP service",
+      "evidence": [
+        "supabase/functions/parse-request/index.ts: Access-Control-Allow-Origin '*'",
+        "packages/nlp-service/src/index.ts: app.use(cors()) (defaults to '*')"
+      ],
+      "remediation": "Constrain origins to approved production domains; keep '*' only for local/dev via env flag."
+    },
+    {
+      "id": "FE-2",
+      "severity": "MEDIUM",
+      "title": "Unauthenticated endpoints exposed (/history, parse)",
+      "evidence": [
+        "packages/nlp-service/src/index.ts: /history comment says 'requires auth in production' but no middleware present",
+        "parse-request relies on JWT or custom token but allows '*' CORS and does not enforce per-route RBAC"
+      ],
+      "remediation": "Add JWT middleware + role checks; disable /history in public builds or require admin role."
+    },
+    {
+      "id": "FE-3",
+      "severity": "LOW",
+      "title": "No rate limiting on Express services",
+      "evidence": [
+        "packages/nlp-service/src/index.ts: no rate limiter",
+        "packages/sync-service/src/index.ts: no rate limiter"
+      ],
+      "remediation": "Add rate-limiter-flexible with IP+user bucketing and circuit-breaker thresholds."
+    },
+    {
+      "id": "FE-4",
+      "severity": "LOW",
+      "title": "Security headers missing on Express services",
+      "evidence": [
+        "No Helmet.js setup in nlp-service or sync-service"
+      ],
+      "remediation": "Add helmet with strict defaults; define content-type sniffing and frameguard policies."
+    }
+  ],
+  "recommendations": [
+    "Introduce shared auth middleware (JWT validation, role checks) across services.",
+    "Lock down CORS by environment; default deny, allowlist known hosts.",
+    "Add rate limiting and request size limits; enforce JSON content-type on POST endpoints.",
+    "Add Helmet and standardized error responses (problem+json)."
+  ]
+}

@@ -26,14 +26,13 @@ jobs:
         run: npm ci || npm i
 
       - name: Lint JS/TS
-        run: npm run lint:js
+        run: npm run lint:js -- --max-warnings 100
 
       - name: Prettier check (code only)
         run: npx prettier --check '**/*.{js,jsx,ts,tsx,json,yml,yaml}'
 
-      - name: Typecheck (non-blocking for now)
+      - name: Typecheck
         run: npx tsc --noEmit
-        continue-on-error: true
 
       - name: Unit tests (@P0)
         run: npm run test:unit
