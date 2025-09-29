@@ -96,8 +96,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}-${{ hashFiles('package.json') }}
           restore-keys: |
+            ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}-
             ${{ runner.os }}-playwright-
 
       - name: Install dependencies
@@ -114,7 +115,8 @@ jobs:
           !contains(runner.name, 'local') &&
           (github.event_name == 'schedule' ||
            github.event_name == 'workflow_dispatch' ||
-           contains(github.event.head_commit.message || '', '[e2e]'))
+           (github.event_name == 'push' && contains(github.event.head_commit.message, '[e2e]')) ||
+           (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[e2e]')))
         run: npx playwright install --with-deps chromium
 
       - name: Unit tests
@@ -138,7 +140,11 @@ jobs:
           CI: "true"
 
       - name: E2E tests
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message || '', '[e2e]')
+        if: |
+          github.event_name == 'schedule' ||
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && contains(github.event.head_commit.message, '[e2e]')) ||
+          (github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[e2e]'))
         run: npm run test:e2e
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
