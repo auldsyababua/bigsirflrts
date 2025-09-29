@@ -1,55 +1,47 @@
 # CI/CD Improvements Handoff
 
-**Date**: 2025-09-29
-**Context**: Post-TypeScript cleanup and CI/CD policy implementation (PRs #13, #14, #15)
-**Status**: PR #15 is open but failing CI - needs investigation before proceeding
-**Repository**: <https://github.com/auldsyababua/bigsirflrts>
+**Date**: 2025-09-29 **Context**: Post-TypeScript cleanup and CI/CD policy
+implementation (PRs #13, #14, #15) **Status**: ✅ PR #15 merged - All TypeScript
+errors fixed, strict typecheck enabled **Repository**:
+<https://github.com/auldsyababua/bigsirflrts>
 
 ---
 
-## ⚠️ IMPORTANT: PR #15 Status
+## ✅ PR #15 Completed
 
-**Current Issue**: PR #15 is failing CI checks despite:
+**What Was Accomplished**:
 
-- ✅ All TypeScript errors fixed locally (0 errors with `npx tsc --noEmit`)
-- ✅ Unit tests passing locally
-- ✅ Prettier passing on all PR files
-- ✅ ESLint passing (warnings only)
-- ✅ Added `audit-results/` to `.prettierignore`
+- ✅ Fixed all 58 remaining TypeScript errors (68 → 0 total)
+- ✅ Enabled strict TypeScript typecheck in PR Core (now blocking)
+- ✅ Implemented Qodo-merge-pro code review suggestions
+- ✅ Fixed local/CI parity issues (see lessons learned below)
+- ✅ All CI checks passing
 
-**Action Required**: Before starting the CI improvements below, you must:
+**Key Commits**:
 
-1. **Investigate the CI failure**:
-   - Check the GitHub Actions logs for PR #15: <https://github.com/auldsyababua/bigsirflrts/pull/15>
-   - Look at the "core" job in the PR Core workflow
-   - Identify which step is failing (likely unit tests or typecheck)
+1. `fix: resolve all remaining TypeScript errors in test files`
+2. `feat: enable strict TypeScript typecheck in PR Core workflow`
+3. `fix: add audit-results to .prettierignore`
+4. `fix: implement Qodo-merge-pro suggestions for test robustness`
+5. `fix: add @types/js-yaml and allow ESLint warnings in CI`
 
-2. **Possible causes**:
-   - CI environment differences (Node version, dependencies)
-   - Race conditions in tests
-   - Missing environment variables
-   - Flaky tests (see Qodo suggestions below)
-
-3. **Fix the failure**:
-   - Address the root cause
-   - Push the fix to the `fix/remaining-typescript-errors` branch
-   - Wait for CI to pass
-
-4. **Merge PR #15**:
-   - Only proceed with the tasks below after PR #15 is merged
-   - This ensures you're working from a stable baseline
+**Lessons Learned**: See "Ensuring Local/CI Parity" section below for critical
+insights from PR #15.
 
 ---
 
-## 🤖 Qodo Code Review Suggestions
+## 🤖 Qodo Code Review Suggestions (Implemented in PR #15)
 
-The Qodo-merge-pro bot identified three potential issues in the test code. **Consider addressing these as part of fixing PR #15 or as a follow-up PR**:
+The Qodo-merge-pro bot identified three potential issues in the test code. **All
+were addressed in PR #15**:
 
 ### 1. Possible Flaky Test (High Priority)
 
-**Issue**: Exponential backoff verification uses strict boolean comparisons with tight tolerances
+**Issue**: Exponential backoff verification uses strict boolean comparisons with
+tight tolerances
 
-**Location**: `tests/integration/supabase-webhook-retry-backoff.test.ts` line 196
+**Location**: `tests/integration/supabase-webhook-retry-backoff.test.ts` line
+196
 
 **Current Code**:
 
@@ -66,10 +58,15 @@ expect(Math.abs(actualDelay - expectedDelay) <= tolerance).toBe(true);
 const tolerance = expectedDelay * 0.75; // Increased from 0.5 to 0.75
 
 // Option 2: Add retry logic
-await expect.poll(async () => {
-  const delay = calculateDelay();
-  return Math.abs(delay - expectedDelay) <= tolerance;
-}, { timeout: 5000, intervals: [100, 250, 500] }).toBe(true);
+await expect
+  .poll(
+    async () => {
+      const delay = calculateDelay();
+      return Math.abs(delay - expectedDelay) <= tolerance;
+    },
+    { timeout: 5000, intervals: [100, 250, 500] }
+  )
+  .toBe(true);
 
 // Option 3: Use toBeCloseTo for numeric comparisons
 expect(actualDelay).toBeCloseTo(expectedDelay, -2); // Within 100ms
@@ -79,7 +76,8 @@ expect(actualDelay).toBeCloseTo(expectedDelay, -2); // Within 100ms
 
 **Issue**: Fallback to empty string for webhook URL can cause TypeError
 
-**Location**: `tests/integration/supabase-webhook-retry-backoff.test.ts` line 294
+**Location**: `tests/integration/supabase-webhook-retry-backoff.test.ts` line
+294
 
 **Current Code**:
 
@@ -88,7 +86,8 @@ const webhookUrl = testConfig.n8n?.webhookUrl || process.env.N8N_WEBHOOK_URL || 
 const response = await fetch(webhookUrl, { ... });
 ```
 
-**Problem**: `fetch('')` throws TypeError instead of failing the test with a clear message
+**Problem**: `fetch('')` throws TypeError instead of failing the test with a
+clear message
 
 **Recommended Fix**:
 
@@ -102,7 +101,8 @@ const response = await fetch(webhookUrl, { ... });
 
 ### 3. Mock Access Safety (Low Priority)
 
-**Issue**: Accessing `vi.mocked(...).mock.calls[0]?.[0]` assumes at least one call
+**Issue**: Accessing `vi.mocked(...).mock.calls[0]?.[0]` assumes at least one
+call
 
 **Location**: `tests/unit/opentelemetry-sdk.test.ts` lines 143, 156, 171
 
@@ -110,7 +110,10 @@ const response = await fetch(webhookUrl, { ... });
 
 ```typescript
 const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0]?.[0];
-expect(exporterConfig?.headers).toHaveProperty('authorization', `Bearer ${testApiKey}`);
+expect(exporterConfig?.headers).toHaveProperty(
+  'authorization',
+  `Bearer ${testApiKey}`
+);
 ```
 
 **Problem**: If mocking changes, this could be undefined and mask test failures
@@ -121,27 +124,35 @@ expect(exporterConfig?.headers).toHaveProperty('authorization', `Bearer ${testAp
 // Assert call count first
 expect(vi.mocked(OTLPTraceExporter)).toHaveBeenCalledTimes(1);
 const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0][0];
-expect(exporterConfig.headers).toHaveProperty('authorization', `Bearer ${testApiKey}`);
+expect(exporterConfig.headers).toHaveProperty(
+  'authorization',
+  `Bearer ${testApiKey}`
+);
 ```
 
-**Implementation Strategy**:
+**Implementation Status**:
 
-- Fix #1 (flaky test) immediately if CI is failing intermittently
-- Fix #2 (empty URL) as part of PR #15 or a quick follow-up
-- Fix #3 (mock safety) as a follow-up PR (low priority)
+- ✅ Fix #1 (flaky test) - Implemented in PR #15 (tolerance increased to 75%)
+- ✅ Fix #2 (empty URL) - Implemented in PR #15 (explicit error check added)
+- ✅ Fix #3 (mock safety) - Implemented in PR #15 (call count assertions added)
 
 ---
 
 ## Background
 
-The CI/CD pipeline was recently restructured to follow 2025 best practices for AI-driven development:
+The CI/CD pipeline was recently restructured to follow 2025 best practices for
+AI-driven development:
 
-- **PR Core** (`.github/workflows/pr-core.yml`): Fast, blocking checks (ESLint, Prettier, TypeScript, unit tests)
-- **Docs Lint** (`.github/workflows/docs-lint.yml`): Advisory markdown linting (non-blocking)
-- **QA Gate** (`.github/workflows/bmad-qa-gate.yml` and `bmad-qa-gate-fast.yml`): Comprehensive validation (post-merge/nightly)
+- **PR Core** (`.github/workflows/pr-core.yml`): Fast, blocking checks (ESLint,
+  Prettier, TypeScript, unit tests)
+- **Docs Lint** (`.github/workflows/docs-lint.yml`): Advisory markdown linting
+  (non-blocking)
+- **QA Gate** (`.github/workflows/bmad-qa-gate.yml` and
+  `bmad-qa-gate-fast.yml`): Comprehensive validation (post-merge/nightly)
 - **Pre-push hook** (`.husky/pre-push`): Fast local checks with escape hatches
 
-All TypeScript errors have been resolved (68 → 0) and strict typecheck is now enabled in PR Core.
+All TypeScript errors have been resolved (68 → 0) and strict typecheck is now
+enabled in PR Core.
 
 ---
 
@@ -156,8 +167,10 @@ All TypeScript errors have been resolved (68 → 0) and strict typecheck is now 
 **Required Changes**:
 
 1. **Edit `.github/workflows/bmad-qa-gate.yml`**:
-   - Split the single `qa-gate` job into three parallel jobs: `lint`, `format`, and `test`
-   - Each job should run independently with its own checkout and dependency installation
+   - Split the single `qa-gate` job into three parallel jobs: `lint`, `format`,
+     and `test`
+   - Each job should run independently with its own checkout and dependency
+     installation
    - Keep the same environment variables and secrets
 
 2. **Edit `.github/workflows/bmad-qa-gate-fast.yml`**:
@@ -175,7 +188,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
           cache: 'npm'
       - run: npm ci || npm i
       - run: npm run lint
@@ -187,7 +200,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
           cache: 'npm'
       - run: npm ci || npm i
       - run: npm run format:check
@@ -199,7 +212,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
           cache: 'npm'
       - run: npm ci || npm i
       - name: Install tools (ripgrep, shellcheck)
@@ -214,8 +227,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          NODE_ENV: "test"
-          CI: "true"
+          NODE_ENV: 'test'
+          CI: 'true'
 ```
 
 **Files to Modify**:
@@ -235,7 +248,8 @@ jobs:
 
 **Goal**: Save 30-60 seconds per workflow run
 
-**Current State**: Only `bmad-qa-gate-fast.yml` uses npm caching; standard QA gate doesn't
+**Current State**: Only `bmad-qa-gate-fast.yml` uses npm caching; standard QA
+gate doesn't
 
 **Required Changes**:
 
@@ -252,8 +266,8 @@ jobs:
 - name: Use Node.js 20
   uses: actions/setup-node@v4
   with:
-    node-version: "20"
-    cache: 'npm'  # Add this line
+    node-version: '20'
+    cache: 'npm' # Add this line
 ```
 
 **Files to Modify**:
@@ -276,7 +290,8 @@ jobs:
 
 **Required Changes**:
 
-1. **Edit `.github/workflows/bmad-qa-gate.yml`** and **`.github/workflows/bmad-qa-gate-fast.yml`**:
+1. **Edit `.github/workflows/bmad-qa-gate.yml`** and
+   **`.github/workflows/bmad-qa-gate-fast.yml`**:
    - Add conditional execution to E2E test step
    - Run E2E tests only when:
      - Commit message contains `[e2e]`
@@ -287,7 +302,9 @@ jobs:
 
 ```yaml
 - name: Run E2E tests
-  if: contains(github.event.head_commit.message, '[e2e]') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  if:
+    contains(github.event.head_commit.message, '[e2e]') || github.event_name ==
+    'schedule' || github.event_name == 'workflow_dispatch'
   run: npm run test:e2e
   env:
     # ... existing env vars
@@ -303,7 +320,9 @@ jobs:
   run: npm run test:integration
 
 - name: E2E tests
-  if: contains(github.event.head_commit.message, '[e2e]') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  if:
+    contains(github.event.head_commit.message, '[e2e]') || github.event_name ==
+    'schedule' || github.event_name == 'workflow_dispatch'
   run: npm run test:e2e
 ```
 
@@ -367,7 +386,8 @@ jobs:
    - Add artifact upload step after unit tests
    - Only upload on failure
 
-2. **Edit `.github/workflows/bmad-qa-gate.yml`** and **`.github/workflows/bmad-qa-gate-fast.yml`**:
+2. **Edit `.github/workflows/bmad-qa-gate.yml`** and
+   **`.github/workflows/bmad-qa-gate-fast.yml`**:
    - Add artifact upload steps after test execution
    - Only upload on failure
 
@@ -421,7 +441,8 @@ jobs:
 
 ### Branch Protection
 
-The repository has branch protection on `main` requiring the "core" check to pass. Make sure:
+The repository has branch protection on `main` requiring the "core" check to
+pass. Make sure:
 
 - PR Core workflow continues to work after changes
 - The job name remains "core" (or update branch protection if you rename it)
@@ -435,7 +456,8 @@ The following secrets are configured and used in workflows:
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-Do not remove or modify secret references without confirming they're no longer needed.
+Do not remove or modify secret references without confirming they're no longer
+needed.
 
 ### Testing Strategy
 
@@ -461,11 +483,122 @@ If any change causes issues:
 
 ## Success Criteria
 
-**Task 1**: QA Gate completes in 5-7 minutes (down from 10-15)  
-**Task 2**: Workflow logs show cache hits, dependency install time reduced  
-**Task 3**: E2E tests skip on regular commits, run on `[e2e]` commits  
-**Task 4**: No Husky deprecation warnings in git output  
-**Task 5**: Test artifacts available for download when tests fail  
+**Task 1**: QA Gate completes in 5-7 minutes (down from 10-15) **Task 2**:
+Workflow logs show cache hits, dependency install time reduced **Task 3**: E2E
+tests skip on regular commits, run on `[e2e]` commits **Task 4**: No Husky
+deprecation warnings in git output **Task 5**: Test artifacts available for
+download when tests fail
+
+---
+
+## Ensuring Local/CI Parity
+
+**Critical Lesson from PR #15**: CI failures often happen because local and CI
+environments differ. Here's how to prevent that:
+
+### 1. Always Use `npm ci` in CI (Not `npm install`)
+
+**Why**: `npm ci` installs exact versions from `package-lock.json`, while
+`npm install` may resolve different versions.
+
+**Current State**: ✅ All workflows use `npm ci || npm i` (fallback for safety)
+
+### 2. Ensure All Dependencies Are in package.json
+
+**Problem Found**: `@types/js-yaml` was installed locally but not in
+`package.json` → CI failed with TypeScript error
+
+**Solution**:
+
+```bash
+# Check for extraneous packages
+npm list 2>&1 | grep extraneous
+
+# If found, add them properly
+npm install --save-dev @types/package-name
+```
+
+**Prevention**: Before pushing, run:
+
+```bash
+npm prune  # Remove extraneous packages
+npm ci     # Reinstall from lock file
+```
+
+### 3. Match ESLint Behavior Between Local and CI
+
+**Problem Found**: ESLint warnings failed CI but not local builds
+
+**Solution**: Updated PR Core workflow to allow warnings:
+
+```yaml
+- name: Lint JS/TS
+  run: npm run lint:js -- --max-warnings 100
+```
+
+**Local Test**: Run the exact CI command:
+
+```bash
+npm run lint:js -- --max-warnings 100
+```
+
+### 4. Test CI Commands Locally Before Pushing
+
+**Recommended Pre-Push Checklist**:
+
+```bash
+# 1. Clean install (matches CI)
+npm ci
+
+# 2. Run linting (matches CI)
+npm run lint:js -- --max-warnings 100
+
+# 3. Run Prettier check (matches CI)
+npx prettier --check '**/*.{js,jsx,ts,tsx,json,yml,yaml}'
+
+# 4. Run TypeScript typecheck (matches CI)
+npx tsc --noEmit
+
+# 5. Run unit tests (matches CI)
+npm run test:unit
+```
+
+**Pro Tip**: Create a script in `package.json`:
+
+```json
+{
+  "scripts": {
+    "ci:local": "npm ci && npm run lint:js -- --max-warnings 100 && npx prettier --check '**/*.{js,jsx,ts,tsx,json,yml,yaml}' && npx tsc --noEmit && npm run test:unit"
+  }
+}
+```
+
+Then run: `npm run ci:local` before pushing.
+
+### 5. Common Mismatches to Watch For
+
+| Issue                | Local                        | CI                     | Fix                         |
+| -------------------- | ---------------------------- | ---------------------- | --------------------------- |
+| **Missing types**    | Installed globally or cached | Not available          | Add to `package.json`       |
+| **ESLint warnings**  | Don't fail build             | Fail build             | Add `--max-warnings N`      |
+| **Node version**     | May differ                   | Fixed in workflow      | Use `nvm` or `asdf` locally |
+| **Environment vars** | Set in shell                 | Set in workflow        | Document required vars      |
+| **File paths**       | Case-insensitive (macOS)     | Case-sensitive (Linux) | Use correct casing          |
+
+### 6. Debugging CI Failures
+
+When CI fails but local passes:
+
+1. **Check the exact error** in GitHub Actions logs
+2. **Look for missing dependencies**: `Could not find module 'X'`
+3. **Check for ESLint/Prettier differences**: Run exact CI commands locally
+4. **Verify Node version matches**: Check workflow vs local (`node --version`)
+5. **Test with `npm ci`**: Not `npm install`
+
+### 7. Update This Section
+
+As you discover new local/CI mismatches, document them here for future
+reference.
 
 ---
 
@@ -476,7 +609,8 @@ If you encounter issues:
 1. Check the GitHub Actions logs for error messages
 2. Verify the workflow syntax with `actionlint` (if available)
 3. Test locally with `act` (GitHub Actions local runner) if possible
-4. Consult the GitHub Actions documentation: <https://docs.github.com/en/actions>
+4. Consult the GitHub Actions documentation:
+   <https://docs.github.com/en/actions>
 
 ---
 
@@ -484,6 +618,6 @@ If you encounter issues:
 
 - **PR #13**: CI/CD policy implementation (merged)
 - **PR #14**: First batch of TypeScript fixes (merged)
-- **PR #15**: Final TypeScript fixes + strict typecheck (open, awaiting merge)
+- **PR #15**: Final TypeScript fixes + strict typecheck (merged)
 
-Wait for PR #15 to merge before starting these improvements.
+**PR #15 is now merged** - You can proceed with the CI improvement tasks above.

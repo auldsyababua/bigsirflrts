@@ -3,25 +3,28 @@
 ## Overview
 
 This guide provides step-by-step instructions for deploying OpenProject
-Community Edition on Digital Ocean using Docker Compose with Cloudflare Tunnel
-for secure access and R2 for file storage.
+Community Edition on Digital Ocean using Docker Compose with **Supabase PostgreSQL**,
+Cloudflare Tunnel for secure access, and R2 for file storage.
+
+**Current Architecture**: Supabase-only (ADR-002) - No local PostgreSQL container.
 
 ## Architecture
 
 ```
 Internet → Cloudflare Tunnel → Digital Ocean VM (NYC3)
                                         ↓
-                            Docker Network (172.20.0.0/16)
+                            Docker Network (flrts_network)
                                         ↓
                     ┌─────────────────────────────────────┐
-                    │  OpenProject    │    PostgreSQL 16  │
-                    │  (4GB RAM)      │    (2GB RAM)      │
+                    │  OpenProject    │    Memcached      │
+                    │  (Rails App)    │    (Cache)        │
                     │                 │                   │
-                    │  Memcached      │    Cloudflared    │
-                    │  (256MB RAM)    │    (256MB RAM)    │
+                    │  Cloudflared    │                   │
+                    │  (Tunnel)       │                   │
                     └─────────────────────────────────────┘
-                                        ↓
-                            Cloudflare R2 (File Storage)
+                            ↓                   ↓
+                    Supabase PostgreSQL    Cloudflare R2
+                    (Managed Database)     (File Storage)
 ```
 
 ## Prerequisites
@@ -62,32 +65,50 @@ chmod +x setup-server.sh
 
 ### 3. Configure Environment Variables
 
+**CRITICAL**: All credentials must be stored in environment variables. Never commit the `.env` file!
+
 ```bash
 # Navigate to project directory
-cd /opt/flrts-openproject
+cd /root
 
-# Copy environment template
-cp .env.example .env
+# Copy environment template (from this repo)
+cp infrastructure/digitalocean/.env.example .env
 
 # Generate secret key
-echo "OPENPROJECT_SECRET_KEY_BASE=$(openssl rand -hex 64)" >> .env
+echo "SECRET_KEY_BASE=$(openssl rand -hex 64)" >> .env
 
-# Generate strong PostgreSQL password
-echo "POSTGRES_PASSWORD=$(openssl rand -base64 32)" >> .env
-
-# Edit the .env file with your values
+# Edit the .env file with your actual values
 nano .env
 ```
 
 Required environment variables to configure:
 
-- `POSTGRES_PASSWORD` - Strong password for PostgreSQL
-- `OPENPROJECT_SECRET_KEY_BASE` - Generated above
-- `OPENPROJECT_HOST_NAME` - Your domain (e.g., openproject.yourdomain.com)
+**Supabase Database Connection** (get from <https://supabase.com/dashboard/project/thnwlykidzhrsagyjncc/settings/database>):
+
+- `SUPABASE_DB_USER` - Usually `postgres`
+- `SUPABASE_DB_PASSWORD` - Your Supabase database password
+- `SUPABASE_DB_HOST` - `db.thnwlykidzhrsagyjncc.supabase.co`
+- `SUPABASE_DB_PORT` - `5432`
+- `SUPABASE_DB_NAME` - `postgres`
+- `SUPABASE_DB_SCHEMA` - `openproject`
+
+**OpenProject Security**:
+
+- `SECRET_KEY_BASE` - Generated above (CRITICAL - never use defaults!)
+- `OPENPROJECT_ADMIN_USERNAME` - Admin username (change from default!)
+- `OPENPROJECT_ADMIN_PASSWORD` - Strong admin password (change from default!)
+- `OPENPROJECT_HOST_NAME` - `ops.10nz.tools`
+- `OPENPROJECT_HTTPS` - `true`
+
+**Cloudflare R2 Storage**:
+
 - `R2_ACCESS_KEY_ID` - From Cloudflare R2
 - `R2_SECRET_ACCESS_KEY` - From Cloudflare R2
 - `R2_ENDPOINT` - Your R2 endpoint URL
-- `R2_BUCKET` - Your R2 bucket name
+- `R2_BUCKET` - `10netzero-docs`
+
+**Cloudflare Tunnel**:
+
 - `CLOUDFLARE_TUNNEL_TOKEN` - From Cloudflare Tunnel setup
 
 ### 4. Set Up Cloudflare R2 Storage
@@ -131,57 +152,103 @@ Configure tunnel ingress rules in Cloudflare Dashboard:
    - Domain: yourdomain.com
    - Service: <http://openproject:80>
 
-### 6. Deploy the Application
+### 6. Validate Environment Variables
+
+**IMPORTANT**: Validate your environment before deployment to prevent boot with empty credentials.
 
 ```bash
 # On the server
-cd /opt/flrts-openproject
+cd /root
 
-# Start all services
-docker compose up -d
+# Run validation script
+bash infrastructure/digitalocean/validate-env.sh
 
-# Monitor startup (this takes 2-3 minutes)
-docker compose logs -f openproject
-
-# Check health
-./scripts/health-check.sh
+# If validation passes, proceed with deployment
 ```
 
-### 7. Initial OpenProject Configuration
-
-1. Access OpenProject at `http://165.227.216.172:8080` (temporary)
-2. Complete the setup wizard:
-   - Admin email: <admin@yourdomain.com>
-   - Admin password: (secure password)
-   - Language: English
-3. Configure organization settings
-4. Create first project
-
-### 8. Secure the Deployment
+### 7. Deploy the Application
 
 ```bash
-# Once Cloudflare Tunnel is working, remove direct port access
-ufw delete allow 8080/tcp
-ufw reload
+# On the server
+cd /root
 
-# Update docker-compose.yml to bind only to localhost
-# Change: ports: - "8080:80"
-# To: ports: - "127.0.0.1:8080:80"
-docker compose up -d
+# Start all services using Supabase compose file
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml up -d
+
+# Monitor startup (this takes 5-10 minutes for first migration)
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml logs -f
+
+# Check that migration completed successfully
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml ps
+
+# The openproject-migrate container should show "Exit 0" status
+# The openproject container should be "Up" and healthy
+```
+
+**What happens during deployment:**
+
+1. `openproject-migrate` runs database migrations and seeds (then exits)
+2. `openproject` starts and connects to Supabase PostgreSQL
+3. `memcached` starts for Rails caching
+4. `cloudflared` starts the Cloudflare Tunnel
+
+### 8. Initial OpenProject Configuration
+
+Access OpenProject via Cloudflare Tunnel at `https://ops.10nz.tools`
+
+**Admin Credentials** (from CLAUDE.md):
+
+- Username: `admin`
+- Password: Set via `OPENPROJECT_ADMIN_PASSWORD` in `.env`
+
+**IMPORTANT**: Change the admin password immediately after first login!
+
+1. Log in with admin credentials
+2. Go to Administration → Users → admin
+3. Change password to a strong, unique password
+4. Store new password in 1Password or your password manager
+
+### 8. Verify Deployment
+
+```bash
+# Check all containers are running
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml ps
+
+# Test OpenProject health endpoint
+curl http://localhost:8080/health_checks/default
+
+# Test Supabase connection
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml exec openproject \
+  rails runner "puts ActiveRecord::Base.connection.execute('SELECT version()').first"
+
+# Should show PostgreSQL version from Supabase
 ```
 
 ## Maintenance
 
-### Daily Backups
+### Database Backups
 
-Automated backups run daily at 2 AM UTC:
+**Note**: Database is managed by Supabase. Use Supabase's built-in backup features:
+
+1. **Point-in-Time Recovery (PITR)**: Available in Supabase dashboard
+2. **Manual Backups**: Use `pg_dump` to backup from Supabase
 
 ```bash
-# Manual backup
-/opt/flrts-openproject/scripts/backup.sh
+# Manual backup from Supabase (run from your local machine or server)
+PGPASSWORD="${SUPABASE_DB_PASSWORD}" pg_dump \
+  -h db.thnwlykidzhrsagyjncc.supabase.co \
+  -U postgres \
+  -d postgres \
+  --schema=openproject \
+  --no-owner --no-acl \
+  | gzip > openproject_backup_$(date +%Y%m%d).sql.gz
 
-# View backup files
-ls -la /opt/flrts-openproject/backups/
+# Restore from backup
+gunzip < openproject_backup_20250101.sql.gz | \
+PGPASSWORD="${SUPABASE_DB_PASSWORD}" psql \
+  -h db.thnwlykidzhrsagyjncc.supabase.co \
+  -U postgres \
+  -d postgres
 ```
 
 ### Monitoring
@@ -219,14 +286,18 @@ docker compose up -d
 
 ```bash
 # Check logs
-docker compose logs openproject
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml logs openproject
 
-# Check database connection (Supabase)
-# Use your Supabase pooler connection string; example:
-# psql "postgresql://<user>:<password>@<pooler-host>:5432/postgres?sslmode=require&schema=openproject" -c "select now()"
+# Check database connection to Supabase
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml exec openproject \
+  rails runner "ActiveRecord::Base.connection.execute('SELECT 1')"
+
+# Check if migration container completed successfully
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml ps openproject-migrate
+# Should show "Exit 0"
 
 # Restart services
-docker compose restart
+docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml restart
 ```
 
 #### High memory usage
@@ -254,12 +325,16 @@ docker compose restart cloudflared
 
 ## Resource Allocation
 
+**Note**: No local PostgreSQL container - using Supabase managed database.
+
 | Service     | Memory Limit | CPU Limit     | Actual Usage (typical)        |
 | ----------- | ------------ | ------------- | ----------------------------- |
-| OpenProject | 4GB          | 2.0 cores     | 2-3GB / 0.5-1.0 cores         |
-| Memcached   | 384MB        | 0.25 cores    | 256MB / 0.05 cores            |
-| Cloudflared | 256MB        | 0.25 cores    | 50MB / 0.01 cores             |
-| **Total**   | **4.6GB**    | **2.5 cores** | **2.5-3.5GB / 0.6-1.1 cores** |
+| OpenProject | No limit     | No limit      | 2-3GB / 0.5-1.0 cores         |
+| Memcached   | No limit     | No limit      | 256MB / 0.05 cores            |
+| Cloudflared | No limit     | No limit      | 50MB / 0.01 cores             |
+| **Total**   | **~3.5GB**   | **~0.6 cores**| **2.5-3.5GB / 0.6-1.1 cores** |
+
+**Droplet Size**: s-4vcpu-8gb (4 vCPU, 8GB RAM) - plenty of headroom for growth
 
 ## Security Checklist
 
@@ -267,19 +342,23 @@ docker compose restart cloudflared
 - [x] Fail2ban protecting SSH
 - [x] Docker logs limited to prevent disk fill
 - [x] No direct port exposure (via Cloudflare Tunnel)
-- [ ] SSL/TLS certificates (handled by Cloudflare)
-- [ ] Database encrypted at rest
+- [x] SSL/TLS certificates (handled by Cloudflare)
+- [x] Database encrypted at rest (Supabase manages encryption)
+- [x] No hardcoded credentials (all in .env file)
+- [x] .env file in .gitignore
 - [ ] Regular security updates scheduled
 - [ ] Monitoring and alerting configured
+- [ ] Admin password changed from default
 
 ## Cost Breakdown
 
 | Service                             | Monthly Cost   |
 | ----------------------------------- | -------------- |
 | Digital Ocean Droplet (s-4vcpu-8gb) | $48.00         |
+| Supabase Pro (PostgreSQL)           | $25.00         |
 | Cloudflare R2 (100GB storage)       | ~$2.00         |
 | Cloudflare Tunnel                   | Free           |
-| **Total**                           | **~$50/month** |
+| **Total**                           | **~$75/month** |
 
 ## Emergency Procedures
 
@@ -325,28 +404,40 @@ docker compose up -d
 
 ## Appendix: Environment Variables Reference
 
+See `.env.example` for the complete template. Key variables:
+
 ```bash
-# Required Variables
-POSTGRES_PASSWORD=                    # PostgreSQL password
-OPENPROJECT_SECRET_KEY_BASE=         # Rails secret key (generate with openssl)
-OPENPROJECT_HOST_NAME=                # Your domain name
-CLOUDFLARE_TUNNEL_TOKEN=              # Cloudflare Tunnel token
+# Supabase Database Connection
+SUPABASE_DB_USER=postgres
+SUPABASE_DB_PASSWORD=                 # From Supabase dashboard
+SUPABASE_DB_HOST=db.thnwlykidzhrsagyjncc.supabase.co
+SUPABASE_DB_PORT=5432
+SUPABASE_DB_NAME=postgres
+SUPABASE_DB_SCHEMA=openproject
 
-# R2 Storage (Required for file attachments)
-R2_ACCESS_KEY_ID=                     # R2 Access Key
-R2_SECRET_ACCESS_KEY=                 # R2 Secret Key
-R2_ENDPOINT=                          # https://ACCOUNT_ID.r2.cloudflarestorage.com
-R2_BUCKET=openproject-files           # R2 bucket name
+# OpenProject Security (CRITICAL - never use defaults!)
+SECRET_KEY_BASE=                      # Generate with: openssl rand -hex 64
+OPENPROJECT_ADMIN_USERNAME=admin
+OPENPROJECT_ADMIN_PASSWORD=           # Strong password
+OPENPROJECT_HOST_NAME=ops.10nz.tools
+OPENPROJECT_HTTPS=true
 
-# Optional Email Configuration
-EMAIL_DELIVERY_METHOD=smtp            # Email delivery method
-SMTP_ADDRESS=                         # SMTP server address
-SMTP_PORT=587                         # SMTP port
-SMTP_USERNAME=                        # SMTP username
-SMTP_PASSWORD=                        # SMTP password
-SMTP_DOMAIN=                          # Email domain
-SMTP_AUTH=plain                       # SMTP authentication method
+# Cloudflare R2 Storage
+R2_ACCESS_KEY_ID=                     # From Cloudflare R2
+R2_SECRET_ACCESS_KEY=                 # From Cloudflare R2
+R2_ENDPOINT=                          # Your R2 endpoint
+R2_BUCKET=10netzero-docs
+
+# Cloudflare Tunnel
+CLOUDFLARE_TUNNEL_TOKEN=              # From Cloudflare Tunnel setup
 ```
+
+**Security Notes:**
+
+- Never commit `.env` to git (already in .gitignore)
+- Store credentials in 1Password or secure password manager
+- Rotate `SECRET_KEY_BASE` and admin password quarterly
+- Use strong, unique passwords for all credentials
 
 ---
 

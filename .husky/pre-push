@@ -1,6 +1,4 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
+#!/usr/bin/env bash
 # Allow skipping the hook entirely (emergencies/refactors)
 if [ "$SKIP_PREPUSH" = "1" ]; then
   echo "⏭️  SKIP_PREPUSH=1 set — skipping pre-push checks."
