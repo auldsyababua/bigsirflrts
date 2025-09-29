@@ -195,16 +195,33 @@ describe('Container Naming Standardization Tests', () => {
     });
 
     test('No hardcoded container references in compose files', async () => {
-      const command =
-        'grep -r "docker-.*-1\\|bigsirflrts-" infrastructure/docker/*.yml 2>/dev/null || true';
+      // Use Node.js fs module instead of shell command to avoid command injection
+      const { readdir, readFile } = await import('node:fs/promises');
+      const { join } = await import('node:path');
 
-      try {
-        const { stdout } = await execAsync(command);
-        expect(stdout.trim()).toBe('');
-      } catch (error) {
-        // Command failed - that's good, means no matches found
-        expect(error).toBeDefined();
+      const dockerDir = join(process.cwd(), 'infrastructure/docker');
+      const files = await readdir(dockerDir);
+      const ymlFiles = files.filter((f) => f.endsWith('.yml'));
+
+      const violations: string[] = [];
+      const patterns = [/docker-.*-1/, /bigsirflrts-/];
+
+      for (const file of ymlFiles) {
+        const content = await readFile(join(dockerDir, file), 'utf-8');
+        const lines = content.split('\n');
+
+        lines.forEach((line, index) => {
+          patterns.forEach((pattern) => {
+            if (pattern.test(line)) {
+              violations.push(`${file}:${index + 1}: ${line.trim()}`);
+            }
+          });
+        });
       }
+
+      expect(violations, `Found hardcoded container references:\n${violations.join('\n')}`).toEqual(
+        []
+      );
     });
   });
 
