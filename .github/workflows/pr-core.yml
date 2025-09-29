@@ -43,7 +43,10 @@ jobs:
         with:
           name: test-results-pr-${{ github.run_id }}
           path: |
-            test-results/
-            playwright-report/
-            coverage/
+            test-results/**/*.xml
+            test-results/**/*.json
+            playwright-report/**/*.html
+            playwright-report/**/*.png
+            coverage/**/*.html
+            coverage/**/*.json
           retention-days: 7

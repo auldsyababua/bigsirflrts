@@ -26,18 +26,6 @@ jobs:
           node-version: "20"
           cache: 'npm'
 
-      - name: Cache Dependencies
-        if: "!contains(runner.name, 'local')"
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-deps-
-
       - name: Install dependencies
         run: npm ci || npm i
 
@@ -67,18 +55,6 @@ jobs:
         with:
           node-version: "20"
           cache: 'npm'
-
-      - name: Cache Dependencies
-        if: "!contains(runner.name, 'local')"
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-deps-
 
       - name: Install dependencies
         run: npm ci || npm i
@@ -114,17 +90,14 @@ jobs:
           node-version: "20"
           cache: 'npm'
 
-      - name: Cache Dependencies
+      - name: Cache Playwright browsers
         if: "!contains(runner.name, 'local')"
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.npm
-            node_modules
-            ~/.cache/ms-playwright
-          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-deps-
+            ${{ runner.os }}-playwright-
 
       - name: Install dependencies
         run: npm ci || npm i
@@ -162,7 +135,7 @@ jobs:
           RUNNER_TYPE: ${{ runner.labels[0] }}
 
       - name: E2E tests
-        if: contains(github.event.head_commit.message, '[e2e]') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: (github.event.head_commit.message && contains(github.event.head_commit.message, '[e2e]')) || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: npm run test:e2e
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
@@ -179,9 +152,12 @@ jobs:
         with:
           name: test-results-fast-${{ github.run_id }}
           path: |
-            test-results/
-            playwright-report/
-            coverage/
+            test-results/**/*.xml
+            test-results/**/*.json
+            playwright-report/**/*.html
+            playwright-report/**/*.png
+            coverage/**/*.html
+            coverage/**/*.json
           retention-days: 7
 
       - name: Performance Report
