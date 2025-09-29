@@ -1,0 +1,87 @@
+{
+  "module": "OpenProject Integration",
+  "status": "complete",
+  "timestamp": "2025-09-28T00:00:00Z",
+  "services": [
+    {
+      "name": "sync-service",
+      "file": "packages/sync-service/src/index.ts",
+      "apiBase": "${OPENPROJECT_URL}/api/v3",
+      "auth": {
+        "scheme": "basic",
+        "username": "apikey",
+        "secretEnv": "OPENPROJECT_API_KEY"
+      },
+      "endpoints": [
+        { "method": "POST", "path": "/projects/${OPENPROJECT_PROJECT_ID}/work_packages", "usage": "create work package" },
+        { "method": "PATCH", "path": "/work_packages/{id}", "usage": "update work package" },
+        { "method": "DELETE", "path": "/work_packages/{id}", "usage": "delete work package" }
+      ]
+    },
+    {
+      "name": "browser-extension",
+      "file": "packages/flrts-extension/content.js",
+      "context": "runs inside OpenProject domain",
+      "endpoints": [
+        { "method": "POST", "path": "/api/v3/work_packages", "usage": "create work package via UI action" }
+      ]
+    }
+  ],
+  "validations": {
+    "restVersion": "v3",
+    "headers": ["Content-Type: application/json"],
+    "auth": "Basic apikey:API_KEY supported by OpenProject",
+    "notes": [
+      "Consider using /projects/:id/work_packages/form for pre-validation"
+    ]
+  },
+  "architecture": {
+    "principle": "API-only integration per docs/architecture/api-contract.md",
+    "observed": "Database migrations define openproject.* tables and triggers",
+    "risk": "dual write/consistency if both DB triggers and REST are used",
+    "decisionNeeded": true
+  },
+  "issues": [
+    {
+      "id": "OP-1",
+      "severity": "HIGH",
+      "title": "Hardcoded project ID",
+      "location": "packages/sync-service/src/index.ts:26",
+      "description": "OPENPROJECT_PROJECT_ID = 3 is hardcoded",
+      "remediation": "Parameterize as OPENPROJECT_PROJECT_ID env or discover dynamically"
+    },
+    {
+      "id": "OP-2",
+      "severity": "MEDIUM",
+      "title": "No retry/backoff or idempotency",
+      "location": "packages/sync-service/src/index.ts (openprojectAPI calls)",
+      "description": "Create/Update/Delete calls do not implement retries, backoff, or idempotency keys",
+      "remediation": "Add exponential backoff, request IDs, and deduplication strategy"
+    },
+    {
+      "id": "OP-3",
+      "severity": "MEDIUM",
+      "title": "Environment-coupled dictionary IDs",
+      "location": "packages/sync-service/src/index.ts:41-61, 76-79",
+      "description": "Status/Priority numeric IDs are hardcoded and vary per OpenProject instance",
+      "remediation": "Resolve IDs via API on startup and cache; or configure via env"
+    },
+    {
+      "id": "OP-4",
+      "severity": "LOW",
+      "title": "Secret prefix logging",
+      "location": "packages/sync-service/src/index.ts:20-21, 174-176",
+      "description": "Logs include first characters of keys which may leak in aggregated logs",
+      "remediation": "Remove key prefix logging in non-local environments"
+    },
+    {
+      "id": "OP-5",
+      "severity": "ARCHITECTURAL",
+      "title": "API-only principle vs DB triggers",
+      "location": "database/migrations/002_openproject_schema.sql",
+      "description": "Migrations define openproject.* tables and triggers that sync with public.tasks, diverging from API-only contract",
+      "remediation": "Choose and enforce a single integration pattern; if API-only, remove triggers and document cache strategy if any"
+    }
+  ]
+}
+

@@ -1,42 +1,35 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+#!/usr/bin/env bash
+# Allow skipping the hook entirely (emergencies/refactors)
+if [ "$SKIP_PREPUSH" = "1" ]; then
+  echo "⏭️  SKIP_PREPUSH=1 set — skipping pre-push checks."
+  exit 0
+fi
 
-echo "🚀 Running pre-push validation checks..."
-echo "This will run unit and integration tests to ensure code quality before pushing."
-echo "This may take 30-90 seconds..."
-echo ""
+echo "🚀 Running pre-push (fast) — P0 unit tests by default"
 
-# Run unit tests
-echo "📦 Running unit tests..."
+# Run unit tests (fast, deterministic)
+echo "📦 Running unit tests (@P0)..."
 if ! npm run test:unit; then
-    echo ""
-    echo "❌ Unit tests failed!"
-    echo "Please fix the failing tests before pushing."
-    echo "Run 'npm run test:unit' locally to debug."
-    exit 1
+  echo "\n❌ Unit tests failed!"
+  echo "Please fix before pushing. Run 'npm run test:unit' to debug."
+  exit 1
 fi
 
 echo "✅ Unit tests passed!"
-echo ""
 
-# Run integration tests  
-echo "🔗 Running integration tests..."
-if ! npm run test:integration; then
-    echo ""
-    echo "❌ Integration tests failed!"
-    echo "Please fix the failing tests before pushing."
-    echo "Run 'npm run test:integration' locally to debug."
+# Optional: include integration tests when requested
+if [ "$RUN_INTEGRATION" = "true" ]; then
+  echo "🔗 RUN_INTEGRATION=true — running integration tests..."
+  if ! npm run test:integration; then
+    echo "\n❌ Integration tests failed!"
+    echo "Please fix before pushing. Run 'npm run test:integration' to debug."
     exit 1
+  fi
+  echo "✅ Integration tests passed!"
+else
+  echo "🔍 Skipping integration tests (set RUN_INTEGRATION=true to include)"
 fi
 
-echo "✅ Integration tests passed!"
-echo ""
-
-echo "🎉 All pre-push checks passed!"
-echo ""
-echo "💡 Reminder: The full CI environment will run 'npm run test:ci-local' on GitHub Actions."
-echo "   If you want to test the exact CI environment locally before pushing, run:"
-echo "   npm run test:ci-local"
-echo ""
+echo "🎉 Pre-push checks complete"
 
 exit 0

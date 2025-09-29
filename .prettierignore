@@ -8,3 +8,5 @@ package-lock.json
 .github/workflows/*.yml
 ARCHIVE(DEPRECATED)/
 infrastructure/digitalocean/monitoring/
+audit-results/
+docs/architecture/audit-*.md
