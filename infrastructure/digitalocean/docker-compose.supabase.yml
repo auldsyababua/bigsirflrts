@@ -2,6 +2,9 @@ version: "3.8"
 
 # OpenProject connected to Supabase PostgreSQL
 # Following PRD architecture: Single database with schema separation
+#
+# IMPORTANT: Run ./validate-env.sh before starting to ensure all required
+# environment variables are set. This prevents boot with empty credentials.
 
 services:
   openproject-migrate:
@@ -10,10 +13,11 @@ services:
     restart: "no"
     environment:
       # Supabase Direct Connection (IPv4 add-on enabled)
-      DATABASE_URL: "postgresql://postgres:jda2NZG7czw0jau%40zxa@db.thnwlykidzhrsagyjncc.supabase.co:5432/postgres?schema=openproject"
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-kCB6E+/0HzxTR0yBkBCqNdcntXTpMkLZvpL7K28mZIkiHuDaRVKx1gPihP4VHp2o}
+      # Format: postgresql://[user]:[password]@[host]:[port]/[database]?schema=[schema]
+      DATABASE_URL: "postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?schema=${SUPABASE_DB_SCHEMA}"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       RAILS_ENV: production
-      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: openproject
+      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: ${SUPABASE_DB_SCHEMA}
     command: bundle exec rake db:migrate db:seed
 
   openproject:
@@ -22,21 +26,22 @@ services:
     restart: always
     environment:
       # Supabase Direct Connection (IPv4 add-on enabled)
-      DATABASE_URL: "postgresql://postgres:jda2NZG7czw0jau%40zxa@db.thnwlykidzhrsagyjncc.supabase.co:5432/postgres?schema=openproject"
+      # Format: postgresql://[user]:[password]@[host]:[port]/[database]?schema=[schema]
+      DATABASE_URL: "postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?schema=${SUPABASE_DB_SCHEMA}"
 
       # OpenProject configuration
-      OPENPROJECT_HOST__NAME: ops.10nz.tools
-      OPENPROJECT_HTTPS: "true"
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-kCB6E+/0HzxTR0yBkBCqNdcntXTpMkLZvpL7K28mZIkiHuDaRVKx1gPihP4VHp2o}
+      OPENPROJECT_HOST__NAME: ${OPENPROJECT_HOST_NAME}
+      OPENPROJECT_HTTPS: ${OPENPROJECT_HTTPS}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       RAILS_ENV: production
       RAILS_MIN_THREADS: 2
       RAILS_MAX_THREADS: 5
 
       # Database pool configuration (per PRD NFR16)
-      DB_POSTGRESDB_POOL_SIZE: 4
+      DB_POSTGRESDB_POOL_SIZE: ${DB_POSTGRESDB_POOL_SIZE:-4}
 
       # Schema configuration
-      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: openproject
+      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: ${SUPABASE_DB_SCHEMA}
 
       # Attachments storage: Cloudflare R2 via fog (S3-compatible)
       OPENPROJECT_ATTACHMENTS__STORAGE: fog
@@ -49,8 +54,8 @@ services:
       OPENPROJECT_FOG__DIRECTORY: ${R2_BUCKET}
 
       # Admin credentials
-      OPENPROJECT_SEED_ADMIN_USER_NAME: ${OPENPROJECT_ADMIN_USERNAME:-admin}
-      OPENPROJECT_SEED_ADMIN_USER_PASSWORD: ${OPENPROJECT_ADMIN_PASSWORD:-mqsgyCQNQ2q*NCMT8QARXKJqz}
+      OPENPROJECT_SEED_ADMIN_USER_NAME: ${OPENPROJECT_ADMIN_USERNAME}
+      OPENPROJECT_SEED_ADMIN_USER_PASSWORD: ${OPENPROJECT_ADMIN_PASSWORD}
 
     volumes:
       - openproject_data:/var/openproject/assets
