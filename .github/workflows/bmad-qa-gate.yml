@@ -59,6 +59,7 @@ jobs:
           path: |
             .prettierrc
             .prettierignore
+          if-no-files-found: ignore
           retention-days: 7
 
   test:
@@ -106,7 +107,7 @@ jobs:
           CI: "true"
 
       - name: E2E tests
-        if: contains(github.event.head_commit.message, '[e2e]') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message || '', '[e2e]')
         run: npm run test:e2e
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
@@ -125,4 +126,5 @@ jobs:
             test-results/
             playwright-report/
             coverage/
+          if-no-files-found: ignore
           retention-days: 7
