@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -e
+
 # 1. Run environment sanity check
 bash scripts/pre-commit-ci-check.sh
 
