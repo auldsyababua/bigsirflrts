@@ -8,17 +8,103 @@ on:
   workflow_dispatch:
 
 jobs:
-  qa-gate:
-    # Temporarily use GitHub-hosted runner until self-hosted is properly configured
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    
+    timeout-minutes: 5
     steps:
       - name: Runner Info
         run: |
           echo "Running on: ${{ runner.os }} - ${{ runner.name }}"
           echo "Runner labels: ${{ join(runner.labels, ', ') }}"
-          
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Cache Dependencies
+        if: "!contains(runner.name, 'local')"
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Install tools (GitHub-hosted only)
+        if: "!contains(runner.name, 'local')"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep shellcheck
+
+      - name: Lint
+        run: npm run lint
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Runner Info
+        run: |
+          echo "Running on: ${{ runner.os }} - ${{ runner.name }}"
+          echo "Runner labels: ${{ join(runner.labels, ', ') }}"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Cache Dependencies
+        if: "!contains(runner.name, 'local')"
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-deps-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Upload format check results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: format-check-results-fast-${{ github.run_id }}
+          path: |
+            .prettierrc
+            .prettierignore
+          retention-days: 7
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Runner Info
+        run: |
+          echo "Running on: ${{ runner.os }} - ${{ runner.name }}"
+          echo "Runner labels: ${{ join(runner.labels, ', ') }}"
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -53,8 +139,8 @@ jobs:
         if: "!contains(runner.name, 'local')"
         run: npx playwright install --with-deps chromium
 
-      - name: Run BMAD QA Gate
-        run: npm run qa:gate
+      - name: Unit tests
+        run: npm run test:unit
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -63,6 +149,40 @@ jobs:
           NODE_ENV: "test"
           CI: "true"
           RUNNER_TYPE: ${{ runner.labels[0] }}
+
+      - name: Integration tests
+        run: npm run test:integration
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NODE_ENV: "test"
+          CI: "true"
+          RUNNER_TYPE: ${{ runner.labels[0] }}
+
+      - name: E2E tests
+        if: contains(github.event.head_commit.message, '[e2e]') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: npm run test:e2e
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NODE_ENV: "test"
+          CI: "true"
+          RUNNER_TYPE: ${{ runner.labels[0] }}
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-fast-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+            coverage/
+          retention-days: 7
 
       - name: Performance Report
         if: always()

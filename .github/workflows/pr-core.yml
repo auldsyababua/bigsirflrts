@@ -37,3 +37,13 @@ jobs:
       - name: Unit tests (@P0)
         run: npm run test:unit
 
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-pr-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+            coverage/
+          retention-days: 7

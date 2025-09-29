@@ -8,7 +8,60 @@ on:
   workflow_dispatch:
 
 jobs:
-  qa-gate:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Install tools (ripgrep, shellcheck)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep shellcheck
+
+      - name: Lint
+        run: npm run lint
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Upload format check results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: format-check-results-${{ github.run_id }}
+          path: |
+            .prettierrc
+            .prettierignore
+          retention-days: 7
+
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -19,6 +72,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci || npm i
@@ -31,8 +85,8 @@ jobs:
       - name: Install Playwright (Chromium)
         run: npx playwright install --with-deps chromium
 
-      - name: Run BMAD QA Gate
-        run: npm run qa:gate
+      - name: Unit tests
+        run: npm run test:unit
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -40,3 +94,35 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NODE_ENV: "test"
           CI: "true"
+
+      - name: Integration tests
+        run: npm run test:integration
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NODE_ENV: "test"
+          CI: "true"
+
+      - name: E2E tests
+        if: contains(github.event.head_commit.message, '[e2e]') || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: npm run test:e2e
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NODE_ENV: "test"
+          CI: "true"
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+            coverage/
+          retention-days: 7
