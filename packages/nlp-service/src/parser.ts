@@ -28,24 +28,32 @@ export class TaskParser {
     this.jitterMaxMs = parseInt(process.env.OPENAI_BACKOFF_JITTER_MS || '200', 10);
     this.circuitThreshold = parseInt(process.env.OPENAI_CIRCUIT_THRESHOLD || '5', 10);
     this.circuitCooldownMs = parseInt(process.env.OPENAI_CIRCUIT_COOLDOWN_MS || '60000', 10); // 60s
-    // Validate resilience config
-    if (!Number.isFinite(this.timeoutMs) || this.timeoutMs <= 0) {
-      throw new Error('OPENAI_TIMEOUT_MS must be a positive integer');
+    // Validate resilience config with upper bounds to prevent misconfiguration
+    if (!Number.isFinite(this.timeoutMs) || this.timeoutMs <= 0 || this.timeoutMs > 120000) {
+      throw new Error('OPENAI_TIMEOUT_MS must be between 1 and 120000 (2 minutes)');
     }
-    if (!Number.isFinite(this.maxRetries) || this.maxRetries < 0) {
-      throw new Error('OPENAI_MAX_RETRIES must be a non-negative integer');
+    if (!Number.isFinite(this.maxRetries) || this.maxRetries < 0 || this.maxRetries > 10) {
+      throw new Error('OPENAI_MAX_RETRIES must be between 0 and 10');
     }
-    if (!Number.isFinite(this.baseDelayMs) || this.baseDelayMs < 0) {
-      throw new Error('OPENAI_BACKOFF_BASE_MS must be a non-negative integer');
+    if (!Number.isFinite(this.baseDelayMs) || this.baseDelayMs < 0 || this.baseDelayMs > 60000) {
+      throw new Error('OPENAI_BACKOFF_BASE_MS must be between 0 and 60000 (1 minute)');
     }
-    if (!Number.isFinite(this.jitterMaxMs) || this.jitterMaxMs < 0) {
-      throw new Error('OPENAI_BACKOFF_JITTER_MS must be a non-negative integer');
+    if (!Number.isFinite(this.jitterMaxMs) || this.jitterMaxMs < 0 || this.jitterMaxMs > 5000) {
+      throw new Error('OPENAI_BACKOFF_JITTER_MS must be between 0 and 5000');
     }
-    if (!Number.isFinite(this.circuitThreshold) || this.circuitThreshold <= 0) {
-      throw new Error('OPENAI_CIRCUIT_THRESHOLD must be a positive integer');
+    if (
+      !Number.isFinite(this.circuitThreshold) ||
+      this.circuitThreshold <= 0 ||
+      this.circuitThreshold > 100
+    ) {
+      throw new Error('OPENAI_CIRCUIT_THRESHOLD must be between 1 and 100');
     }
-    if (!Number.isFinite(this.circuitCooldownMs) || this.circuitCooldownMs <= 0) {
-      throw new Error('OPENAI_CIRCUIT_COOLDOWN_MS must be a positive integer');
+    if (
+      !Number.isFinite(this.circuitCooldownMs) ||
+      this.circuitCooldownMs <= 0 ||
+      this.circuitCooldownMs > 600000
+    ) {
+      throw new Error('OPENAI_CIRCUIT_COOLDOWN_MS must be between 1 and 600000 (10 minutes)');
     }
     if (this.jitterMaxMs > this.baseDelayMs) {
       this.jitterMaxMs = this.baseDelayMs;
