@@ -54,12 +54,26 @@ should_ignore() {
     local clean_file="${file#./}"
 
     # Convert glob pattern to regex for matching
-    # Handle ** before * to avoid conflicts
+    # Order matters: Replace **/ before * to handle multi-char wildcards correctly
     local regex_pattern="$pattern"
-    regex_pattern="${regex_pattern//\*\*\//(.*/)?}"  # **/ becomes (.*/)? (zero or more dirs)
-    regex_pattern="${regex_pattern//\*/[^/]*}"  # * becomes [^/]* (no slashes)
-    regex_pattern="${regex_pattern//\?/.}"  # ? becomes . (any single char)
-    regex_pattern="^${regex_pattern}$"  # Anchor pattern
+
+    # Replace **/ with placeholder to protect it
+    regex_pattern="${regex_pattern//\*\*\//____DOUBLESTAR____}"
+
+    # Escape literal dots
+    regex_pattern="${regex_pattern//./\\.}"
+
+    # Convert remaining * to [^/]+ (filename wildcard)
+    regex_pattern="${regex_pattern//\*/[^/]+}"
+
+    # Convert ? to . (single char wildcard)
+    regex_pattern="${regex_pattern//\?/.}"
+
+    # Replace placeholder with (/[^/]+)*/ (zero or more directory levels)
+    regex_pattern="${regex_pattern//____DOUBLESTAR____/(/[^/]+)*/}"
+
+    # Anchor pattern
+    regex_pattern="^${regex_pattern}$"
 
     # Check if file matches pattern and check name matches
     if [[ "$clean_file" =~ $regex_pattern ]] && [[ "$check" == "$check_name" || "$check" == "*" ]]; then
