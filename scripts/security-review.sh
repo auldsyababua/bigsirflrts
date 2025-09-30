@@ -93,20 +93,25 @@ echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 # Get changed files (staged + unstaged) or all .ts/.js files if no changes
-CHANGED_FILES=$(git diff --name-only --diff-filter=d HEAD 2>/dev/null || echo "")
-if [ -z "$CHANGED_FILES" ]; then
-  # No changes, check staged files
-  CHANGED_FILES=$(git diff --cached --name-only --diff-filter=d 2>/dev/null || echo "")
+# Safely determine changed files; tolerate non-git contexts
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  CHANGED_FILES="$(git diff --name-only --diff-filter=d HEAD 2>/dev/null || true)"
+  if [ -z "$CHANGED_FILES" ]; then
+    # No changes, check staged files
+    CHANGED_FILES="$(git diff --cached --name-only --diff-filter=d 2>/dev/null || true)"
+  fi
+else
+  CHANGED_FILES=""
 fi
 
-# If still no files, we're probably on a new branch, get all source files
+# If still no files, scan all relevant source files
 if [ -z "$CHANGED_FILES" ]; then
   echo "ℹ️  No changes detected, scanning all TypeScript/JavaScript files..."
-  CHANGED_FILES=$(find . -type f \( -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" \) \
+  CHANGED_FILES="$(find . -type f \( -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" \) \
     -not -path "*/node_modules/*" \
     -not -path "*/archive/*" \
     -not -path "*/.git/*" \
-    -not -path "*/dist/*" 2>/dev/null || echo "")
+    -not -path "*/dist/*" 2>/dev/null || true)"
 fi
 
 if [ -z "$CHANGED_FILES" ]; then
