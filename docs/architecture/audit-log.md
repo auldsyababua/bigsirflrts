@@ -22,7 +22,7 @@ Highlights:
 Key findings:
 
 - CRITICAL: Hardcoded DB credentials and default admin/secret values present in docker compose variants (dev examples). Must replace with env vars or Docker secrets for any non-local use.
-- HIGH: TELEGRAM_BOT_URL referenced without a defined telegram-bot service in one compose; clarify or remove.
+- ~~HIGH: TELEGRAM_BOT_URL referenced without a defined telegram-bot service in one compose; clarify or remove.~~ **RESOLVED (10N-165)**: Removed stale reference.
 - MEDIUM: Ensure production binds to 127.0.0.1 with Cloudflare Tunnel; add CI lint to enforce.
 
 Immediate recommendations:

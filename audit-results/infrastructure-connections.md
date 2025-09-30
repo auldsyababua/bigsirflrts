@@ -71,7 +71,7 @@ graph TB
 ## Notable Findings
 
 - Root compose exposes openproject (8080) and nlp-service (3000) on all interfaces. In production DO config, ports are bound to 127.0.0.1 (safer) and fronted by Cloudflare Tunnel.
-- flrts-nlp references TELEGRAM_BOT_URL=<http://telegram-bot:3001>, but no telegram-bot service is defined in the root compose. Verify deployment plan for the Telegram bot.
+- ~~flrts-nlp references TELEGRAM_BOT_URL=<http://telegram-bot:3001>, but no telegram-bot service is defined in the root compose. Verify deployment plan for the Telegram bot.~~ **RESOLVED (10N-165)**: Stale TELEGRAM_BOT_URL reference removed. Telegram integration is implemented as Supabase Edge Function.
 - Monitoring ports are publicly exposed in local/dev stacks; in prod monitoring compose, ports bind to 127.0.0.1 (safer).
 
 ## Files Analyzed

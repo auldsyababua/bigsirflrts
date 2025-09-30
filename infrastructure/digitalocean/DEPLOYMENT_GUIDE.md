@@ -3,10 +3,11 @@
 ## Overview
 
 This guide provides step-by-step instructions for deploying OpenProject
-Community Edition on Digital Ocean using Docker Compose with **Supabase PostgreSQL**,
-Cloudflare Tunnel for secure access, and R2 for file storage.
+Community Edition on Digital Ocean using Docker Compose with **Supabase
+PostgreSQL**, Cloudflare Tunnel for secure access, and R2 for file storage.
 
-**Current Architecture**: Supabase-only (ADR-002) - No local PostgreSQL container.
+**Current Architecture**: Supabase-only (ADR-002) - No local PostgreSQL
+container.
 
 ## Architecture
 
@@ -65,7 +66,8 @@ chmod +x setup-server.sh
 
 ### 3. Configure Environment Variables
 
-**CRITICAL**: All credentials must be stored in environment variables. Never commit the `.env` file!
+**CRITICAL**: All credentials must be stored in environment variables. Never
+commit the `.env` file!
 
 ```bash
 # Navigate to project directory
@@ -83,7 +85,8 @@ nano .env
 
 Required environment variables to configure:
 
-**Supabase Database Connection** (get from <https://supabase.com/dashboard/project/thnwlykidzhrsagyjncc/settings/database>):
+**Supabase Database Connection** (get from
+<https://supabase.com/dashboard/project/thnwlykidzhrsagyjncc/settings/database>):
 
 - `SUPABASE_DB_USER` - Usually `postgres`
 - `SUPABASE_DB_PASSWORD` - Your Supabase database password
@@ -154,7 +157,8 @@ Configure tunnel ingress rules in Cloudflare Dashboard:
 
 ### 6. Validate Environment Variables
 
-**IMPORTANT**: Validate your environment before deployment to prevent boot with empty credentials.
+**IMPORTANT**: Validate your environment before deployment to prevent boot with
+empty credentials.
 
 ```bash
 # On the server
@@ -228,7 +232,8 @@ docker compose -f infrastructure/digitalocean/docker-compose.supabase.yml exec o
 
 ### Database Backups
 
-**Note**: Database is managed by Supabase. Use Supabase's built-in backup features:
+**Note**: Database is managed by Supabase. Use Supabase's built-in backup
+features:
 
 1. **Point-in-Time Recovery (PITR)**: Available in Supabase dashboard
 2. **Manual Backups**: Use `pg_dump` to backup from Supabase
@@ -327,12 +332,12 @@ docker compose restart cloudflared
 
 **Note**: No local PostgreSQL container - using Supabase managed database.
 
-| Service     | Memory Limit | CPU Limit     | Actual Usage (typical)        |
-| ----------- | ------------ | ------------- | ----------------------------- |
-| OpenProject | No limit     | No limit      | 2-3GB / 0.5-1.0 cores         |
-| Memcached   | No limit     | No limit      | 256MB / 0.05 cores            |
-| Cloudflared | No limit     | No limit      | 50MB / 0.01 cores             |
-| **Total**   | **~3.5GB**   | **~0.6 cores**| **2.5-3.5GB / 0.6-1.1 cores** |
+| Service     | Memory Limit | CPU Limit      | Actual Usage (typical)        |
+| ----------- | ------------ | -------------- | ----------------------------- |
+| OpenProject | No limit     | No limit       | 2-3GB / 0.5-1.0 cores         |
+| Memcached   | No limit     | No limit       | 256MB / 0.05 cores            |
+| Cloudflared | No limit     | No limit       | 50MB / 0.01 cores             |
+| **Total**   | **~3.5GB**   | **~0.6 cores** | **2.5-3.5GB / 0.6-1.1 cores** |
 
 **Droplet Size**: s-4vcpu-8gb (4 vCPU, 8GB RAM) - plenty of headroom for growth
 
