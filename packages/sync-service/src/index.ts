@@ -17,13 +17,20 @@ const supabase = createClient(
 
 console.log('Using Supabase URL:', process.env.SUPABASE_URL);
 console.log('Service key present:', !!process.env.SUPABASE_SERVICE_KEY);
-console.log('Service key first 20 chars:', process.env.SUPABASE_SERVICE_KEY?.substring(0, 20));
-console.log('Anon key first 20 chars:', process.env.SUPABASE_ANON_KEY?.substring(0, 20));
+// Avoid logging any part of secrets in shared logs
 
 // OpenProject API config
 const OPENPROJECT_URL = process.env.OPENPROJECT_URL || 'http://localhost:8080';
 const OPENPROJECT_API_KEY = process.env.OPENPROJECT_API_KEY;
-const OPENPROJECT_PROJECT_ID = 3; // FLRTS Development
+
+// Parameterize project ID via env and fail fast if missing/invalid
+const OPENPROJECT_PROJECT_ID = Number.parseInt(
+  String(process.env.OPENPROJECT_PROJECT_ID || ''),
+  10
+);
+if (!Number.isFinite(OPENPROJECT_PROJECT_ID)) {
+  throw new Error('OPENPROJECT_PROJECT_ID is required and must be a valid integer');
+}
 
 // Create axios instance for OpenProject
 const openprojectAPI = axios.create({
