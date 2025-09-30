@@ -5,35 +5,54 @@ findings for any module.
 
 ---
 
-## 🎯 Critical Context: Internal Startup Tool
+## 🎯 Critical Context: Internal Bitcoin Company Tool
 
-**IMPORTANT**: This is an internal tool for a startup with 10-20 users maximum.
-This is NOT:
+**IMPORTANT**: This is an internal tool for a Bitcoin company with 10-20 users
+maximum. This is NOT:
 
 - ❌ Enterprise software for thousands of users
 - ❌ A product for sale to external customers
 - ❌ Processing consumer PII or sensitive customer data
-- ❌ Requiring enterprise-grade compliance (SOC2, ISO 27001, etc.)
+- ❌ Requiring customer-facing compliance (SOC2, ISO 27001, GDPR, etc.)
 
 **What this IS**:
 
 - ✅ Internal operations tool for company employees
 - ✅ Processing company/business data and partner/supplier contacts
 - ✅ Bitcoin network integration (public blockchain, no customer PII)
+- ✅ **Handles significant Bitcoin holdings** - protecting company assets, not
+  customer funds
 - ✅ Pragmatic security appropriate for small team scale
+
+**Security Context**:
+
+- **Network**: Zero-trust architecture with Cloudflare Tunnel (already
+  implemented)
+  - No open ports, all traffic authenticated
+  - This is for **our asset protection**, not compliance theater
+- **Scale**: 10-20 internal users, not millions of customers
+- **Threat Model**: Protect company Bitcoin holdings from external attackers
+- **Not Our Problem**: Customer data breaches, regulatory audits, consumer
+  privacy laws
 
 **Research & Recommendations Should**:
 
-- Focus on practical, cost-effective solutions
-- Balance security with development velocity
-- Avoid over-engineering for enterprise scale
-- Prioritize fixes that protect against realistic threats
-- Consider maintenance burden for small team
-- Skip solutions requiring dedicated security team
+- **DO** prioritize security protecting Bitcoin holdings and operations
+- **DO** maintain zero-trust network security (Cloudflare Tunnel)
+- **DO** focus on practical, maintainable solutions for small team
+- **DON'T** over-engineer for customer scale (millions of users)
+- **DON'T** add compliance features for regulations that don't apply
+- **DON'T** recommend solutions requiring dedicated security team
 
-**Example**: Rate limiting should prevent abuse, not handle millions of
-concurrent users. Basic bcrypt password hashing is fine; HSM modules are
-overkill.
+**Examples**:
+
+- ✅ Zero-trust network architecture (Cloudflare Tunnel) - protects our Bitcoin
+  operations
+- ✅ HMAC webhook validation - prevents unauthorized access to our systems
+- ✅ Rate limiting to prevent service overwhelm - not DDoS for millions
+- ❌ SOC2 compliance features - no customers to audit for
+- ❌ HSM modules for password hashing - overkill for internal auth
+- ❌ Real-time anomaly detection requiring 24/7 SOC team
 
 ---
 
