@@ -93,9 +93,6 @@ services:
       TZ: UTC
       TEAM_TIMEZONES: '{"Joel":"America/New_York","Bryan":"America/New_York","Taylor":"America/Chicago","Colin":"America/Los_Angeles","Bernie":"America/Los_Angeles","Ari":"America/Los_Angeles"}'
 
-      # Service Discovery
-      TELEGRAM_BOT_URL: http://telegram-bot:3001
-
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_FORMAT: json
