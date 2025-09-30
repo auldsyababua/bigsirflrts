@@ -22,6 +22,8 @@ ARCHIVE(DEPRECATED)/
 infrastructure/digitalocean/monitoring/
 audit-results/
 docs/architecture/audit-*.md
+docs/.scratch
+docs/prompts/
 
 # AI agent and development tool directories (non-production)
 .augment/
