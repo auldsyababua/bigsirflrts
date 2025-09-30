@@ -85,18 +85,23 @@ load_ignores() {
     rule="${line#*|}"; [[ $rule == "$line" ]] && rule="" || rule="${rule%%|*}"
     note="${line#*|}"; note="${note#*|}"; [[ $note == "$line" ]] && note=""
 
+    # Map special rules to safe keys (bash doesn't allow "" or "*" as assoc array keys)
+    local rule_key="$rule"
+    [[ -z $rule ]] && rule_key="@EMPTY@"
+    [[ $rule == "*" ]] && rule_key="@WILDCARD@"
+
     # Dual-pattern expansion for /**/ gaps
     if [[ $glob == *"/**/"* ]]; then
       # Pattern like tests/**/*.test.ts
       # Add both: tests/**/*.test.ts AND tests/*.test.ts
       local alt="${glob//\/\*\*\//\/}"
       IGN_PATS[idx]="$glob|$rule|$note"
-      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      IGN_BY_RULE["$rule_key"]+="${IGN_BY_RULE[$rule_key]:+ }$idx"
       log "Pattern $idx: $glob (rule=$rule)"
       : $((idx++))
 
       IGN_PATS[idx]="$alt|$rule|$note"
-      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      IGN_BY_RULE["$rule_key"]+="${IGN_BY_RULE[$rule_key]:+ }$idx"
       log "Pattern $idx: $alt (rule=$rule, dual-expansion)"
       : $((idx++))
     # Expand /** suffix to include single-level
@@ -105,18 +110,18 @@ load_ignores() {
       # Add both: packages/flrts-extension/** AND packages/flrts-extension/*
       local alt="${glob%/**}/*"
       IGN_PATS[idx]="$glob|$rule|$note"
-      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      IGN_BY_RULE["$rule_key"]+="${IGN_BY_RULE[$rule_key]:+ }$idx"
       log "Pattern $idx: $glob (rule=$rule)"
       : $((idx++))
 
       IGN_PATS[idx]="$alt|$rule|$note"
-      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      IGN_BY_RULE["$rule_key"]+="${IGN_BY_RULE[$rule_key]:+ }$idx"
       log "Pattern $idx: $alt (rule=$rule, dual-expansion)"
       : $((idx++))
     else
       # Simple pattern, no expansion needed
       IGN_PATS[idx]="$glob|$rule|$note"
-      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      IGN_BY_RULE["$rule_key"]+="${IGN_BY_RULE[$rule_key]:+ }$idx"
       log "Pattern $idx: $glob (rule=$rule)"
       : $((idx++))
     fi
@@ -134,7 +139,8 @@ should_ignore() {
   # Get relevant pattern indices for this rule
   local idxes="${IGN_BY_RULE[$check_name]:-}"
   # Also check wildcard rules (empty rule name or "*")
-  idxes+=" ${IGN_BY_RULE[""]:-} ${IGN_BY_RULE["*"]:-}"
+  [[ -v IGN_BY_RULE[@EMPTY@] ]] && idxes+=" ${IGN_BY_RULE[@EMPTY@]}"
+  [[ -v IGN_BY_RULE[@WILDCARD@] ]] && idxes+=" ${IGN_BY_RULE[@WILDCARD@]}"
 
   local i glob rule _
   for i in $idxes; do
