@@ -87,8 +87,9 @@ services:
     ports:
       - "127.0.0.1:16686:16686" # UI - localhost only
       - "127.0.0.1:14250:14250" # gRPC
-      - "4317:4317" # OTLP gRPC - allow container access
-      - "4318:4318" # OTLP HTTP - allow container access
+    expose:
+      - "4317" # OTLP gRPC - container-to-container only (not exposed to host)
+      - "4318" # OTLP HTTP - container-to-container only (not exposed to host)
     deploy:
       resources:
         limits:
