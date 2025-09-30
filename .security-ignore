@@ -93,7 +93,7 @@ docs/**/*.md|hardcoded-secrets|Documentation examples with dummy credentials
 README.md|hardcoded-secrets|Documentation examples
 
 # Prompt templates are for AI agents, not production code
-docs/prompts/**/*.md|*|AI agent prompt templates
+docs/prompts/**/*.md|hardcoded-secrets|AI agent prompt templates
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # SPECIFIC FLRTS PATTERNS
