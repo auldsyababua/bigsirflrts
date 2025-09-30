@@ -147,9 +147,10 @@ echo ""
 
 # Check 1: Hardcoded Secrets
 echo "🔍 Checking for hardcoded secrets..."
-if echo "$CHANGED_FILES" | xargs grep -nHE "(password|secret|api[_-]?key|private[_-]?key|token)\s*=\s*['\"]([^'\"]{8,})" 2>/dev/null | grep -v "test" | grep -v "EXAMPLE" | grep -v "\.env"; then
-  add_finding "CRITICAL" "Potential hardcoded secret detected" "multiple" "" "hardcoded-secrets"
-fi
+# Capture and parse matches to avoid leaking raw grep output
+while IFS=: read -r filename linenum content; do
+  add_finding "CRITICAL" "Potential hardcoded secret detected" "$filename" "$linenum" "hardcoded-secrets"
+done < <(echo "$CHANGED_FILES" | xargs grep -nHE "(password|secret|api[_-]?key|private[_-]?key|token)\s*=\s*['\"]([^'\"]{8,})" 2>/dev/null | grep -v "test" | grep -v "EXAMPLE" | grep -v "\.env" || true)
 
 # Check 2: SQL Injection
 echo "🔍 Checking for SQL injection risks..."
@@ -173,9 +174,12 @@ done <<< "$CHANGED_FILES"
 echo "🔍 Checking for XSS vulnerabilities..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]] || [[ "$file" == *.tsx ]] || [[ "$file" == *.jsx ]]; then
-    if grep -nHE "(innerHTML|dangerouslySetInnerHTML|document\\.write)" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
-      add_finding "HIGH" "Potential XSS vulnerability" "$file" "" "xss"
-    fi
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        add_finding "HIGH" "Potential XSS vulnerability" "$filename" "$linenum" "xss"
+      fi
+    done < <(grep -nHE "(innerHTML|dangerouslySetInnerHTML|document\\.write)" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -183,9 +187,16 @@ done <<< "$CHANGED_FILES"
 echo "🔍 Checking for command injection risks..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
-    if grep -nHE "exec\\(|spawn\\(|system\\(" "$file" 2>/dev/null | grep "\${" | grep -v "SECURITY-REVIEWED"; then
-      add_finding "HIGH" "Potential command injection - validate/sanitize input" "$file" "" "command-injection"
-    fi
+    while IFS=: read -r filename linenum content; do
+      # Require variable interpolation to consider as risk
+      if [[ "$content" != *\$\{* ]]; then
+        continue
+      fi
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        add_finding "HIGH" "Potential command injection - validate/sanitize input" "$filename" "$linenum" "command-injection"
+      fi
+    done < <(grep -nHE "exec\\(|spawn\\(|system\\(" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -193,9 +204,12 @@ done <<< "$CHANGED_FILES"
 echo "🔍 Checking CORS configurations..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
-    if grep -nHE "Access-Control-Allow-Origin.*\\*" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
-      add_finding "MEDIUM" "Wildcard CORS (*) - restrict to specific origins" "$file" "" "cors-wildcard"
-    fi
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        add_finding "MEDIUM" "Wildcard CORS (*) - restrict to specific origins" "$filename" "$linenum" "cors-wildcard"
+      fi
+    done < <(grep -nHE "Access-Control-Allow-Origin.*\\*" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -203,9 +217,12 @@ done <<< "$CHANGED_FILES"
 echo "🔍 Checking for eval() usage..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
-    if grep -nHE "\\beval\\(|new Function\\(" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
-      add_finding "HIGH" "Dangerous eval() or Function() constructor usage" "$file" "" "eval-usage"
-    fi
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        add_finding "HIGH" "Dangerous eval() or Function() constructor usage" "$filename" "$linenum" "eval-usage"
+      fi
+    done < <(grep -nHE "\\beval\\(|new Function\\(" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -213,9 +230,12 @@ done <<< "$CHANGED_FILES"
 echo "🔍 Checking cryptographic implementations..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
-    if grep -nHE "(md5|sha1)\\(" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
-      add_finding "MEDIUM" "Weak hashing algorithm (MD5/SHA1) - use SHA-256+" "$file" "" "weak-crypto"
-    fi
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        add_finding "MEDIUM" "Weak hashing algorithm (MD5/SHA1) - use SHA-256+" "$filename" "$linenum" "weak-crypto"
+      fi
+    done < <(grep -nHE "(md5|sha1)\\(" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -252,9 +272,12 @@ while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
     # Check for service_role key in client-side code
     if [[ "$file" != *"edge-function"* ]] && [[ "$file" != *"server"* ]]; then
-      if grep -nHE "service_role|SUPABASE_SERVICE.*KEY" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
-        add_finding "CRITICAL" "Supabase service_role key detected in client-side code" "$file" "" "service-role-exposure"
-      fi
+      while IFS=: read -r filename linenum content; do
+        start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+        if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+          add_finding "CRITICAL" "Supabase service_role key detected in client-side code" "$filename" "$linenum" "service-role-exposure"
+        fi
+      done < <(grep -nHE "service_role|SUPABASE_SERVICE.*KEY" "$file" 2>/dev/null || true)
     fi
   fi
 done <<< "$CHANGED_FILES"
@@ -263,8 +286,15 @@ done <<< "$CHANGED_FILES"
 echo "🔍 [FLRTS] Checking for RLS bypass patterns..."
 while IFS= read -r file; do
   if [[ "$file" == *"edge-function"* ]] || [[ "$file" == *"supabase"* ]]; then
-    # Check for service_role usage without RLS documentation
-    if grep -nHE "service_role" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
+    has_violation=false
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        has_violation=true
+        break
+      fi
+    done < <(grep -nHE "service_role" "$file" 2>/dev/null || true)
+    if [ "$has_violation" = true ]; then
       if ! grep -qE "(RLS_BYPASS|security:.*rls|Row Level Security)" "$file" 2>/dev/null; then
         add_finding "HIGH" "service_role usage without RLS bypass documentation" "$file" "" "rls-bypass"
       fi
@@ -305,12 +335,14 @@ done <<< "$CHANGED_FILES"
 echo "🔍 [FLRTS] Checking Telegram message sanitization..."
 while IFS= read -r file; do
   if [[ "$file" == *"telegram"* ]] && [[ "$file" == *.ts ]]; then
-    # Check for sendMessage with parse_mode without sanitization
-    if grep -nHE "sendMessage.*parse_mode.*(HTML|Markdown)" "$file" 2>/dev/null; then
-      if ! grep -qE "(escapeHtml|sanitize.*markdown|stripHtml)" "$file" 2>/dev/null; then
-        add_finding "MEDIUM" "Telegram message using HTML/Markdown without sanitization" "$file" "" "telegram-html-injection"
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        if ! grep -qE "(escapeHtml|sanitize.*markdown|stripHtml)" "$filename" 2>/dev/null; then
+          add_finding "MEDIUM" "Telegram message using HTML/Markdown without sanitization" "$filename" "$linenum" "telegram-html-injection"
+        fi
       fi
-    fi
+    done < <(grep -nHE "sendMessage.*parse_mode.*(HTML|Markdown)" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -318,10 +350,15 @@ done <<< "$CHANGED_FILES"
 echo "🔍 [FLRTS] Checking N8N webhook URL handling..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
-    # Check for N8N webhook URLs hardcoded in code
-    if grep -nHE "https?://.*n8n.*webhook" "$file" 2>/dev/null | grep -v "\.env" | grep -v "SECURITY-REVIEWED"; then
-      add_finding "HIGH" "N8N webhook URL hardcoded - use environment variable" "$file" "" "n8n-webhook-url"
-    fi
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        # Exclude .env files
+        if [[ "$filename" != *.env* ]]; then
+          add_finding "HIGH" "N8N webhook URL hardcoded - use environment variable" "$filename" "$linenum" "n8n-webhook-url"
+        fi
+      fi
+    done < <(grep -nHE "https?://.*n8n.*webhook" "$file" 2>/dev/null | grep -v "\.env" || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -329,10 +366,12 @@ done <<< "$CHANGED_FILES"
 echo "🔍 [FLRTS] Checking Deno permission usage..."
 while IFS= read -r file; do
   if [[ "$file" == *"edge-function"* ]] || [[ "$file" == *"supabase/functions"* ]]; then
-    # Check for --allow-all or overly broad permissions
-    if grep -nHE "Deno\.(run|spawn).*--allow-all" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
-      add_finding "HIGH" "Deno --allow-all permission detected - use granular permissions" "$file" "" "deno-permissions"
-    fi
+    while IFS=: read -r filename linenum content; do
+      start=$((linenum - 10)); [ $start -lt 1 ] && start=1
+      if ! sed -n "${start},${linenum}p" "$filename" 2>/dev/null | grep -q "SECURITY-REVIEWED"; then
+        add_finding "HIGH" "Deno --allow-all permission detected - use granular permissions" "$filename" "$linenum" "deno-permissions"
+      fi
+    done < <(grep -nHE "Deno\.(run|spawn).*--allow-all" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
@@ -340,7 +379,7 @@ done <<< "$CHANGED_FILES"
 echo "🔍 [FLRTS] Checking input length validation for DoS..."
 while IFS= read -r file; do
   if [[ "$file" == *"telegram"* ]] || [[ "$file" == *"parse"* ]]; then
-    if grep -nHE "message\.text|req\.body|request\.json" "$file" 2>/dev/null; then
+    if grep -qE "message\.text|req\.body|request\.json" "$file" 2>/dev/null; then
       if ! grep -qE "(\.length.*>|maxLength|MAX_.*LENGTH|substring\(0,)" "$file" 2>/dev/null; then
         add_finding "MEDIUM" "Input handling without length validation - DoS risk" "$file" "" "input-length-validation"
       fi

@@ -107,6 +107,9 @@ packages/*/supabase/functions/**/*.ts|service-role-exposure|Edge functions with 
 # Edge functions use CORS wildcard for public API access (no credentials)
 supabase/functions/**/*.ts|cors-wildcard|Public Edge Functions need cross-origin access
 packages/*/supabase/functions/**/*.ts|cors-wildcard|Public Edge Functions need cross-origin access
+infrastructure/supabase/functions/**/*.ts|cors-wildcard|Public Edge Functions in infrastructure
+infrastructure/supabase/functions/**/*.ts|service-role-exposure|Edge functions with documented RLS bypass
+
 
 # N8N webhook URLs in configuration files are expected
 infrastructure/n8n/**/*.json|n8n-webhook-url|N8N configuration files

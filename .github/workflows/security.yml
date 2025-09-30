@@ -47,6 +47,9 @@ jobs:
       - name: Install jq (for npm audit parsing)
         run: sudo apt-get update && sudo apt-get install -y jq
 
+      - name: Grep output leakage guard
+        run: npm run test:security:grep-leak
+
       - name: Run Security Review Script
         id: security-review
         run: |
