@@ -50,13 +50,19 @@ should_ignore() {
     [[ "$pattern" =~ ^#.*$ ]] && continue
     [[ -z "$pattern" ]] && continue
 
+    # Remove leading ./ from file path for matching
+    local clean_file="${file#./}"
+
     # Convert glob pattern to regex for matching
-    # Simple implementation: * becomes .*, ? becomes .
-    local regex_pattern="${pattern//\*/.*}"
-    regex_pattern="${regex_pattern//\?/.}"
+    # Handle ** before * to avoid conflicts
+    local regex_pattern="$pattern"
+    regex_pattern="${regex_pattern//\*\*\//(.*/)?}"  # **/ becomes (.*/)? (zero or more dirs)
+    regex_pattern="${regex_pattern//\*/[^/]*}"  # * becomes [^/]* (no slashes)
+    regex_pattern="${regex_pattern//\?/.}"  # ? becomes . (any single char)
+    regex_pattern="^${regex_pattern}$"  # Anchor pattern
 
     # Check if file matches pattern and check name matches
-    if [[ "$file" =~ $regex_pattern ]] && [[ "$check" == "$check_name" || "$check" == "*" ]]; then
+    if [[ "$clean_file" =~ $regex_pattern ]] && [[ "$check" == "$check_name" || "$check" == "*" ]]; then
       return 0  # Should ignore
     fi
   done < ".security-ignore"
