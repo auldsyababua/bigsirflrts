@@ -446,6 +446,8 @@ describe.skipIf(!hasDbConfig)('@P0 Database Monitoring Integration Tests', () =>
       // Act & Assert - Each view should be queryable
       for (const viewName of monitoringViews) {
         await expect(async () => {
+          // SECURITY-REVIEWED: James 2025-01-30
+          // viewName comes from predefined monitoringViews array, not user input
           const result = await dbClient.query(`SELECT * FROM ${viewName} LIMIT 1;`);
           expect(result).toBeDefined();
         }).not.toThrow();
