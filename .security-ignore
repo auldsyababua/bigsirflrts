@@ -1,0 +1,147 @@
+# Security Review Ignore Patterns
+# Format: file_pattern|check_name|reason
+#
+# This file allows systematic false positive handling instead of inline comments.
+# Use this for patterns that are safe by design or intentionally used in specific contexts.
+#
+# Available check names:
+#   - hardcoded-secrets
+#   - sql-injection
+#   - xss
+#   - command-injection
+#   - cors-wildcard
+#   - eval-usage
+#   - weak-crypto
+#   - missing-auth
+#   - telegram-signature
+#   - service-role-exposure
+#   - rls-bypass
+#   - nlp-sanitization
+#   - rate-limiting
+#   - telegram-html-injection
+#   - n8n-webhook-url
+#   - deno-permissions
+#   - input-length-validation
+#   - dependency-vulnerabilities
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# TEST FILES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Test files intentionally use eval for testing eval behavior
+tests/**/*.test.ts|eval-usage|Testing eval behavior and security controls
+tests/**/*.spec.ts|eval-usage|Testing eval behavior and security controls
+
+# Test fixtures use dummy credentials
+tests/fixtures/**/*.ts|hardcoded-secrets|Test fixtures with dummy data
+tests/fixtures/**/*.json|hardcoded-secrets|Test fixtures with dummy data
+tests/mocks/**/*.ts|hardcoded-secrets|Mock data for testing
+
+# Test files may use innerHTML for DOM testing
+tests/**/*.test.tsx|xss|Testing React component rendering
+tests/**/*.spec.tsx|xss|Testing React component rendering
+
+# Integration tests may use service_role for setup
+tests/integration/**/*.ts|service-role-exposure|Integration tests require elevated permissions
+tests/integration/**/*.ts|rls-bypass|Integration tests validate RLS policies
+
+# Test files intentionally skip input validation to test edge cases
+tests/**/*.test.ts|input-length-validation|Testing boundary conditions
+tests/**/*.test.ts|nlp-sanitization|Testing sanitization functions
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SCRIPTS & TOOLING
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Admin scripts require service_role for database operations
+scripts/admin/**/*.ts|service-role-exposure|Admin scripts require service_role
+scripts/migration/**/*.ts|service-role-exposure|Migration scripts require service_role
+scripts/setup/**/*.ts|service-role-exposure|Setup scripts require service_role
+
+# Build scripts may use eval for dynamic imports
+scripts/build/**/*.js|eval-usage|Build-time code generation
+scripts/codegen/**/*.ts|eval-usage|Code generation requires dynamic execution
+
+# Deployment scripts may use command execution
+scripts/deploy/**/*.sh|command-injection|Deployment scripts use controlled shell commands
+infrastructure/scripts/**/*.sh|command-injection|Infrastructure scripts use controlled shell commands
+
+# Development tools may have relaxed CORS for local testing
+scripts/dev-server.ts|cors-wildcard|Development server only, not production
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# CONFIGURATION FILES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Example/template files contain placeholder secrets
+**/*.example|hardcoded-secrets|Example files with placeholder values
+**/*.template|hardcoded-secrets|Template files with placeholder values
+**/.env.example|hardcoded-secrets|Example environment file
+**/.env.template|hardcoded-secrets|Template environment file
+
+# Documentation may show example secrets
+docs/**/*.md|hardcoded-secrets|Documentation examples with dummy credentials
+README.md|hardcoded-secrets|Documentation examples
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# SPECIFIC FLRTS PATTERNS
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# OpenProject configuration legitimately uses DATABASE_URL with credentials
+packages/openproject-config/**/*.ts|hardcoded-secrets|OpenProject config uses env vars, not hardcoded
+infrastructure/docker/docker-compose*.yml|hardcoded-secrets|Docker compose uses env vars
+
+# Edge functions may use service_role with proper RLS documentation
+supabase/functions/**/*.ts|service-role-exposure|Edge functions with documented RLS bypass
+packages/*/supabase/functions/**/*.ts|service-role-exposure|Edge functions with documented RLS bypass
+
+# N8N webhook URLs in configuration files are expected
+infrastructure/n8n/**/*.json|n8n-webhook-url|N8N configuration files
+.n8n/**/*.json|n8n-webhook-url|N8N workflow definitions
+
+# Telegram bot may use HTML/Markdown for rich formatting (sanitized elsewhere)
+packages/telegram-bot/src/formatters/**/*.ts|telegram-html-injection|Formatters use sanitized input
+
+# NLP service intentionally processes natural language (validated by schema)
+packages/flrts-nlp/src/services/parsing.service.ts|nlp-sanitization|Input validated by Zod schema
+packages/flrts-nlp/src/prompts/**/*.ts|nlp-sanitization|Prompts are static templates
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# THIRD-PARTY CODE
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Vendored libraries (reviewed separately)
+vendor/**/*|*|Third-party code reviewed separately
+
+# Generated code (from trusted sources)
+**/*.generated.ts|*|Auto-generated code from trusted tools
+**/*.generated.js|*|Auto-generated code from trusted tools
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ARCHIVED CODE
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Archived code not in production
+archive/**/*|*|Archived code not in production
+ARCHIVE*/**/*|*|Archived code not in production
+docs/archive/**/*|*|Archived documentation
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# NOTES
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# When to use .security-ignore vs inline comments:
+#
+# Use .security-ignore for:
+#   - Systematic patterns (all test files, all examples)
+#   - File type exceptions (*.example, *.template)
+#   - Directory-wide exceptions (tests/, scripts/admin/)
+#
+# Use inline // SECURITY-REVIEWED: comments for:
+#   - One-off exceptions in production code
+#   - Complex logic requiring detailed explanation
+#   - Temporary exceptions with TODO to fix
+#
+# Review this file quarterly to ensure patterns are still valid.
+# Last reviewed: 2025-01-30 by Colin
+

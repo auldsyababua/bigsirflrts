@@ -117,9 +117,23 @@ const result = await db.query(`SELECT * FROM ${viewName} LIMIT 1;`);
 
 For legitimate cases that trigger false positives:
 
-1. Add `// SECURITY-REVIEWED:` comment with explanation
-2. Document in code review why the pattern is safe
-3. Update `.security-ignore` if needed (see below)
+1. **Inline Comments** - For one-off exceptions:
+
+   ```typescript
+   // SECURITY-REVIEWED: Quinn 2025-01-30
+   // viewName comes from predefined array, not user input
+   const result = await db.query(`SELECT * FROM ${viewName} LIMIT 1;`);
+   ```
+
+2. **Systematic Exceptions** - Use `.security-ignore` for patterns:
+
+   ```bash
+   # .security-ignore format: file_pattern|check_name|reason
+   tests/**/*.test.ts|eval-usage|Testing eval behavior
+   scripts/admin/*.ts|service-role-exposure|Admin scripts require service_role
+   ```
+
+3. Document in code review why the pattern is safe
 
 ## 📁 Files and Locations
 
@@ -128,14 +142,19 @@ For legitimate cases that trigger false positives:
   └── security-review.md          # Slash command definition
 
 scripts/
-  └── security-review.sh          # Automated security scanner
+  └── security-review.sh          # Automated security scanner (18 checks)
 
 .husky/
   └── pre-push                    # Git hook configuration
 
+.github/workflows/
+  └── security.yml                # GitHub Actions CI/CD integration
+
 docs/security/
   ├── SECURITY-REVIEW.md          # This file
   └── findings/                   # Historical security findings
+
+.security-ignore                  # Systematic false positive patterns
 ```
 
 ## 🔧 Advanced Usage
@@ -169,19 +188,24 @@ RUN_INTEGRATION=true git push
 
 ### CI/CD Integration
 
-The security review can be integrated into GitHub Actions:
+Security review is **automatically integrated** into GitHub Actions via
+`.github/workflows/security.yml`:
 
-```yaml
-# .github/workflows/security.yml
-name: Security Review
-on: [pull_request]
-jobs:
-  security:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Security Review
-        run: bash scripts/security-review.sh
+**Features:**
+
+- ✅ Runs on all PRs to `main` and `develop`
+- ✅ Runs on push to `main`
+- ✅ Comments findings summary on PRs
+- ✅ Uploads security review logs as artifacts
+- ✅ Blocks merge on CRITICAL/HIGH findings
+- ✅ Includes dependency review action
+
+**Manual Trigger:**
+
+```bash
+# Trigger workflow manually from GitHub Actions tab
+# Or via gh CLI:
+gh workflow run security.yml
 ```
 
 ## 📊 Security Metrics
