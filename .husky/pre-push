@@ -17,6 +17,15 @@ fi
 
 echo "✅ Unit tests passed!"
 
+# Run security review (can be skipped with SKIP_SECURITY=1)
+echo "🔒 Running security review..."
+if ! bash scripts/security-review.sh; then
+  echo "\n❌ Security review failed!"
+  echo "Please address security issues before pushing."
+  echo "To skip (not recommended): SKIP_SECURITY=1 git push"
+  exit 1
+fi
+
 # Optional: include integration tests when requested
 if [ "$RUN_INTEGRATION" = "true" ]; then
   echo "🔗 RUN_INTEGRATION=true — running integration tests..."

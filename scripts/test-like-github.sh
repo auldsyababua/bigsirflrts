@@ -22,6 +22,9 @@ echo -e "${BLUE}  Mimics exact GitHub Actions environment locally${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
 
+# Remove any leftover security artifacts that can break format checks
+rm -f security-findings.json security-review.log || true
+
 # Function to print section headers
 print_section() {
     echo ""
@@ -36,7 +39,7 @@ TOTAL_FAILURES=0
 run_test() {
     local test_name=$1
     local test_command=$2
-    
+
     echo -e "${BLUE}Running:${NC} $test_name"
     if eval "$test_command"; then
         echo -e "${GREEN}✓ PASSED:${NC} $test_name"
@@ -111,13 +114,19 @@ if ! run_test "Format Check" "npm run -s format:check 2>&1"; then
 fi
 
 echo ""
-echo -e "${BLUE}Stage 3: Unit Tests (@P0)${NC}"
+echo -e "${BLUE}Stage 3: Security Grep-Leak Guard${NC}"
+if ! run_test "Security Grep-Leak Guard" "npm run -s test:security:grep-leak 2>&1"; then
+    ALL_TESTS_PASSED=false
+fi
+
+echo ""
+echo -e "${BLUE}Stage 4: Unit Tests (@P0)${NC}"
 if ! run_test "Unit Tests" "npm run -s test:unit 2>&1"; then
     ALL_TESTS_PASSED=false
 fi
 
 echo ""
-echo -e "${BLUE}Stage 4: Integration Tests (@P0)${NC}"
+echo -e "${BLUE}Stage 5: Integration Tests (@P0)${NC}"
 if ! run_test "Integration Tests" "npm run -s test:integration 2>&1"; then
     ALL_TESTS_PASSED=false
 fi
