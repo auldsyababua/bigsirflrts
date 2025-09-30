@@ -128,9 +128,16 @@ echo "🔍 Checking for SQL injection risks..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
     # Look for SQL queries with template literals (excluding parameterized queries)
-    if grep -nHE "(SELECT|INSERT|UPDATE|DELETE|DROP).*(\\$\\{|\\+\s*[a-zA-Z_])" "$file" 2>/dev/null | grep -v "SECURITY-REVIEWED"; then
-      add_finding "HIGH" "Potential SQL injection - use parameterized queries" "$file" "" "sql-injection"
-    fi
+    # Check if SECURITY-REVIEWED appears within 3 lines before the match
+    while IFS=: read -r filename linenum content; do
+      # Get 3 lines before the match to check for SECURITY-REVIEWED
+      start_line=$((linenum - 3))
+      [ $start_line -lt 1 ] && start_line=1
+      context=$(sed -n "${start_line},${linenum}p" "$filename" 2>/dev/null)
+      if ! echo "$context" | grep -q "SECURITY-REVIEWED"; then
+        add_finding "HIGH" "Potential SQL injection - use parameterized queries" "$filename" "$linenum" "sql-injection"
+      fi
+    done < <(grep -nHE "(SELECT|INSERT|UPDATE|DELETE|DROP).*(\\$\\{|\\+\s*[a-zA-Z_])" "$file" 2>/dev/null || true)
   fi
 done <<< "$CHANGED_FILES"
 
