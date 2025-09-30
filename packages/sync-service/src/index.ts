@@ -1,6 +1,6 @@
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
 
