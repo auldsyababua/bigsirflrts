@@ -52,6 +52,59 @@ const openprojectAPI = axios.create({
   },
 });
 
+// Add request interceptor for correlation IDs and logging
+openprojectAPI.interceptors.request.use(
+  (config) => {
+    // Add X-Request-ID if not already present
+    if (!config.headers['X-Request-ID']) {
+      config.headers['X-Request-ID'] = randomUUID();
+    }
+
+    // Log request (redact auth header)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `→ ${config.method?.toUpperCase()} ${config.url} [${config.headers['X-Request-ID']}]`
+      );
+    }
+
+    return config;
+  },
+  (error) => {
+    console.error('Request interceptor error:', error.message);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for error logging with redaction
+openprojectAPI.interceptors.response.use(
+  (response) => {
+    // Log successful responses in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `← ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url} [${response.config.headers['X-Request-ID']}]`
+      );
+    }
+    return response;
+  },
+  (error) => {
+    // Redact sensitive data from error logs
+    const correlationId = error.config?.headers?.['X-Request-ID'] || 'unknown';
+    const method = error.config?.method?.toUpperCase() || 'UNKNOWN';
+    const url = error.config?.url || 'unknown';
+    const status = error.response?.status || 'no response';
+
+    // Log error without exposing auth credentials or sensitive data
+    console.error(`← ${status} ${method} ${url} [${correlationId}]: ${error.message}`);
+
+    // Log response data only in development (may contain sensitive info)
+    if (process.env.NODE_ENV === 'development' && error.response?.data) {
+      console.error(`Response data: ${JSON.stringify(error.response.data).substring(0, 200)}`);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 // Dictionary caches for dynamic ID resolution
 const statusCache = new Map<string, number>();
 const priorityCache = new Map<string, number>();
@@ -63,13 +116,66 @@ const BASE_DELAY_MS = parseInt(process.env.OPENPROJECT_BASE_DELAY_MS || '500', 1
 const MAX_DELAY_MS = parseInt(process.env.OPENPROJECT_MAX_DELAY_MS || '10000', 10);
 const RETRYABLE_STATUS_CODES = [408, 429, 500, 502, 503, 504];
 
-// Idempotency key storage (in-memory with TTL)
+// Idempotency key storage (in-memory LRU cache with TTL)
 interface IdempotencyRecord {
   key: string;
   response: any;
   timestamp: number;
 }
-const idempotencyCache = new Map<string, IdempotencyRecord>();
+
+// LRU cache implementation with max size
+class LRUCache<K, V> {
+  private cache: Map<K, V>;
+  private maxSize: number;
+
+  constructor(maxSize: number) {
+    this.cache = new Map();
+    this.maxSize = maxSize;
+  }
+
+  get(key: K): V | undefined {
+    const value = this.cache.get(key);
+    if (value !== undefined) {
+      // Move to end (most recently used)
+      this.cache.delete(key);
+      this.cache.set(key, value);
+    }
+    return value;
+  }
+
+  set(key: K, value: V): void {
+    // Delete if exists to reorder
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+    // Evict oldest if at capacity
+    else if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
+    }
+    this.cache.set(key, value);
+  }
+
+  delete(key: K): boolean {
+    return this.cache.delete(key);
+  }
+
+  entries(): IterableIterator<[K, V]> {
+    return this.cache.entries();
+  }
+
+  get size(): number {
+    return this.cache.size;
+  }
+}
+
+const MAX_IDEMPOTENCY_CACHE_SIZE = parseInt(
+  process.env.OPENPROJECT_IDEMPOTENCY_CACHE_SIZE || '1000',
+  10
+);
+const idempotencyCache = new LRUCache<string, IdempotencyRecord>(MAX_IDEMPOTENCY_CACHE_SIZE);
 const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // Clean up expired idempotency keys periodically
@@ -162,34 +268,62 @@ async function retryWithBackoff<T>(
   throw lastError;
 }
 
+// Helper to safely parse integer from env var
+function safeParseInt(value: string | undefined, defaultValue: number): number {
+  if (!value) return defaultValue;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
 // Initialize OpenProject dictionaries at startup
 async function initializeDictionaries() {
   console.log('Initializing OpenProject dictionaries...');
 
   try {
-    // Fetch statuses
-    const statusResponse = await openprojectAPI.get('/statuses');
-    const statuses = statusResponse.data._embedded?.elements || [];
-    for (const status of statuses) {
-      statusCache.set(status.name.toLowerCase(), status.id);
-    }
-    console.log(`Loaded ${statusCache.size} statuses from OpenProject`);
+    // Fetch statuses with retry
+    await retryWithBackoff(
+      async (correlationId) => {
+        const statusResponse = await openprojectAPI.get('/statuses', {
+          headers: { 'X-Request-ID': correlationId },
+        });
+        const statuses = statusResponse.data._embedded?.elements || [];
+        for (const status of statuses) {
+          statusCache.set(status.name.toLowerCase(), status.id);
+        }
+        console.log(`Loaded ${statusCache.size} statuses from OpenProject [${correlationId}]`);
+      },
+      { operationName: 'Fetch statuses', maxRetries: 3 }
+    );
 
-    // Fetch priorities
-    const priorityResponse = await openprojectAPI.get('/priorities');
-    const priorities = priorityResponse.data._embedded?.elements || [];
-    for (const priority of priorities) {
-      priorityCache.set(priority.name.toLowerCase(), priority.id);
-    }
-    console.log(`Loaded ${priorityCache.size} priorities from OpenProject`);
+    // Fetch priorities with retry
+    await retryWithBackoff(
+      async (correlationId) => {
+        const priorityResponse = await openprojectAPI.get('/priorities', {
+          headers: { 'X-Request-ID': correlationId },
+        });
+        const priorities = priorityResponse.data._embedded?.elements || [];
+        for (const priority of priorities) {
+          priorityCache.set(priority.name.toLowerCase(), priority.id);
+        }
+        console.log(`Loaded ${priorityCache.size} priorities from OpenProject [${correlationId}]`);
+      },
+      { operationName: 'Fetch priorities', maxRetries: 3 }
+    );
 
-    // Fetch types
-    const typeResponse = await openprojectAPI.get('/types');
-    const types = typeResponse.data._embedded?.elements || [];
-    for (const type of types) {
-      typeCache.set(type.name.toLowerCase(), type.id);
-    }
-    console.log(`Loaded ${typeCache.size} types from OpenProject`);
+    // Fetch types with retry
+    await retryWithBackoff(
+      async (correlationId) => {
+        const typeResponse = await openprojectAPI.get('/types', {
+          headers: { 'X-Request-ID': correlationId },
+        });
+        const types = typeResponse.data._embedded?.elements || [];
+        for (const type of types) {
+          typeCache.set(type.name.toLowerCase(), type.id);
+        }
+        console.log(`Loaded ${typeCache.size} types from OpenProject [${correlationId}]`);
+      },
+      { operationName: 'Fetch types', maxRetries: 3 }
+    );
 
     // Validate critical mappings exist
     const requiredStatuses = ['new', 'in progress', 'closed', 'rejected'];
@@ -211,34 +345,43 @@ async function initializeDictionaries() {
     console.error('❌ Failed to fetch OpenProject dictionaries:', error.message);
     console.log('Falling back to environment variables...');
 
-    // Fallback to environment variables
-    if (process.env.OPENPROJECT_STATUS_NEW_ID) {
-      statusCache.set('new', parseInt(process.env.OPENPROJECT_STATUS_NEW_ID));
-    }
-    if (process.env.OPENPROJECT_STATUS_IN_PROGRESS_ID) {
-      statusCache.set('in progress', parseInt(process.env.OPENPROJECT_STATUS_IN_PROGRESS_ID));
-    }
-    if (process.env.OPENPROJECT_STATUS_CLOSED_ID) {
-      statusCache.set('closed', parseInt(process.env.OPENPROJECT_STATUS_CLOSED_ID));
-    }
-    if (process.env.OPENPROJECT_STATUS_REJECTED_ID) {
-      statusCache.set('rejected', parseInt(process.env.OPENPROJECT_STATUS_REJECTED_ID));
-    }
-    if (process.env.OPENPROJECT_PRIORITY_HIGH_ID) {
-      priorityCache.set('high', parseInt(process.env.OPENPROJECT_PRIORITY_HIGH_ID));
-    }
-    if (process.env.OPENPROJECT_PRIORITY_NORMAL_ID) {
-      priorityCache.set('normal', parseInt(process.env.OPENPROJECT_PRIORITY_NORMAL_ID));
-    }
-    if (process.env.OPENPROJECT_PRIORITY_LOW_ID) {
-      priorityCache.set('low', parseInt(process.env.OPENPROJECT_PRIORITY_LOW_ID));
-    }
-    if (process.env.OPENPROJECT_TYPE_TASK_ID) {
-      typeCache.set('task', parseInt(process.env.OPENPROJECT_TYPE_TASK_ID));
-    }
+    // Fallback to environment variables with safe parsing
+    const statusNewId = safeParseInt(process.env.OPENPROJECT_STATUS_NEW_ID, 0);
+    if (statusNewId > 0) statusCache.set('new', statusNewId);
 
-    if (statusCache.size === 0 || priorityCache.size === 0 || typeCache.size === 0) {
-      throw new Error('Failed to load OpenProject dictionaries from API or environment variables');
+    const statusInProgressId = safeParseInt(process.env.OPENPROJECT_STATUS_IN_PROGRESS_ID, 0);
+    if (statusInProgressId > 0) statusCache.set('in progress', statusInProgressId);
+
+    const statusClosedId = safeParseInt(process.env.OPENPROJECT_STATUS_CLOSED_ID, 0);
+    if (statusClosedId > 0) statusCache.set('closed', statusClosedId);
+
+    const statusRejectedId = safeParseInt(process.env.OPENPROJECT_STATUS_REJECTED_ID, 0);
+    if (statusRejectedId > 0) statusCache.set('rejected', statusRejectedId);
+
+    const priorityHighId = safeParseInt(process.env.OPENPROJECT_PRIORITY_HIGH_ID, 0);
+    if (priorityHighId > 0) priorityCache.set('high', priorityHighId);
+
+    const priorityNormalId = safeParseInt(process.env.OPENPROJECT_PRIORITY_NORMAL_ID, 0);
+    if (priorityNormalId > 0) priorityCache.set('normal', priorityNormalId);
+
+    const priorityLowId = safeParseInt(process.env.OPENPROJECT_PRIORITY_LOW_ID, 0);
+    if (priorityLowId > 0) priorityCache.set('low', priorityLowId);
+
+    const typeTaskId = safeParseInt(process.env.OPENPROJECT_TYPE_TASK_ID, 0);
+    if (typeTaskId > 0) typeCache.set('task', typeTaskId);
+
+    // Fail fast if critical mappings are missing
+    const missingCritical: string[] = [];
+    if (!statusCache.has('new')) missingCritical.push('status:new');
+    if (!statusCache.has('in progress')) missingCritical.push('status:in progress');
+    if (!priorityCache.has('normal')) missingCritical.push('priority:normal');
+    if (!typeCache.has('task')) missingCritical.push('type:task');
+
+    if (missingCritical.length > 0) {
+      throw new Error(
+        `Failed to load critical OpenProject mappings: ${missingCritical.join(', ')}. ` +
+          `Either API must be available or environment variables must be set.`
+      );
     }
 
     console.log(`Loaded fallback configuration from environment`);
