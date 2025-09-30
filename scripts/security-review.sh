@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-shopt -s globstar extglob nullglob  # Enable ** for recursive matching
+# Enable extended globs; tolerate older Bash (e.g., macOS bash 3.2) where some options are unavailable
+shopt -s extglob 2>/dev/null || true
+shopt -s nullglob 2>/dev/null || true
+shopt -s globstar 2>/dev/null || true  # globstar requires Bash 4+
 
 # Debug logging (set DEBUG=1 to enable)
 : "${DEBUG:=0}"

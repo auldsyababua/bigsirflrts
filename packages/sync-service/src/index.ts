@@ -17,13 +17,25 @@ const supabase = createClient(
 
 console.log('Using Supabase URL:', process.env.SUPABASE_URL);
 console.log('Service key present:', !!process.env.SUPABASE_SERVICE_KEY);
-console.log('Service key first 20 chars:', process.env.SUPABASE_SERVICE_KEY?.substring(0, 20));
-console.log('Anon key first 20 chars:', process.env.SUPABASE_ANON_KEY?.substring(0, 20));
+// Avoid logging any part of secrets in shared logs
 
 // OpenProject API config
 const OPENPROJECT_URL = process.env.OPENPROJECT_URL || 'http://localhost:8080';
 const OPENPROJECT_API_KEY = process.env.OPENPROJECT_API_KEY;
-const OPENPROJECT_PROJECT_ID = 3; // FLRTS Development
+
+// Fail fast if API key is missing
+if (!OPENPROJECT_API_KEY || OPENPROJECT_API_KEY.trim().length === 0) {
+  throw new Error('OPENPROJECT_API_KEY is required');
+}
+
+// Parameterize project ID via env and fail fast if missing/invalid
+const OPENPROJECT_PROJECT_ID = Number.parseInt(
+  String(process.env.OPENPROJECT_PROJECT_ID || ''),
+  10
+);
+if (!Number.isFinite(OPENPROJECT_PROJECT_ID) || OPENPROJECT_PROJECT_ID <= 0) {
+  throw new Error('OPENPROJECT_PROJECT_ID is required and must be a positive integer');
+}
 
 // Create axios instance for OpenProject
 const openprojectAPI = axios.create({
@@ -170,10 +182,7 @@ app.post('/sync/task/:id', async (req, res) => {
 
   try {
     console.log(`Fetching task ${taskId} from Supabase...`);
-    console.log(
-      'Using key that starts with:',
-      (process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || '').substring(0, 30)
-    );
+    // Redacted: avoid logging any portion of Supabase keys
 
     // Fetch task from Supabase
     const { data: task, error } = await supabase
