@@ -69,8 +69,9 @@ should_ignore() {
     # Convert ? to . (single char wildcard)
     regex_pattern="${regex_pattern//\?/.}"
 
-    # Replace placeholder with (/[^/]+)*/ (zero or more directory levels)
-    regex_pattern="${regex_pattern//____DOUBLESTAR____/(/[^/]+)*/}"
+    # Replace placeholder with (.*/)?  (zero or more directory levels)
+    # Note: (/[^/]+)*/ is greedy and consumes the filename too
+    regex_pattern="${regex_pattern//____DOUBLESTAR____/(.*/)?}"
 
     # Anchor pattern
     regex_pattern="^${regex_pattern}$"
