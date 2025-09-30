@@ -29,6 +29,31 @@ MEDIUM_COUNT=0
 LOW_COUNT=0
 
 cleanup() {
+  # Always emit a JSON summary so CI/parsers have structured output
+  if [ ! -f "$JSON_OUTPUT" ] || [ ! -s "$JSON_OUTPUT" ]; then
+    local c_crit=${CRITICAL_COUNT:-0}
+    local c_high=${HIGH_COUNT:-0}
+    local c_med=${MEDIUM_COUNT:-0}
+    local c_low=${LOW_COUNT:-0}
+    local c_total=$((c_crit + c_high + c_med + c_low))
+    local fcount=${FILE_COUNT:-0}
+
+    cat > "$JSON_OUTPUT" <<EOF
+{
+  "summary": {
+    "total": $c_total,
+    "critical": $c_crit,
+    "high": $c_high,
+    "medium": $c_med,
+    "low": $c_low,
+    "files_reviewed": $fcount
+  },
+  "findings": [],
+  "status": "$( [ $c_crit -eq 0 ] && [ $c_high -eq 0 ] && echo warning || echo failed )"
+}
+EOF
+  fi
+
   rm -f "$FINDINGS_FILE"
   # Keep JSON_OUTPUT for CI consumption
 }
@@ -53,27 +78,24 @@ should_ignore() {
     # Remove leading ./ from file path for matching
     local clean_file="${file#./}"
 
-    # Convert glob pattern to regex for matching
-    # Order matters: Replace **/ before * to handle multi-char wildcards correctly
+    # Convert glob pattern to regex for matching (supports **, *, ?)
+    # 1) Start with the raw pattern
     local regex_pattern="$pattern"
 
-    # Replace **/ with placeholder to protect it
-    regex_pattern="${regex_pattern//\*\*\//____DOUBLESTAR____}"
+    # 2) Escape regex metacharacters we do NOT want to treat specially
+    #    Keep *, **, and ? unescaped so we can translate them next
+    #    shellcheck disable=SC2001
+    regex_pattern=$(sed -E 's/[.\\[\\]\\{\\}\\(\\)\\+\\^\\$\\|]/\\\&/g' <<< "$regex_pattern")
 
-    # Escape literal dots
-    regex_pattern="${regex_pattern//./\\.}"
-
-    # Convert remaining * to [^/]+ (filename wildcard)
-    regex_pattern="${regex_pattern//\*/[^/]+}"
-
-    # Convert ? to . (single char wildcard)
+    # 3) Translate glob tokens to regex
+    #    - **  →  .*
+    #    - *   →  [^/]*
+    #    - ?   →  .
+    regex_pattern="${regex_pattern//\*\*/.*}"
+    regex_pattern="${regex_pattern//\*/[^/]*}"
     regex_pattern="${regex_pattern//\?/.}"
 
-    # Replace placeholder with (.*/)?  (zero or more directory levels)
-    # Note: (/[^/]+)*/ is greedy and consumes the filename too
-    regex_pattern="${regex_pattern//____DOUBLESTAR____/(.*/)?}"
-
-    # Anchor pattern
+    # 4) Anchor the pattern to match the entire path (relative to repo root)
     regex_pattern="^${regex_pattern}$"
 
     # Check if file matches pattern and check name matches
