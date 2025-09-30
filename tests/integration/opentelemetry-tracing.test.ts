@@ -334,10 +334,10 @@ describe.skipIf(skipInCI)('@P0 OpenTelemetry Integration Tests', () => {
             'auth.test': testCase.auth.substring(0, 10) + '...',
           });
           span.end();
-
-          // Force export through the test span processor
-          await testSpanProcessor.forceFlush();
         });
+
+        // Force export through the test span processor AFTER span block completes
+        await testSpanProcessor.forceFlush();
 
         // Wait for the mock server to receive the request
         await new Promise((resolve) => setTimeout(resolve, 100));

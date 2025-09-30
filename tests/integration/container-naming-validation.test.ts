@@ -196,28 +196,42 @@ describe('Container Naming Standardization Tests', () => {
 
     test('No hardcoded container references in compose files', async () => {
       // Use Node.js fs module instead of shell command to avoid command injection
-      const { readdir, readFile } = await import('node:fs/promises');
-      const { join } = await import('node:path');
+      const { readdir, readFile, stat } = await import('node:fs/promises');
+      const { join, relative } = await import('node:path');
 
       const dockerDir = join(process.cwd(), 'infrastructure/docker');
-      const files = await readdir(dockerDir);
-      const ymlFiles = files.filter((f) => f.endsWith('.yml'));
-
       const violations: string[] = [];
       const patterns = [/docker-.*-1/, /bigsirflrts-/];
 
-      for (const file of ymlFiles) {
-        const content = await readFile(join(dockerDir, file), 'utf-8');
-        const lines = content.split('\n');
+      // Recursive function to scan directories
+      async function scanDirectory(dir: string): Promise<void> {
+        const entries = await readdir(dir);
 
-        lines.forEach((line, index) => {
-          patterns.forEach((pattern) => {
-            if (pattern.test(line)) {
-              violations.push(`${file}:${index + 1}: ${line.trim()}`);
-            }
-          });
-        });
+        for (const entry of entries) {
+          const fullPath = join(dir, entry);
+          const stats = await stat(fullPath);
+
+          if (stats.isDirectory()) {
+            // Recursively scan subdirectories
+            await scanDirectory(fullPath);
+          } else if (entry.endsWith('.yml') || entry.endsWith('.yaml')) {
+            // Check both .yml and .yaml files
+            const content = await readFile(fullPath, 'utf-8');
+            const lines = content.split('\n');
+            const relativePath = relative(dockerDir, fullPath);
+
+            lines.forEach((line, index) => {
+              patterns.forEach((pattern) => {
+                if (pattern.test(line)) {
+                  violations.push(`${relativePath}:${index + 1}: ${line.trim()}`);
+                }
+              });
+            });
+          }
+        }
       }
+
+      await scanDirectory(dockerDir);
 
       expect(violations, `Found hardcoded container references:\n${violations.join('\n')}`).toEqual(
         []
