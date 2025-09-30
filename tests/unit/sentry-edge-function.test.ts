@@ -213,11 +213,6 @@ describe('@P0 Sentry Edge Function Tests', () => {
     it('should capture exceptions with proper context', async () => {
       // Arrange
       const testError = new Error('Test error message');
-      const testRequest = new Request('https://test.com/parse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invalidJson: 'missing_bracket' }),
-      });
 
       // Mock scope behavior for error context
       const capturedContext: any = {};
@@ -305,7 +300,6 @@ describe('@P0 Sentry Edge Function Tests', () => {
 
     it('should set user context for authentication tracking', async () => {
       // Arrange
-      const authHeader = 'Bearer test-token';
 
       // Act
       await mockSentry.withScope(async (scope: any) => {
@@ -355,12 +349,12 @@ describe('@P0 Sentry Edge Function Tests', () => {
 
     it('should create child spans for different operations', async () => {
       // Act
-      const authSpan = mockTransaction.startChild({
+      mockTransaction.startChild({
         op: 'auth.validate',
         description: 'Validate authentication',
       });
 
-      const parseSpan = mockTransaction.startChild({
+      mockTransaction.startChild({
         op: 'request.parse',
         description: 'Parse request body',
       });

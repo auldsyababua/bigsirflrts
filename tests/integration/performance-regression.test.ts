@@ -12,7 +12,7 @@
  * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/performance-regression.test.ts
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
 

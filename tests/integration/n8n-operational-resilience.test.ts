@@ -4,11 +4,11 @@
  * Per Story 1.3 QA Requirements and ADR-001
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { execSync, exec } from 'child_process';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { exec } from 'child_process';
 import { promisify } from 'util';
 import axios from 'axios';
-import * as fs from 'fs';
+
 import * as path from 'path';
 
 const execAsync = promisify(exec);
@@ -26,8 +26,6 @@ const DOCKER_COMPOSE_FILE = path.join(
 
 // Container names (use environment variables or default to flrts-* pattern)
 const N8N_CONTAINER = process.env.N8N_CONTAINER || 'flrts-n8n';
-const POSTGRES_CONTAINER = process.env.POSTGRES_CONTAINER || 'flrts-postgres';
-const NGINX_CONTAINER = process.env.NGINX_CONTAINER || 'flrts-nginx';
 
 // Test timeouts
 const CONTAINER_RESTART_TIMEOUT = 30000; // 30 seconds
@@ -85,28 +83,29 @@ async function getContainerMemoryUsage(containerName: string): Promise<number> {
     const value = parseFloat(match[1]);
     const unit = match[2];
 
-    // Convert to MB
+    // Convert to MiB (base 2 MB)
+    // Note: Docker stats uses binary units (KiB, MiB, GiB) by default
     switch (unit) {
       case 'B':
-        return value / (1024 * 1024);
+        return value / (1024 * 1024); // Bytes to MiB
       case 'KiB':
-        return value / 1024;
+        return value / 1024; // KiB to MiB
       case 'KB':
-        return value / 1000;
+        return value / 1024; // KB to MiB (treating as KiB since Docker uses binary)
       case 'MiB':
-        return value; // Already in MB (base 2)
+        return value; // Already in MiB
       case 'MB':
-        return value; // Already in MB (base 10)
+        return (value * (1000 * 1000)) / (1024 * 1024); // MB (decimal) to MiB (binary)
       case 'GiB':
-        return value * 1024;
+        return value * 1024; // GiB to MiB
       case 'GB':
-        return value * 1000;
+        return (value * (1000 * 1000 * 1000)) / (1024 * 1024); // GB (decimal) to MiB (binary)
       case 'TiB':
-        return value * 1024 * 1024;
+        return value * 1024 * 1024; // TiB to MiB
       case 'TB':
-        return value * 1000 * 1000;
+        return (value * (1000 * 1000 * 1000 * 1000)) / (1024 * 1024); // TB (decimal) to MiB (binary)
       default:
-        return value; // Assume MB if unknown
+        return value; // Assume MiB if unknown
     }
   } catch (error) {
     return 0;
@@ -273,7 +272,7 @@ describe('n8n Operational Resilience Tests', () => {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         // Try webhook during DB disconnection
-        const disconnectedWebhook = await sendWebhook('test-disconnected', {
+        await sendWebhook('test-disconnected', {
           test: 'during_db_failure',
         });
 

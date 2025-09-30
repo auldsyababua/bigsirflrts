@@ -56,7 +56,9 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_API_KEY = 'test-api-key';
 
       // Act - Simulate SDK initialization
-      const mockSDK = new NodeSDK({
+      // Note: Instance not stored because we're testing constructor behavior via mocks
+      // The mock verification below confirms the SDK was instantiated with correct config
+      new NodeSDK({
         traceExporter: new OTLPTraceExporter({
           url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT + '/v1/traces',
           headers: {
@@ -66,7 +68,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
         instrumentations: [],
       });
 
-      // Assert
+      // Assert - Verify constructor was called with correct configuration
       expect(NodeSDK).toHaveBeenCalledTimes(1);
       const sdkConfig = vi.mocked(NodeSDK).mock.calls[0]?.[0];
 
@@ -111,14 +113,16 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_EXPORTER_OTLP_ENDPOINT = testEndpoint;
 
       // Act - Create exporter directly
-      const exporter = new OTLPTraceExporter({
+      // Note: Instance not stored because we're testing constructor behavior via mocks
+      // The mock verification below confirms the exporter was instantiated with correct config
+      new OTLPTraceExporter({
         url: `${testEndpoint}/v1/traces`,
         headers: {
           authorization: 'Bearer test-key',
         },
       });
 
-      // Assert
+      // Assert - Verify constructor was called with correct configuration
       expect(OTLPTraceExporter).toHaveBeenCalled();
       const exporterConfig =
         vi.mocked(OTLPTraceExporter).mock.calls[

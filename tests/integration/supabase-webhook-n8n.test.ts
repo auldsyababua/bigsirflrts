@@ -63,21 +63,18 @@ describe('Supabase Database Webhooks → n8n Integration', () => {
 
       if (response.status === 404) {
         // Function doesn't exist, create a simple check via information_schema
-        const triggerCheckResponse = await fetch(
-          `${testConfig.supabase.url}/rest/v1/rpc/sql_query`,
-          {
-            method: 'POST',
-            headers: getSupabaseHeaders(false),
-            body: JSON.stringify({
-              query: `
+        await fetch(`${testConfig.supabase.url}/rest/v1/rpc/sql_query`, {
+          method: 'POST',
+          headers: getSupabaseHeaders(false),
+          body: JSON.stringify({
+            query: `
               SELECT trigger_name, event_manipulation, action_statement
               FROM information_schema.triggers
               WHERE trigger_name LIKE '%webhook%' OR trigger_name LIKE '%n8n%'
               OR action_statement LIKE '%${N8N_WEBHOOK_URL.split('/').pop()}%'
             `,
-            }),
-          }
-        );
+          }),
+        });
 
         // If no SQL RPC exists, we'll test by creating a task and monitoring the webhook
         console.warn(
