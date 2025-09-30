@@ -9,6 +9,7 @@ package-lock.json
 dist/
 build/
 .bmad-core/
+.claude/commands/bmadInfraDevOps/
 tools/
 infrastructure/digitalocean/monitoring/
 infrastructure/github-runner/work/
