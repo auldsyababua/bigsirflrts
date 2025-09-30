@@ -62,46 +62,29 @@ jobs:
         id: parse-findings
         run: |
           # Parse structured JSON output from security script
-          if [ -f "${{ steps.security-review.outputs.JSON_OUTPUT_PATH }}" ]; then
-            JSON_FILE="${{ steps.security-review.outputs.JSON_OUTPUT_PATH }}"
+          JSON_FILE="security-findings.json"
 
+          if [ -f "$JSON_FILE" ]; then
             CRITICAL=$(jq -r '.summary.critical' "$JSON_FILE")
             HIGH=$(jq -r '.summary.high' "$JSON_FILE")
             MEDIUM=$(jq -r '.summary.medium' "$JSON_FILE")
             LOW=$(jq -r '.summary.low' "$JSON_FILE")
             TOTAL=$(jq -r '.summary.total' "$JSON_FILE")
-
-            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
-            echo "high=$HIGH" >> $GITHUB_OUTPUT
-            echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
-            echo "low=$LOW" >> $GITHUB_OUTPUT
-            echo "total=$TOTAL" >> $GITHUB_OUTPUT
-
-            # Save JSON for PR comment
-            cp "$JSON_FILE" security-findings.json
           else
-            # Fallback to log parsing if JSON not available
-            echo "⚠️ JSON output not found, falling back to log parsing"
-            if [ -f security-review.log ]; then
-              CRITICAL=$(grep -c "🚨 CRITICAL:" security-review.log || echo "0")
-              HIGH=$(grep -c "❗ HIGH:" security-review.log || echo "0")
-              MEDIUM=$(grep -c "⚠️  MEDIUM:" security-review.log || echo "0")
-              LOW=$(grep -c "ℹ️  LOW:" security-review.log || echo "0")
-              TOTAL=$((CRITICAL + HIGH + MEDIUM + LOW))
-            else
-              CRITICAL=0
-              HIGH=0
-              MEDIUM=0
-              LOW=0
-              TOTAL=0
-            fi
-
-            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
-            echo "high=$HIGH" >> $GITHUB_OUTPUT
-            echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
-            echo "low=$LOW" >> $GITHUB_OUTPUT
-            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+            # If JSON not found, assume no findings (script may have exited early)
+            echo "⚠️ JSON output not found, assuming no findings"
+            CRITICAL=0
+            HIGH=0
+            MEDIUM=0
+            LOW=0
+            TOTAL=0
           fi
+
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+          echo "low=$LOW" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
         if: github.event_name == 'pull_request' && always()

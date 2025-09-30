@@ -1,0 +1,41 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop]
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    name: Claude AI Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Claude Code Action
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are reviewing code for FLRTS (Field Reports, Lists, Reminders, Tasks, and Sub-Tasks),
+            a Telegram-based task management system using Supabase Edge Functions and N8N workflows.
+
+            Focus your review on:
+            1. **Telegram webhook security** - signature validation, rate limiting
+            2. **Supabase RLS policies** - service_role key usage, RLS bypass patterns
+            3. **Natural language parsing safety** - input sanitization
+            4. **Input validation** - length limits, DoS prevention
+            5. **API authentication** - proper token/key handling
+            6. **Error handling** - proper logging and error responses
+            7. **TypeScript best practices** - type safety, null checks
+
+            Be constructive and specific. Reference line numbers when suggesting changes.

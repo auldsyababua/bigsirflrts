@@ -22,14 +22,15 @@ fi
 
 # Temporary files for findings
 FINDINGS_FILE=$(mktemp)
-JSON_OUTPUT=$(mktemp)
+JSON_OUTPUT="security-findings.json"
 CRITICAL_COUNT=0
 HIGH_COUNT=0
 MEDIUM_COUNT=0
 LOW_COUNT=0
 
 cleanup() {
-  rm -f "$FINDINGS_FILE" "$JSON_OUTPUT"
+  rm -f "$FINDINGS_FILE"
+  # Keep JSON_OUTPUT for CI consumption
 }
 trap cleanup EXIT
 
