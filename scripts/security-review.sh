@@ -85,15 +85,25 @@ should_ignore() {
     # 2) Escape regex metacharacters we do NOT want to treat specially
     #    Keep *, **, and ? unescaped so we can translate them next
     #    shellcheck disable=SC2001
-    regex_pattern=$(sed -E 's/[.\\[\\]\\{\\}\\(\\)\\+\\^\\$\\|]/\\\&/g' <<< "$regex_pattern")
+    regex_pattern=$(sed -E 's/[.+^$(){}|[\]\\]/\\&/g' <<< "$regex_pattern")
 
     # 3) Translate glob tokens to regex
-    #    - **  →  .*
-    #    - *   →  [^/]*
-    #    - ?   →  .
-    regex_pattern="${regex_pattern//\*\*/.*}"
+    #    - **/  →  (?:.*/)?  (zero or more directories with trailing slash)
+    #    - /**  →  (/.*)?    (optional slash and rest of path)
+    #    - **   →  .*        (any remaining ** becomes catch-all)
+    #    - *    →  [^/]*     (matches within one path segment)
+    #    - ?    →  [^/]      (single character, not slash)
+
+    # Replace **/ first (zero or more dirs)
+    regex_pattern="${regex_pattern//\*\*\//(?\:.*\/)?}"
+    # Replace /** (any subpath)
+    regex_pattern="${regex_pattern//\/\*\*/(\/.*)?}"
+    # Replace remaining ** with .*
+    regex_pattern="${regex_pattern//\*\*/.*/}"
+    # Replace single * (within segment)
     regex_pattern="${regex_pattern//\*/[^/]*}"
-    regex_pattern="${regex_pattern//\?/.}"
+    # Replace ? (single char, not slash)
+    regex_pattern="${regex_pattern//\?/[^/]}"
 
     # 4) Anchor the pattern to match the entire path (relative to repo root)
     regex_pattern="^${regex_pattern}$"
