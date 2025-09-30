@@ -61,22 +61,46 @@ jobs:
         if: always()
         id: parse-findings
         run: |
-          # Extract findings summary from log
-          if [ -f security-review.log ]; then
-            CRITICAL=$(grep -c "🚨 CRITICAL:" security-review.log || echo "0")
-            HIGH=$(grep -c "❗ HIGH:" security-review.log || echo "0")
-            MEDIUM=$(grep -c "⚠️  MEDIUM:" security-review.log || echo "0")
-            LOW=$(grep -c "ℹ️  LOW:" security-review.log || echo "0")
-            
+          # Parse structured JSON output from security script
+          if [ -f "${{ steps.security-review.outputs.JSON_OUTPUT_PATH }}" ]; then
+            JSON_FILE="${{ steps.security-review.outputs.JSON_OUTPUT_PATH }}"
+
+            CRITICAL=$(jq -r '.summary.critical' "$JSON_FILE")
+            HIGH=$(jq -r '.summary.high' "$JSON_FILE")
+            MEDIUM=$(jq -r '.summary.medium' "$JSON_FILE")
+            LOW=$(jq -r '.summary.low' "$JSON_FILE")
+            TOTAL=$(jq -r '.summary.total' "$JSON_FILE")
+
             echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
             echo "high=$HIGH" >> $GITHUB_OUTPUT
             echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
             echo "low=$LOW" >> $GITHUB_OUTPUT
-            
-            TOTAL=$((CRITICAL + HIGH + MEDIUM + LOW))
             echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+            # Save JSON for PR comment
+            cp "$JSON_FILE" security-findings.json
           else
-            echo "total=0" >> $GITHUB_OUTPUT
+            # Fallback to log parsing if JSON not available
+            echo "⚠️ JSON output not found, falling back to log parsing"
+            if [ -f security-review.log ]; then
+              CRITICAL=$(grep -c "🚨 CRITICAL:" security-review.log || echo "0")
+              HIGH=$(grep -c "❗ HIGH:" security-review.log || echo "0")
+              MEDIUM=$(grep -c "⚠️  MEDIUM:" security-review.log || echo "0")
+              LOW=$(grep -c "ℹ️  LOW:" security-review.log || echo "0")
+              TOTAL=$((CRITICAL + HIGH + MEDIUM + LOW))
+            else
+              CRITICAL=0
+              HIGH=0
+              MEDIUM=0
+              LOW=0
+              TOTAL=0
+            fi
+
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high=$HIGH" >> $GITHUB_OUTPUT
+            echo "medium=$MEDIUM" >> $GITHUB_OUTPUT
+            echo "low=$LOW" >> $GITHUB_OUTPUT
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
           fi
 
       - name: Comment on PR
@@ -165,12 +189,14 @@ jobs:
               });
             }
 
-      - name: Upload Security Review Log
+      - name: Upload Security Review Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: security-review-log
-          path: security-review.log
+          name: security-review-results
+          path: |
+            security-review.log
+            security-findings.json
           retention-days: 30
 
       - name: Fail if Critical/High Issues Found
