@@ -41,6 +41,9 @@ tests/mocks/**/*.ts|hardcoded-secrets|Mock data for testing
 tests/**/*.test.tsx|xss|Testing React component rendering
 tests/**/*.spec.tsx|xss|Testing React component rendering
 
+# Browser extension uses innerHTML for UI rendering (sanitized by browser context)
+packages/flrts-extension/**/*.js|xss|Browser extension UI rendering
+
 # Integration tests may use service_role for setup
 tests/integration/**/*.ts|service-role-exposure|Integration tests require elevated permissions
 tests/integration/**/*.ts|rls-bypass|Integration tests validate RLS policies

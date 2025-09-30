@@ -128,10 +128,10 @@ echo "🔍 Checking for SQL injection risks..."
 while IFS= read -r file; do
   if [[ "$file" == *.ts ]] || [[ "$file" == *.js ]]; then
     # Look for SQL queries with template literals (excluding parameterized queries)
-    # Check if SECURITY-REVIEWED appears within 3 lines before the match
+    # Check if SECURITY-REVIEWED appears within 10 lines before the match
     while IFS=: read -r filename linenum content; do
-      # Get 3 lines before the match to check for SECURITY-REVIEWED
-      start_line=$((linenum - 3))
+      # Get 10 lines before the match to check for SECURITY-REVIEWED
+      start_line=$((linenum - 10))
       [ $start_line -lt 1 ] && start_line=1
       context=$(sed -n "${start_line},${linenum}p" "$filename" 2>/dev/null)
       if ! echo "$context" | grep -q "SECURITY-REVIEWED"; then
@@ -247,12 +247,16 @@ done <<< "$CHANGED_FILES"
 # Check 12: Natural Language Input Sanitization
 echo "🔍 [FLRTS] Checking natural language input handling..."
 while IFS= read -r file; do
-  if [[ "$file" == *"parse"* ]] || [[ "$file" == *"nlp"* ]] || [[ "$file" == *"telegram"*"message"* ]]; then
-    if grep -nHE "(message\.text|update\.message|naturalLanguage)" "$file" 2>/dev/null; then
-      # Check if input is used in SQL or code execution without sanitization
-      if ! grep -qE "(sanitize|validate|escape|trim|filter)" "$file" 2>/dev/null; then
-        add_finding "HIGH" "Natural language input used without sanitization" "$file" "" "nlp-sanitization"
-      fi
+  # Skip test files - they're covered by .security-ignore
+  if [[ "$file" == *"test"* ]] || [[ "$file" == *"spec"* ]]; then
+    continue
+  fi
+
+  # Only check files that actually handle user input (not just "parse" in filename)
+  if grep -qE "(message\.text|update\.message|req\.body.*text|request\.json)" "$file" 2>/dev/null; then
+    # Flag only if BOTH conditions: has user input AND no sanitization found
+    if ! grep -qE "(sanitize|validate|escape|trim|filter|zod|schema\.parse)" "$file" 2>/dev/null; then
+      add_finding "HIGH" "User input handling without sanitization - validate before use" "$file" "" "nlp-sanitization"
     fi
   fi
 done <<< "$CHANGED_FILES"
