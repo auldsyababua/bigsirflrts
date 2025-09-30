@@ -23,7 +23,15 @@ console.log('Anon key first 20 chars:', process.env.SUPABASE_ANON_KEY?.substring
 // OpenProject API config
 const OPENPROJECT_URL = process.env.OPENPROJECT_URL || 'http://localhost:8080';
 const OPENPROJECT_API_KEY = process.env.OPENPROJECT_API_KEY;
-const OPENPROJECT_PROJECT_ID = 3; // FLRTS Development
+
+// Project ID must be provided via env to avoid coupling to a specific instance
+const OPENPROJECT_PROJECT_ID = Number(process.env.OPENPROJECT_PROJECT_ID);
+if (!process.env.OPENPROJECT_PROJECT_ID || Number.isNaN(OPENPROJECT_PROJECT_ID)) {
+  throw new Error(
+    'OPENPROJECT_PROJECT_ID env var is required and must be a number (e.g., 3). '
+    + 'Set it in your environment or .env.local.'
+  );
+}
 
 // Create axios instance for OpenProject
 const openprojectAPI = axios.create({
