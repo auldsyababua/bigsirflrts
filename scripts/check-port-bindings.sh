@@ -29,13 +29,6 @@ readonly PROD_PATTERNS=(
   "**/*-production.yml"
 )
 
-# Exception: Internal container-to-container ports (not exposed to host)
-# Example: Jaeger OTLP gRPC on 4317:4317 (no host IP means container-only)
-readonly INTERNAL_ONLY_PORTS=(
-  "4317:4317"  # Jaeger OTLP gRPC (container-to-container)
-  "4318:4318"  # Jaeger OTLP HTTP (container-to-container)
-)
-
 # Exit codes
 readonly EXIT_SUCCESS=0
 readonly EXIT_VIOLATION=1
@@ -89,16 +82,6 @@ log_error() {
   echo -e "${RED}✗${NC} $*" >&2
 }
 
-is_internal_port() {
-  local port="$1"
-  for internal_port in "${INTERNAL_ONLY_PORTS[@]}"; do
-    if [[ "$port" == "$internal_port" ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
 check_file() {
   local file="$1"
   local violations=0
@@ -142,12 +125,6 @@ check_file() {
     # - Optional trailing quote
     if [[ "$line" =~ -[[:space:]]+[\"']?(\[[:0-9a-fA-F]+\]:[0-9]+(:[0-9]+)?(/[a-z]+)?|[0-9.:]+:[0-9]+(/[a-z]+)?)[\"']? ]]; then
       local port_binding="${BASH_REMATCH[1]}"
-
-      # Skip internal-only ports (container-to-container)
-      if is_internal_port "$port_binding"; then
-        [[ "${VERBOSE:-}" == "1" ]] && log_info "  Line $line_num: $port_binding (internal-only, OK)"
-        continue
-      fi
 
       # Check if binding starts with 127.0.0.1: or [::1]: (IPv4/IPv6 localhost)
       # Note: IPv6 MUST use brackets in YAML: [::1]:8080:80

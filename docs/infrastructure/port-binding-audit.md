@@ -24,8 +24,10 @@ localhost-only binding. Development/local stacks intentionally use `0.0.0.0`
 | `infrastructure/digitalocean/docker-compose.monitoring.prod.yml` | n8n-monitor | `127.0.0.1:3002:3002`   | ✅ Correct |
 | `infrastructure/digitalocean/docker-compose.supabase.yml`        | openproject | `127.0.0.1:8080:8080`   | ✅ Correct |
 
-**Note:** Jaeger OTLP gRPC port `4317:4317` intentionally allows
-container-to-container access (not exposed to host).
+**Note:** Jaeger OTLP ports (4317/4318) use `expose:` for container-to-container
+communication only. Using `ports: ["4317:4317"]` would incorrectly expose them
+to the host on 0.0.0.0. For container-only access, always use `expose:` instead
+of `ports:`.
 
 ### ℹ️ Development/Local Files (0.0.0.0 - Acceptable)
 
