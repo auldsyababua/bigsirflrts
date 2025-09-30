@@ -7,7 +7,6 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
-import axios from 'axios';
 
 const execAsync = promisify(exec);
 const fsAsync = fs.promises;
@@ -206,7 +205,7 @@ describe('n8n Queue Mode Configuration', () => {
   describe('Docker Compose Validation', () => {
     it('should validate docker-compose configuration', async () => {
       try {
-        const { stdout, stderr } = await execAsync(
+        const { stderr } = await execAsync(
           `docker-compose -f ${path.join(dockerDir, 'docker-compose.yml')} config`
         );
         // If command succeeds, configuration is valid

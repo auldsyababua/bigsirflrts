@@ -14,7 +14,7 @@
  * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/supabase-webhook-retry-backoff.test.ts
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
 
@@ -223,8 +223,6 @@ describe('Supabase Webhook Retry Mechanisms', () => {
       const taskId = testTask.id;
 
       try {
-        const startTime = Date.now();
-
         // Wait for all retry attempts to complete
         await RetryTestUtils.waitForRetryAttempts(RETRY_TEST_CONFIG.maxRetries + 1);
 

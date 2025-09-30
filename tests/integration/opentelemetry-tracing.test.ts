@@ -9,7 +9,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import {
   trace as otelTrace,
-  context,
   SpanStatusCode,
   diag,
   DiagConsoleLogger,
@@ -250,7 +249,6 @@ describe.skipIf(skipInCI)('@P0 OpenTelemetry Integration Tests', () => {
       // Act
       await tracer.startActiveSpan('http-request', async (span) => {
         // Simulate HTTP request with trace injection
-        const activeContext = context.active();
 
         // Headers should be injected by instrumentation
         await fetch('http://test-service/api/endpoint', {

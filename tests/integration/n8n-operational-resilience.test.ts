@@ -4,11 +4,11 @@
  * Per Story 1.3 QA Requirements and ADR-001
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { execSync, exec } from 'child_process';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { exec } from 'child_process';
 import { promisify } from 'util';
 import axios from 'axios';
-import * as fs from 'fs';
+
 import * as path from 'path';
 
 const execAsync = promisify(exec);
@@ -26,8 +26,6 @@ const DOCKER_COMPOSE_FILE = path.join(
 
 // Container names (use environment variables or default to flrts-* pattern)
 const N8N_CONTAINER = process.env.N8N_CONTAINER || 'flrts-n8n';
-const POSTGRES_CONTAINER = process.env.POSTGRES_CONTAINER || 'flrts-postgres';
-const NGINX_CONTAINER = process.env.NGINX_CONTAINER || 'flrts-nginx';
 
 // Test timeouts
 const CONTAINER_RESTART_TIMEOUT = 30000; // 30 seconds
@@ -274,7 +272,7 @@ describe('n8n Operational Resilience Tests', () => {
         await new Promise((resolve) => setTimeout(resolve, 3000));
 
         // Try webhook during DB disconnection
-        const disconnectedWebhook = await sendWebhook('test-disconnected', {
+        await sendWebhook('test-disconnected', {
           test: 'during_db_failure',
         });
 
