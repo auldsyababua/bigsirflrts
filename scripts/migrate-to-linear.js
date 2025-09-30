@@ -398,7 +398,7 @@ This template demonstrates the BMAD development flow:
     ];
 
     for (const template of templates) {
-      const issue = await linear.createIssue({
+      await linear.createIssue({
         teamId: TEAM_ID,
         projectId: PROJECT_ID,
         ...template,

@@ -47,9 +47,8 @@ Deno.serve(async (req: Request) => {
     const update = await req.json();
     const chatId = update.message?.chat?.id;
     const messageText = update.message?.text;
-    const userId = update.message?.from?.id;
+
     const messageId = update.message?.message_id;
-    const username = update.message?.from?.username;
 
     timer.checkpoint('Payload parsed');
 
@@ -59,13 +58,13 @@ Deno.serve(async (req: Request) => {
     }
 
     // 4. Send immediate acknowledgment via Telegram API (fire and forget)
-    const acknowledgmentPromise = sendQuickReply(chatId, messageId, messageText);
+    sendQuickReply(chatId, messageId, messageText);
 
     // 5. Queue for n8n processing (non-blocking)
-    const queuePromise = queueForProcessing(update, timer);
+    queueForProcessing(update, timer);
 
     // 6. Log to Supabase (non-blocking)
-    const logPromise = logToSupabase(update, timer.elapsed());
+    logToSupabase(update, timer.elapsed());
 
     // Don't wait for async operations - respond immediately
     console.log(`[COMPLETE] Total sync time: ${timer.elapsed()}ms`);

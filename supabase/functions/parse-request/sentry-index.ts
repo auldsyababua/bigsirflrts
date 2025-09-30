@@ -24,7 +24,7 @@ Sentry.setTag('function_name', 'parse-request');
 // Environment variables
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')!;
+
 const N8N_WEBHOOK_URL = Deno.env.get('N8N_WEBHOOK_URL')!;
 
 // Initialize Supabase client
@@ -256,8 +256,6 @@ serve(async (req: Request) => {
 
 // Attempt quick parsing for simple patterns (unchanged from original)
 function attemptQuickParse(input: string): any | null {
-  const normalized = input.toLowerCase().trim();
-
   const createMatch = input.match(SIMPLE_PATTERNS.CREATE_TASK);
   if (!createMatch) return null;
 

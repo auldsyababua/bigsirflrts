@@ -94,13 +94,11 @@ const quickScanFiles = [
   'infrastructure/scripts/deploy-openproject.sh',
 ];
 
-let todoCount = 0;
 for (const file of quickScanFiles) {
   if (fs.existsSync(file)) {
     const content = fs.readFileSync(file, 'utf8');
     const todos = content.match(/TODO:/gi);
     if (todos) {
-      todoCount += todos.length;
       console.log(chalk.gray(`  ${file}: ${todos.length} TODOs`));
     }
   }

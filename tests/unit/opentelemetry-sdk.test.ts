@@ -56,7 +56,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_API_KEY = 'test-api-key';
 
       // Act - Simulate SDK initialization
-      const mockSDK = new NodeSDK({
+      new NodeSDK({
         traceExporter: new OTLPTraceExporter({
           url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT + '/v1/traces',
           headers: {
@@ -111,7 +111,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_EXPORTER_OTLP_ENDPOINT = testEndpoint;
 
       // Act - Create exporter directly
-      const exporter = new OTLPTraceExporter({
+      new OTLPTraceExporter({
         url: `${testEndpoint}/v1/traces`,
         headers: {
           authorization: 'Bearer test-key',

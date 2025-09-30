@@ -207,7 +207,7 @@ Comprehensive System Audit Plan for FLRTS Monorepo
   4. Audit WebSocket authentication
   5. Verify input validation middleware
 
-  2. Connection Mapping Strategy
+  6. Connection Mapping Strategy
 
   2.1 Connection Taxonomy
 
@@ -297,7 +297,7 @@ Comprehensive System Audit Plan for FLRTS Monorepo
       NLP --> SB
       BOT --> TG
 
-  3. Audit Execution Plan
+  1. Audit Execution Plan
 
   3.1 Execution Sequence
 
@@ -409,7 +409,7 @@ Comprehensive System Audit Plan for FLRTS Monorepo
 
   echo "✅ Module $MODULE validated. Proceeding to next module."
 
-  4. Issue Detection Framework
+  1. Issue Detection Framework
 
   4.1 Critical Issue Patterns
 
@@ -539,7 +539,7 @@ Comprehensive System Audit Plan for FLRTS Monorepo
     }
   }
 
-  5. Output Format Templates
+  1. Output Format Templates
 
   5.1 Connection Map Template (Mermaid)
 
@@ -691,7 +691,7 @@ Comprehensive System Audit Plan for FLRTS Monorepo
     }
   }
 
-  6. Automation Scripts
+  1. Automation Scripts
 
   6.1 Master Audit Orchestrator
 
@@ -803,7 +803,7 @@ Comprehensive System Audit Plan for FLRTS Monorepo
     }
   }
 
-  7. Integration with Existing Tools
+  1. Integration with Existing Tools
 
   7.1 Linear Integration
 
@@ -856,7 +856,7 @@ Comprehensive System Audit Plan for FLRTS Monorepo
           env:
             LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
 
-  8. Success Metrics
+  1. Success Metrics
 
   interface AuditSuccessMetrics {
     coverage: {
