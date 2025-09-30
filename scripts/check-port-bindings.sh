@@ -125,10 +125,22 @@ check_file() {
       continue
     fi
 
-    # Match port binding patterns in YAML array format
-    # Matches: - "8080:80" or - '8080:80' or - "127.0.0.1:8080:80"
-    # Pattern: dash, spaces, optional quote, port binding, optional quote
-    if [[ "$line" =~ -[[:space:]]+[\"']?([0-9.:]+:[0-9]+(/[a-z]+)?)[\"']? ]]; then
+    # Match port binding patterns in YAML array format (short syntax)
+    # Supports multiple formats:
+    #   - "8080:80"                # quoted
+    #   - 8080:80                  # unquoted
+    #   - "127.0.0.1:8080:80"      # IPv4 with host IP
+    #   - "[::1]:8080:80"          # IPv6 with brackets (required by YAML)
+    #   - "8080:80/tcp"            # with protocol
+    #
+    # Pattern explanation:
+    # - Array item starts with dash and spaces
+    # - Optional quotes (double or single)
+    # - Optional bracketed IPv6 OR IPv4/port combo
+    # - Colon-separated port binding
+    # - Optional protocol suffix (/tcp, /udp)
+    # - Optional trailing quote
+    if [[ "$line" =~ -[[:space:]]+[\"']?(\[[:0-9a-fA-F]+\]:[0-9]+(:[0-9]+)?(/[a-z]+)?|[0-9.:]+:[0-9]+(/[a-z]+)?)[\"']? ]]; then
       local port_binding="${BASH_REMATCH[1]}"
 
       # Skip internal-only ports (container-to-container)
@@ -137,10 +149,11 @@ check_file() {
         continue
       fi
 
-      # Check if binding starts with 127.0.0.1: or ::1: (IPv4/IPv6 localhost)
-      if [[ ! "$port_binding" =~ ^(127\.0\.0\.1|::1): ]]; then
+      # Check if binding starts with 127.0.0.1: or [::1]: (IPv4/IPv6 localhost)
+      # Note: IPv6 MUST use brackets in YAML: [::1]:8080:80
+      if [[ ! "$port_binding" =~ ^(127\.0\.0\.1|\[::1\]): ]]; then
         log_error "  Line $line_num: $port_binding"
-        log_error "    → Must use localhost binding: 127.0.0.1:PORT:CONTAINER_PORT"
+        log_error "    → Must use localhost binding: 127.0.0.1:PORT:CONTAINER or [::1]:PORT:CONTAINER"
         ((violations++))
       else
         [[ "${VERBOSE:-}" == "1" ]] && log_success "  Line $line_num: $port_binding (correct)"
@@ -161,13 +174,35 @@ find_production_files() {
   local files=()
 
   for pattern in "${PROD_PATTERNS[@]}"; do
-    # Use find with shell globbing (more portable than ** globstar)
-    while IFS= read -r -d '' file; do
-      files+=("$file")
-    done < <(find . -path "./$pattern" -type f -print0 2>/dev/null || true)
+    # Recursive only if the pattern STARTS with literal "**/"
+    if [[ "$pattern" == \*\*/* ]]; then
+      # Remove the leading "**/" literally
+      local basename="${pattern#\*\*/}"
+      while IFS= read -r -d '' file; do
+        files+=("$file")
+      done < <(find . -type f -name "$basename" -print0 2>/dev/null || true)
+
+    # Non-recursive: directory + wildcard in basename (e.g., path/*.yml)
+    elif [[ "$pattern" == */* && "$pattern" == *\** ]]; then
+      local dir="${pattern%/*}"
+      local filepattern="${pattern##*/}"
+      while IFS= read -r -d '' file; do
+        files+=("$file")
+      done < <(find "$dir" -maxdepth 1 -type f -name "$filepattern" -print0 2>/dev/null || true)
+
+    else
+      # Literal file or simple glob via find -path so the shell doesn't expand it
+      if [[ -f "$pattern" ]]; then
+        files+=("$pattern")
+      else
+        while IFS= read -r -d '' file; do
+          files+=("$file")
+        done < <(find . -type f -path "./$pattern" -print0 2>/dev/null || true)
+      fi
+    fi
   done
 
-  # Remove duplicates and sort
+  # De-dupe + sort
   if [[ ${#files[@]} -gt 0 ]]; then
     printf '%s\n' "${files[@]}" | sort -u
   fi
