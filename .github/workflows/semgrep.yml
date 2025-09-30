@@ -1,0 +1,208 @@
+name: Semgrep Security Analysis
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**.tsx'
+      - '**.jsx'
+  push:
+    branches: [main]
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**.tsx'
+      - '**.jsx'
+  workflow_dispatch:
+
+jobs:
+  semgrep:
+    name: Semgrep SAST Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # For uploading SARIF
+      pull-requests: write # For commenting
+
+    container:
+      image: semgrep/semgrep
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        id: semgrep
+        run: |
+          semgrep scan \
+            --config=auto \
+            --json \
+            --output=semgrep-results.json \
+            --sarif \
+            --sarif-output=semgrep-results.sarif \
+            --metrics=off \
+            --verbose
+        continue-on-error: true
+
+      - name: Parse Semgrep Results
+        if: always()
+        id: parse-results
+        run: |
+          if [ -f semgrep-results.json ]; then
+            # Extract severity counts from JSON
+            CRITICAL=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep-results.json)
+            HIGH=$(jq '[.results[] | select(.extra.severity == "WARNING")] | length' semgrep-results.json)
+            INFO=$(jq '[.results[] | select(.extra.severity == "INFO")] | length' semgrep-results.json)
+            TOTAL=$(jq '.results | length' semgrep-results.json)
+
+            echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+            echo "high=$HIGH" >> $GITHUB_OUTPUT
+            echo "info=$INFO" >> $GITHUB_OUTPUT
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+            # Fail if critical issues found
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "has_critical=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_critical=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "total=0" >> $GITHUB_OUTPUT
+            echo "has_critical=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload SARIF to GitHub Security
+        if: always() && github.event_name == 'push'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep-results.sarif
+
+      - name: Upload Semgrep Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: |
+            semgrep-results.json
+            semgrep-results.sarif
+          retention-days: 30
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const critical = '${{ steps.parse-results.outputs.critical }}' || '0';
+            const high = '${{ steps.parse-results.outputs.high }}' || '0';
+            const info = '${{ steps.parse-results.outputs.info }}' || '0';
+            const total = '${{ steps.parse-results.outputs.total }}' || '0';
+            const hasCritical = '${{ steps.parse-results.outputs.has_critical }}' === 'true';
+
+            let status = '✅ **Semgrep Analysis Passed**';
+            let emoji = '🔍';
+
+            if (hasCritical) {
+              status = '❌ **Semgrep Analysis Failed**';
+              emoji = '🚨';
+            } else if (parseInt(high) > 0) {
+              status = '⚠️ **Semgrep Analysis Passed with Warnings**';
+              emoji = '⚠️';
+            }
+
+            let findings = '';
+            if (fs.existsSync('semgrep-results.json')) {
+              const results = JSON.parse(fs.readFileSync('semgrep-results.json', 'utf8'));
+              
+              if (results.results && results.results.length > 0) {
+                findings = '\n### 🔍 Findings\n\n';
+                
+                // Group by severity
+                const errorFindings = results.results.filter(r => r.extra.severity === 'ERROR');
+                const warningFindings = results.results.filter(r => r.extra.severity === 'WARNING');
+                
+                if (errorFindings.length > 0) {
+                  findings += '#### 🚨 Critical Issues\n\n';
+                  errorFindings.slice(0, 5).forEach(finding => {
+                    findings += `- **${finding.check_id}** in \`${finding.path}:${finding.start.line}\`\n`;
+                    findings += `  ${finding.extra.message}\n\n`;
+                  });
+                  if (errorFindings.length > 5) {
+                    findings += `_...and ${errorFindings.length - 5} more critical issues_\n\n`;
+                  }
+                }
+                
+                if (warningFindings.length > 0) {
+                  findings += '#### ⚠️ Warnings\n\n';
+                  warningFindings.slice(0, 3).forEach(finding => {
+                    findings += `- **${finding.check_id}** in \`${finding.path}:${finding.start.line}\`\n`;
+                    findings += `  ${finding.extra.message}\n\n`;
+                  });
+                  if (warningFindings.length > 3) {
+                    findings += `_...and ${warningFindings.length - 3} more warnings_\n\n`;
+                  }
+                }
+              }
+            }
+
+            const body = `## ${emoji} Semgrep Security Analysis
+
+            ${status}
+
+            ### Summary
+
+            | Severity | Count |
+            |----------|-------|
+            | 🚨 Critical (ERROR) | ${critical} |
+            | ⚠️ High (WARNING) | ${high} |
+            | ℹ️ Info | ${info} |
+            | **Total** | **${total}** |
+
+            ${findings}
+
+            ${hasCritical ? '### ❌ Action Required\n\nCritical security issues detected by Semgrep. Please fix these issues before merging.\n\n' : ''}
+            ${!hasCritical && parseInt(high) > 0 ? '### ⚠️ Warnings\n\nWarnings detected by Semgrep. Please review and address when possible.\n\n' : ''}
+
+            ---
+
+            📚 **Resources:**
+            - [Semgrep Rules](https://semgrep.dev/r)
+            - [Security Review Documentation](../blob/main/docs/security/SECURITY-REVIEW.md)
+            `;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Semgrep Security Analysis')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Fail if Critical Issues Found
+        if: steps.parse-results.outputs.has_critical == 'true'
+        run: |
+          echo "❌ Semgrep found critical security issues"
+          echo "Please review the findings and fix before merging"
+          exit 1
