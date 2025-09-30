@@ -2,6 +2,12 @@
 set -euo pipefail
 shopt -s globstar extglob nullglob  # Enable ** for recursive matching
 
+# Debug logging (set DEBUG=1 to enable)
+: "${DEBUG:=0}"
+log() {
+  [[ $DEBUG == 1 ]] && printf '[DEBUG] %s\n' "$*" >&2
+}
+
 # Security Review Script for FLRTS
 # Runs automated security checks before code is pushed
 # Called by .husky/pre-push hook
@@ -28,6 +34,10 @@ CRITICAL_COUNT=0
 HIGH_COUNT=0
 MEDIUM_COUNT=0
 LOW_COUNT=0
+
+# Ignore pattern storage (loaded once)
+declare -A IGN_BY_RULE    # rule -> "0 1 5" (indices into IGN_PATS)
+declare -a IGN_PATS       # each entry: "glob|rule|note"
 
 cleanup() {
   # Always emit a JSON summary so CI/parsers have structured output
@@ -60,36 +70,87 @@ EOF
 }
 trap cleanup EXIT
 
-# Function to check if finding should be ignored
-should_ignore() {
-  local file=$1
-  local check_name=$2
+# Load and index .security-ignore patterns (called once at startup)
+load_ignores() {
+  [[ ! -f ".security-ignore" ]] && { log "No .security-ignore file found"; return 0; }
 
-  # Check if .security-ignore exists
-  if [ ! -f ".security-ignore" ]; then
-    return 1  # Don't ignore
-  fi
+  local line glob rule note idx=0
 
-  # Remove leading ./ from file path for matching
-  local clean_file="${file#./}"
-
-  # Read .security-ignore and check for matches using native glob matching
-  while IFS='|' read -r pattern check reason; do
+  while IFS= read -r line; do
     # Skip comments and empty lines
-    [[ "$pattern" =~ ^#.*$ ]] && continue
-    [[ -z "$pattern" ]] && continue
+    [[ $line =~ ^[[:space:]]*(#|$) ]] && continue
 
-    # Use native bash glob matching (supports **, *, ? wildcards)
-    case "$clean_file" in
-      $pattern)
-        # Check if the check name matches
-        if [[ "$check" == "$check_name" || "$check" == "*" ]]; then
-          return 0  # Should ignore
-        fi
-        ;;
-    esac
+    # Parse: glob|rule|note
+    glob="${line%%|*}"
+    rule="${line#*|}"; [[ $rule == "$line" ]] && rule="" || rule="${rule%%|*}"
+    note="${line#*|}"; note="${note#*|}"; [[ $note == "$line" ]] && note=""
+
+    # Dual-pattern expansion for /**/ gaps
+    if [[ $glob == *"/**/"* ]]; then
+      # Pattern like tests/**/*.test.ts
+      # Add both: tests/**/*.test.ts AND tests/*.test.ts
+      local alt="${glob//\/\*\*\//\/}"
+      IGN_PATS[idx]="$glob|$rule|$note"
+      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      log "Pattern $idx: $glob (rule=$rule)"
+      : $((idx++))
+
+      IGN_PATS[idx]="$alt|$rule|$note"
+      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      log "Pattern $idx: $alt (rule=$rule, dual-expansion)"
+      : $((idx++))
+    # Expand /** suffix to include single-level
+    elif [[ $glob == */** ]]; then
+      # Pattern like packages/flrts-extension/**
+      # Add both: packages/flrts-extension/** AND packages/flrts-extension/*
+      local alt="${glob%/**}/*"
+      IGN_PATS[idx]="$glob|$rule|$note"
+      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      log "Pattern $idx: $glob (rule=$rule)"
+      : $((idx++))
+
+      IGN_PATS[idx]="$alt|$rule|$note"
+      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      log "Pattern $idx: $alt (rule=$rule, dual-expansion)"
+      : $((idx++))
+    else
+      # Simple pattern, no expansion needed
+      IGN_PATS[idx]="$glob|$rule|$note"
+      IGN_BY_RULE["$rule"]+="${IGN_BY_RULE[$rule]:+ }$idx"
+      log "Pattern $idx: $glob (rule=$rule)"
+      : $((idx++))
+    fi
   done < ".security-ignore"
 
+  log "Loaded ${#IGN_PATS[@]} patterns; rules: ${!IGN_BY_RULE[*]}"
+}
+
+# Function to check if finding should be ignored (uses pre-loaded patterns)
+should_ignore() {
+  local file="$1"
+  local check_name="$2"
+  local clean_file="${file#./}"
+
+  # Get relevant pattern indices for this rule
+  local idxes="${IGN_BY_RULE[$check_name]:-}"
+  # Also check wildcard rules (empty rule name or "*")
+  idxes+=" ${IGN_BY_RULE[""]:-} ${IGN_BY_RULE[*]:-}"
+
+  local i glob rule _
+  for i in $idxes; do
+    [[ -z $i ]] && continue
+    IFS='|' read -r glob rule _ <<< "${IGN_PATS[i]}"
+
+    # Match file against glob pattern
+    case "$clean_file" in
+      $glob)
+        log "Ignore match: $clean_file matches $glob (rule=$check_name)"
+        return 0  # Should ignore
+        ;;
+    esac
+  done
+
+  log "No ignore match for: $clean_file (rule=$check_name)"
   return 1  # Don't ignore
 }
 
@@ -121,6 +182,9 @@ echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━�
 echo "${BLUE}  Security Review - Checking for vulnerabilities${NC}"
 echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
+
+# Load ignore patterns once at startup
+load_ignores
 
 # Get changed files (staged + unstaged) or all .ts/.js files if no changes
 # Safely determine changed files; tolerate non-git contexts
