@@ -5,3 +5,4 @@ ARCHIVE(DEPRECATED)/
 coverage/
 .git/
 package-lock.json
+docs/.scratch
