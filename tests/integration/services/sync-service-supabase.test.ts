@@ -30,18 +30,24 @@ describe('Supabase Sync Service', () => {
       }
 
       // Try a simple query to test connection
-      const { error } = await supabase.from('tasks').select('id, task_title').limit(1);
+      const { data, error } = await supabase.from('tasks').select('id, task_title').limit(1);
 
       // If table doesn't exist, that's okay - we're just testing connection
-      if (
-        error &&
-        !error.message.includes('relation') &&
-        !error.message.includes('does not exist')
-      ) {
-        throw error;
+      if (error) {
+        // PGRST116 = table not found (acceptable for connection test)
+        const isTableNotFound =
+          error.message.includes('relation') ||
+          error.message.includes('does not exist') ||
+          error.code === 'PGRST116';
+
+        if (!isTableNotFound) {
+          throw new Error(`Unexpected Supabase error: ${error.message} (code: ${error.code})`);
+        }
       }
 
+      // Validate connection succeeded (either got data or expected table-not-found error)
       expect(supabase).toBeDefined();
+      expect(error === null || error.code === 'PGRST116').toBe(true);
     });
   });
 

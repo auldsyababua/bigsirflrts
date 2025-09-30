@@ -57,16 +57,22 @@ Deno.serve(async (req: Request) => {
       return new Response('OK', { status: 200 });
     }
 
-    // 4. Send immediate acknowledgment via Telegram API (fire and forget)
+    // 4. Send immediate acknowledgment via Telegram API (fire-and-forget)
+    // Note: Intentionally not awaited to minimize response latency (<200ms requirement)
+    // Error handling: sendQuickReply has internal try-catch that logs failures
     sendQuickReply(chatId, messageId, messageText);
 
-    // 5. Queue for n8n processing (non-blocking)
+    // 5. Queue for n8n processing (fire-and-forget)
+    // Note: Intentionally not awaited to minimize response latency
+    // Error handling: queueForProcessing has internal try-catch (line 129)
     queueForProcessing(update, timer);
 
-    // 6. Log to Supabase (non-blocking)
+    // 6. Log to Supabase (fire-and-forget)
+    // Note: Intentionally not awaited to minimize response latency
+    // Error handling: logToSupabase has internal try-catch (line 153)
     logToSupabase(update, timer.elapsed());
 
-    // Don't wait for async operations - respond immediately
+    // Don't wait for async operations - respond immediately to meet <200ms SLA
     console.log(`[COMPLETE] Total sync time: ${timer.elapsed()}ms`);
 
     return new Response(
