@@ -104,6 +104,10 @@ infrastructure/docker/docker-compose*.yml|hardcoded-secrets|Docker compose uses 
 supabase/functions/**/*.ts|service-role-exposure|Edge functions with documented RLS bypass
 packages/*/supabase/functions/**/*.ts|service-role-exposure|Edge functions with documented RLS bypass
 
+# Edge functions use CORS wildcard for public API access (no credentials)
+supabase/functions/**/*.ts|cors-wildcard|Public Edge Functions need cross-origin access
+packages/*/supabase/functions/**/*.ts|cors-wildcard|Public Edge Functions need cross-origin access
+
 # N8N webhook URLs in configuration files are expected
 infrastructure/n8n/**/*.json|n8n-webhook-url|N8N configuration files
 .n8n/**/*.json|n8n-webhook-url|N8N workflow definitions
