@@ -55,6 +55,9 @@ tests/**/*.test.ts|nlp-sanitization|Testing sanitization functions
 # Test files may contain SQL keywords in string literals (not actual SQL injection)
 tests/**/*.test.ts|sql-injection|Test data contains SQL keywords in strings
 
+# Test utility scripts use spawn/exec for controlled test execution
+tests/**/*.js|command-injection|Test utilities use controlled shell commands
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # SCRIPTS & TOOLING
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
