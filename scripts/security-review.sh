@@ -20,15 +20,16 @@ if [ "${SKIP_SECURITY:-}" = "1" ]; then
   exit 0
 fi
 
-# Temporary file for findings
+# Temporary files for findings
 FINDINGS_FILE=$(mktemp)
+JSON_OUTPUT=$(mktemp)
 CRITICAL_COUNT=0
 HIGH_COUNT=0
 MEDIUM_COUNT=0
 LOW_COUNT=0
 
 cleanup() {
-  rm -f "$FINDINGS_FILE"
+  rm -f "$FINDINGS_FILE" "$JSON_OUTPUT"
 }
 trap cleanup EXIT
 
@@ -357,8 +358,62 @@ echo "${BLUE}  Security Review Results${NC}"
 echo "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
+# Generate JSON output for CI consumption
+generate_json_output() {
+  cat > "$JSON_OUTPUT" <<EOF
+{
+  "summary": {
+    "total": $TOTAL_FINDINGS,
+    "critical": $CRITICAL_COUNT,
+    "high": $HIGH_COUNT,
+    "medium": $MEDIUM_COUNT,
+    "low": $LOW_COUNT,
+    "files_reviewed": $FILE_COUNT
+  },
+  "findings": [
+EOF
+
+  # Add findings as JSON array
+  local first=true
+  if [ -f "$FINDINGS_FILE" ] && [ -s "$FINDINGS_FILE" ]; then
+    while IFS='|' read -r severity message file line; do
+      if [ "$first" = true ]; then
+        first=false
+      else
+        echo "," >> "$JSON_OUTPUT"
+      fi
+
+      # Escape quotes in message and file for JSON
+      message_json=$(echo "$message" | sed 's/"/\\"/g')
+      file_json=$(echo "$file" | sed 's/"/\\"/g')
+
+      cat >> "$JSON_OUTPUT" <<FINDING
+    {
+      "severity": "$severity",
+      "message": "$message_json",
+      "file": "$file_json",
+      "line": "${line:-null}"
+    }
+FINDING
+    done < "$FINDINGS_FILE"
+  fi
+
+  cat >> "$JSON_OUTPUT" <<EOF
+
+  ],
+  "status": "$([ $CRITICAL_COUNT -eq 0 ] && [ $HIGH_COUNT -eq 0 ] && echo "warning" || echo "failed")"
+}
+EOF
+
+  # Output JSON_OUTPUT path for CI to read
+  echo "JSON_OUTPUT_PATH=$JSON_OUTPUT" >> "${GITHUB_OUTPUT:-/dev/null}"
+}
+
 # Display results
 TOTAL_FINDINGS=$((CRITICAL_COUNT + HIGH_COUNT + MEDIUM_COUNT + LOW_COUNT))
+
+# Generate JSON output regardless of findings
+generate_json_output
 
 if [ $TOTAL_FINDINGS -eq 0 ]; then
   echo "${GREEN}✅ No security issues detected!${NC}"
