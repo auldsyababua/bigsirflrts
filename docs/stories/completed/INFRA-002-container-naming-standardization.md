@@ -717,7 +717,7 @@ designed, causing the QA gate to run expensive E2E tests that required running
 services.
 
 **Root Cause Analysis** (Documented in:
-`/Users/colinaulds/Desktop/bigsirflrts/docs/qa/assessments/e2e-test-bug-investigation-report.md`):
+`docs/qa/assessments/e2e-test-bug-investigation-report.md`):
 
 1. Skip condition in tests was checking `process.env.CI` as a boolean, but
    environment variables are always strings

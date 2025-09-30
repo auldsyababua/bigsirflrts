@@ -305,16 +305,17 @@ describe.skipIf(skipInCI)('@P0 OpenTelemetry Integration Tests', () => {
     });
 
     it('should handle OTLP endpoint authentication', async () => {
-      // Arrange - Test different auth scenarios using main SDK with custom exporters
+      // Arrange - Test different auth scenarios using custom exporters
       const authTestCases = [
         { auth: 'Bearer valid-token', expectedStatus: 200 },
         { auth: 'Bearer test-api-key', expectedStatus: 200 },
+        { auth: 'Bearer invalid-token', expectedStatus: 401 },
       ];
 
       for (const testCase of authTestCases) {
         receivedTraces = [];
 
-        // Create custom exporter with specific auth header and send directly
+        // Create custom exporter with specific auth header
         const testExporter = new OTLPTraceExporter({
           url: `http://localhost:${mockOTLPPort}/v1/traces`,
           headers: {
@@ -322,7 +323,11 @@ describe.skipIf(skipInCI)('@P0 OpenTelemetry Integration Tests', () => {
           },
         });
 
-        // Act - Use the existing tracer with custom span processor for this test
+        // Create a custom span processor for this test exporter
+        const { BatchSpanProcessor } = await import('@opentelemetry/sdk-trace-base');
+        const testSpanProcessor = new BatchSpanProcessor(testExporter);
+
+        // Act - Create a span and export it through the test exporter
         const tracer = otelTrace.getTracer('auth-test');
         await tracer.startActiveSpan('auth-test-span', async (span) => {
           span.setAttributes({
@@ -331,17 +336,32 @@ describe.skipIf(skipInCI)('@P0 OpenTelemetry Integration Tests', () => {
           span.end();
         });
 
-        // Force export through main span processor and wait
-        await spanProcessor.forceFlush();
+        // Force export through the test span processor AFTER span block completes
+        await testSpanProcessor.forceFlush();
+
+        // Wait for the mock server to receive the request
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Assert - Note: this test verifies auth headers are properly sent
-        // The main SDK sends with 'Bearer test-api-key' so we check what was actually sent
+        // Assert - Verify the auth header was sent correctly
         if (testCase.expectedStatus === 200) {
-          expect(receivedTraces.length).toBeGreaterThan(0);
-          // Verify that the main SDK configuration is working with proper auth
-          expect(receivedTraces[0].headers['authorization']).toBe('Bearer test-api-key');
+          expect(
+            receivedTraces.length,
+            `Expected traces for auth: ${testCase.auth}`
+          ).toBeGreaterThan(0);
+          expect(
+            receivedTraces[0].headers['authorization'],
+            'Auth header should match test case'
+          ).toBe(testCase.auth);
+        } else {
+          // For 401 cases, the mock server should reject and no traces should be received
+          expect(
+            receivedTraces.length,
+            `Expected no traces for invalid auth: ${testCase.auth}`
+          ).toBe(0);
         }
+
+        // Cleanup
+        await testSpanProcessor.shutdown();
       }
     });
 

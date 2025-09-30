@@ -85,28 +85,29 @@ async function getContainerMemoryUsage(containerName: string): Promise<number> {
     const value = parseFloat(match[1]);
     const unit = match[2];
 
-    // Convert to MB
+    // Convert to MiB (base 2 MB)
+    // Note: Docker stats uses binary units (KiB, MiB, GiB) by default
     switch (unit) {
       case 'B':
-        return value / (1024 * 1024);
+        return value / (1024 * 1024); // Bytes to MiB
       case 'KiB':
-        return value / 1024;
+        return value / 1024; // KiB to MiB
       case 'KB':
-        return value / 1000;
+        return value / 1024; // KB to MiB (treating as KiB since Docker uses binary)
       case 'MiB':
-        return value; // Already in MB (base 2)
+        return value; // Already in MiB
       case 'MB':
-        return value; // Already in MB (base 10)
+        return (value * (1000 * 1000)) / (1024 * 1024); // MB (decimal) to MiB (binary)
       case 'GiB':
-        return value * 1024;
+        return value * 1024; // GiB to MiB
       case 'GB':
-        return value * 1000;
+        return (value * (1000 * 1000 * 1000)) / (1024 * 1024); // GB (decimal) to MiB (binary)
       case 'TiB':
-        return value * 1024 * 1024;
+        return value * 1024 * 1024; // TiB to MiB
       case 'TB':
-        return value * 1000 * 1000;
+        return (value * (1000 * 1000 * 1000 * 1000)) / (1024 * 1024); // TB (decimal) to MiB (binary)
       default:
-        return value; // Assume MB if unknown
+        return value; // Assume MiB if unknown
     }
   } catch (error) {
     return 0;
