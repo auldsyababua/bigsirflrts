@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+shopt -s globstar extglob nullglob  # Enable ** for recursive matching
 
 # Security Review Script for FLRTS
 # Runs automated security checks before code is pushed
@@ -69,49 +70,24 @@ should_ignore() {
     return 1  # Don't ignore
   fi
 
-  # Read .security-ignore and check for matches
+  # Remove leading ./ from file path for matching
+  local clean_file="${file#./}"
+
+  # Read .security-ignore and check for matches using native glob matching
   while IFS='|' read -r pattern check reason; do
     # Skip comments and empty lines
     [[ "$pattern" =~ ^#.*$ ]] && continue
     [[ -z "$pattern" ]] && continue
 
-    # Remove leading ./ from file path for matching
-    local clean_file="${file#./}"
-
-    # Convert glob pattern to regex for matching (supports **, *, ?)
-    # 1) Start with the raw pattern
-    local regex_pattern="$pattern"
-
-    # 2) Escape regex metacharacters we do NOT want to treat specially
-    #    Keep *, **, and ? unescaped so we can translate them next
-    #    shellcheck disable=SC2001
-    regex_pattern=$(sed -E 's/[.+^$(){}|[\]\\]/\\&/g' <<< "$regex_pattern")
-
-    # 3) Translate glob tokens to regex
-    #    - **/  →  (?:.*/)?  (zero or more directories with trailing slash)
-    #    - /**  →  (/.*)?    (optional slash and rest of path)
-    #    - **   →  .*        (any remaining ** becomes catch-all)
-    #    - *    →  [^/]*     (matches within one path segment)
-    #    - ?    →  [^/]      (single character, not slash)
-
-    # Replace **/ first (zero or more dirs)
-    regex_pattern="${regex_pattern//\*\*\//(?\:.*\/)?}"
-    # Replace /** (any subpath)
-    regex_pattern="${regex_pattern//\/\*\*/(\/.*)?}"
-    # Replace remaining ** with .*
-    regex_pattern="${regex_pattern//\*\*/.*/}"
-    # Replace single * (within segment)
-    regex_pattern="${regex_pattern//\*/[^/]*}"
-    # Replace ? (single char, not slash)
-    regex_pattern="${regex_pattern//\?/[^/]}"
-
-    # 4) Anchor the pattern to match the entire path (relative to repo root)
-    regex_pattern="^${regex_pattern}$"
-
-    # Check if file matches pattern and check name matches
-    if [[ "$clean_file" =~ $regex_pattern ]] && [[ "$check" == "$check_name" || "$check" == "*" ]]; then
-      return 0  # Should ignore
-    fi
+    # Use native bash glob matching (supports **, *, ? wildcards)
+    case "$clean_file" in
+      $pattern)
+        # Check if the check name matches
+        if [[ "$check" == "$check_name" || "$check" == "*" ]]; then
+          return 0  # Should ignore
+        fi
+        ;;
+    esac
   done < ".security-ignore"
 
   return 1  # Don't ignore
