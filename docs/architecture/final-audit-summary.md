@@ -20,7 +20,7 @@ docs/architecture/audit-log.md
 
 - CRITICAL: Hardcoded Supabase credentials (10N-163)
 - HIGH: Default SECRET_KEY_BASE/Admin password (10N-164)
-- MEDIUM: TELEGRAM_BOT_URL without companion service (10N-165)
+- ~~MEDIUM: TELEGRAM_BOT_URL without companion service (10N-165)~~ **RESOLVED**
 - LOW: Open ports on 0.0.0.0 in dev (10N-166)
 
 1. OpenProject Integration
