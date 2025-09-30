@@ -12,6 +12,17 @@
 
 set -euo pipefail
 
+# Bash 3.2-compatible readarray
+readarray_compat() {
+  # $1 = array name to fill; reads from stdin
+  local __name="$1" __line
+  local -a __tmp=()
+  while IFS= read -r __line; do
+    __tmp+=( "$__line" )
+  done
+  eval "$__name=(\"\${__tmp[@]}\")"
+}
+
 # ANSI color codes for output
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
@@ -21,9 +32,10 @@ readonly NC='\033[0m' # No Color
 
 # Production file patterns that MUST use localhost bindings
 readonly PROD_PATTERNS=(
-  "infrastructure/digitalocean/*.yml"
-  "infrastructure/aws/*.yml"
+  "infrastructure/digitalocean/*prod.yml"
+  "infrastructure/aws/*prod.yml"
   "**/prod.yml"
+  "**/*prod.yml"
   "**/*-prod.yml"
   "**/production.yml"
   "**/*-production.yml"
@@ -151,38 +163,38 @@ find_production_files() {
   local files=()
 
   for pattern in "${PROD_PATTERNS[@]}"; do
-    # Recursive only if the pattern STARTS with literal "**/"
+    # starts with literal "**/"
     if [[ "$pattern" == \*\*/* ]]; then
-      # Remove the leading "**/" literally
+      # strip leading "**/"
       local basename="${pattern#\*\*/}"
+      # recursive search from "."
       while IFS= read -r -d '' file; do
-        files+=("$file")
+        # ensure ./ prefix
+        case "$file" in ./*) files+=("$file");; *) files+=("./$file");; esac
       done < <(find . -type f -name "$basename" -print0 2>/dev/null || true)
 
-    # Non-recursive: directory + wildcard in basename (e.g., path/*.yml)
+    # directory + wildcard basename (e.g., path/*prod.yml)
     elif [[ "$pattern" == */* && "$pattern" == *\** ]]; then
       local dir="${pattern%/*}"
       local filepattern="${pattern##*/}"
+      # start from "./$dir" so BSD find emits "./…" paths
       while IFS= read -r -d '' file; do
-        files+=("$file")
-      done < <(find "$dir" -maxdepth 1 -type f -name "$filepattern" -print0 2>/dev/null || true)
+        case "$file" in ./*) files+=("$file");; *) files+=("./$file");; esac
+      done < <(find "./$dir" -maxdepth 1 -type f -name "$filepattern" -print0 2>/dev/null || true)
 
     else
-      # Literal file or simple glob via find -path so the shell doesn't expand it
+      # literal or simple glob via -path
       if [[ -f "$pattern" ]]; then
-        files+=("$pattern")
+        case "$pattern" in ./*) files+=("$pattern");; *) files+=("./$pattern");; esac
       else
         while IFS= read -r -d '' file; do
-          files+=("$file")
+          case "$file" in ./*) files+=("$file");; *) files+=("./$file");; esac
         done < <(find . -type f -path "./$pattern" -print0 2>/dev/null || true)
       fi
     fi
   done
 
-  # De-dupe + sort
-  if [[ ${#files[@]} -gt 0 ]]; then
-    printf '%s\n' "${files[@]}" | sort -u
-  fi
+  [[ ${#files[@]} -gt 0 ]] && printf '%s\n' "${files[@]}" | sort -u
 }
 
 main() {
@@ -222,7 +234,12 @@ main() {
   # If no files specified, find all production files
   if [[ ${#files_to_check[@]} -eq 0 ]]; then
     log_info "Scanning for production Docker Compose files..."
-    mapfile -t files_to_check < <(find_production_files)
+    # Use mapfile if available (Bash 4+), otherwise use Bash 3.2-compatible alternative
+    if command -v mapfile >/dev/null 2>&1; then
+      mapfile -t files_to_check < <(find_production_files)
+    else
+      readarray_compat files_to_check < <(find_production_files)
+    fi
 
     if [[ ${#files_to_check[@]} -eq 0 ]]; then
       log_warning "No production Docker Compose files found"
@@ -257,4 +274,7 @@ main() {
   fi
 }
 
-main "$@"
+# Only run when executed, not when sourced (needed for tests and preview)
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
