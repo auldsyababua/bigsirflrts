@@ -28,6 +28,28 @@ export class TaskParser {
     this.jitterMaxMs = parseInt(process.env.OPENAI_BACKOFF_JITTER_MS || '200', 10);
     this.circuitThreshold = parseInt(process.env.OPENAI_CIRCUIT_THRESHOLD || '5', 10);
     this.circuitCooldownMs = parseInt(process.env.OPENAI_CIRCUIT_COOLDOWN_MS || '60000', 10); // 60s
+    // Validate resilience config
+    if (!Number.isFinite(this.timeoutMs) || this.timeoutMs <= 0) {
+      throw new Error('OPENAI_TIMEOUT_MS must be a positive integer');
+    }
+    if (!Number.isFinite(this.maxRetries) || this.maxRetries < 0) {
+      throw new Error('OPENAI_MAX_RETRIES must be a non-negative integer');
+    }
+    if (!Number.isFinite(this.baseDelayMs) || this.baseDelayMs < 0) {
+      throw new Error('OPENAI_BACKOFF_BASE_MS must be a non-negative integer');
+    }
+    if (!Number.isFinite(this.jitterMaxMs) || this.jitterMaxMs < 0) {
+      throw new Error('OPENAI_BACKOFF_JITTER_MS must be a non-negative integer');
+    }
+    if (!Number.isFinite(this.circuitThreshold) || this.circuitThreshold <= 0) {
+      throw new Error('OPENAI_CIRCUIT_THRESHOLD must be a positive integer');
+    }
+    if (!Number.isFinite(this.circuitCooldownMs) || this.circuitCooldownMs <= 0) {
+      throw new Error('OPENAI_CIRCUIT_COOLDOWN_MS must be a positive integer');
+    }
+    if (this.jitterMaxMs > this.baseDelayMs) {
+      this.jitterMaxMs = this.baseDelayMs;
+    }
   }
 
   private async sleep(ms: number) {
@@ -64,15 +86,20 @@ export class TaskParser {
 
     // Allow model/temperature override via env
     const model = process.env.OPENAI_MODEL || 'gpt-4o-2024-08-06';
-    const temperature = process.env.OPENAI_TEMPERATURE
+    const parsedTemp = process.env.OPENAI_TEMPERATURE
       ? Number(process.env.OPENAI_TEMPERATURE)
-      : 0.1;
+      : undefined;
+    const temperature =
+      Number.isFinite(parsedTemp) && (parsedTemp as number) >= 0 && (parsedTemp as number) <= 2
+        ? (parsedTemp as number)
+        : 0.1;
 
     this.ensureBreakerClosed();
 
+    let lastError: any;
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort('timeout'), this.timeoutMs);
+      const timer = setTimeout(() => controller.abort(), this.timeoutMs);
       try {
         const completion = await this.openai.chat.completions.parse({
           model,
@@ -82,15 +109,17 @@ export class TaskParser {
           ],
           response_format: zodResponseFormat(ParsedTaskSchema, 'parsed_task'),
           temperature,
-          // @ts-expect-error openai SDK supports abort signal per-request in modern versions
           signal: controller.signal,
         });
 
         clearTimeout(timer);
-        const parsed = completion.choices[0].message.parsed;
-        if (!parsed) {
+
+        // Defensive checks for response shape
+        if (!completion.choices?.[0]?.message?.parsed) {
           throw new Error('Failed to parse input - no structured output received');
         }
+
+        const parsed = completion.choices[0].message.parsed;
 
         // Success → reset breaker state
         this.consecutiveFailures = 0;
@@ -98,6 +127,7 @@ export class TaskParser {
         return parsed;
       } catch (error: any) {
         clearTimeout(timer);
+        lastError = error;
         console.error('OpenAI parsing error:', error?.message || error);
 
         // 4xx (non-429) considered non-retryable; others may retry
@@ -108,10 +138,7 @@ export class TaskParser {
         const isServerError = status >= 500 || status === undefined; // network
         const isRetryable = aborted || isRateLimited || isServerError;
 
-        this.consecutiveFailures++;
-        this.openBreakerIfNeeded();
-
-        if (attempt < this.maxRetries && isRetryable && Date.now() >= this.breakerOpenUntil) {
+        if (attempt < this.maxRetries && isRetryable) {
           const delay = this.calcBackoff(attempt);
           await this.sleep(delay);
           continue; // retry
@@ -125,8 +152,15 @@ export class TaskParser {
       }
     }
 
-    // Should never reach here due to returns/throws above
-    throw new Error('OpenAI parsing failed after retries');
+    // All retries exhausted - update circuit breaker
+    this.consecutiveFailures++;
+    this.openBreakerIfNeeded();
+
+    // Map SDK API error nicely when available
+    if (lastError instanceof OpenAI.APIError) {
+      throw new Error(`OpenAI API Error: ${lastError.message}`);
+    }
+    throw lastError || new Error('OpenAI parsing failed after retries');
   }
 
   // Helper method to validate the parsed output
