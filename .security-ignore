@@ -92,6 +92,9 @@ scripts/dev-server.ts|cors-wildcard|Development server only, not production
 docs/**/*.md|hardcoded-secrets|Documentation examples with dummy credentials
 README.md|hardcoded-secrets|Documentation examples
 
+# Prompt templates are for AI agents, not production code
+docs/prompts/**/*.md|*|AI agent prompt templates
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # SPECIFIC FLRTS PATTERNS
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

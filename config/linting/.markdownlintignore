@@ -6,3 +6,4 @@ coverage/
 .git/
 package-lock.json
 docs/.scratch
+docs/prompts/
