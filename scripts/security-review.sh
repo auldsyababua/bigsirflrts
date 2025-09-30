@@ -134,7 +134,7 @@ should_ignore() {
   # Get relevant pattern indices for this rule
   local idxes="${IGN_BY_RULE[$check_name]:-}"
   # Also check wildcard rules (empty rule name or "*")
-  idxes+=" ${IGN_BY_RULE[""]:-} ${IGN_BY_RULE[*]:-}"
+  idxes+=" ${IGN_BY_RULE[""]:-} ${IGN_BY_RULE["*"]:-}"
 
   local i glob rule _
   for i in $idxes; do
