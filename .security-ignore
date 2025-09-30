@@ -49,6 +49,9 @@ tests/integration/**/*.ts|rls-bypass|Integration tests validate RLS policies
 tests/**/*.test.ts|input-length-validation|Testing boundary conditions
 tests/**/*.test.ts|nlp-sanitization|Testing sanitization functions
 
+# Test files may contain SQL keywords in string literals (not actual SQL injection)
+tests/**/*.test.ts|sql-injection|Test data contains SQL keywords in strings
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # SCRIPTS & TOOLING
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
