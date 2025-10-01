@@ -1,54 +1,97 @@
 # ERPNext Data Migration Strategy
 
 **Status:** Not Started **Phase:** 1.5 **Agent:** Internal Team **Date
-Created:** 2025-10-01 **Related Linear:** 10N-232
+Created:** 2025-10-01 **Last Updated:** 2025-10-01 **Related Linear:** 10N-232
+
+> ⚠️ No production cutover is planned yet—this document captures strategy and
+> lessons learned from exploratory trials so we can execute quickly once MVP
+> validation demands it.
 
 ## Purpose
 
-Outline the approach for moving FLRTS data into ERPNext when we decide to
-perform an MVP or production migration.
+Define the approach for moving FLRTS data from OpenProject/Supabase into
+ERPNext, including decision criteria, validation steps, rollback plan, and
+testing guidelines.
 
 ## Prerequisites
 
-- [ ] Schema mapping document completed
-- [ ] Test ERPNext environment with realistic sample data
-- [ ] Agreement on cutover/rollback plan
+- [ ] `docs/migration/schema-mapping.md` completed with field-level mappings
+- [ ] ERPNext production topology provisioned and smoke-tested
+- [ ] Backup/snapshot procedures rehearsed
+- [ ] Migration scripts prototyped in staging
+- [ ] Test migration run completed successfully with sign-off
 
-## Template
+## Migration Approach
 
-### Migration Approach
+### Decision: Big Bang vs Incremental
 
-- Big bang vs incremental
-- Rationale for chosen method
-- Impact on downtime and user experience
+Document the decision once Phase 1.5 analysis completes.
 
-### Entity Migration Order
+#### Option 1: Big Bang Migration
 
-1. Sites / Locations
-2. Contractors / Vendors
-3. Personnel / Technicians
-4. Work Orders and related child tables
-5. Attachments or auxiliary data (if any)
+- **Pros:** Clean cutover, simpler synchronization story, clear rollback point.
+- **Cons:** Requires downtime window; higher blast radius if errors occur.
 
-### Validation Requirements
+#### Option 2: Incremental (Dual-Write/Phased)
 
-- Pre/post record counts
-- Spot-check queries
-- Business rule verification
+- **Pros:** Lower risk; allows parallel validation.
+- **Cons:** Requires temporary dual-write logic and conflict resolution; more
+  operational overhead.
 
-### Rollback Procedures
+### Selected Approach
 
-- Snapshot/backup strategy
-- Steps to restore original system
-- Communication plan
+- _To be decided during Phase 1.5 execution._
 
-### Testing Strategy
+## Migration Waves & Entity Order
 
-- Dry-run environments
-- Automated checks or scripts
-- Sign-off checklist
+1. Sites / Locations (no downstream dependencies)
+2. Contractors / Suppliers (links to Sites)
+3. Personnel / Technicians (Users, Employees)
+4. Work Orders (Maintenance Visits + child tables)
+5. Attachments and auxiliary data (photos, logs) if scoped
 
-## Notes
+## Validation Requirements
 
-This document is exploratory until MVP adoption is confirmed; capture lessons
-from trial migrations and update before any production attempt.
+- Pre/post record counts for every DocType
+- Referential integrity spot checks (Link fields resolve)
+- Business rule verification (statuses, assignments, SLAs)
+- Performance smoke tests (API latency, report responsiveness)
+
+## Rollback Procedures
+
+1. Capture Supabase + ERPNext backups immediately prior to run
+2. If validation fails, restore ERPNext backup and point integrations back to
+   legacy services
+3. Document incident in Linear and schedule root-cause review
+4. Communicate status to stakeholders (Telegram + email template)
+
+## Testing Strategy
+
+- Run migrations in staging with production-sized anonymized data
+- Automate repeatable scripts (bench commands, Python utilities)
+- Record timing metrics and bottlenecks
+- Require sign-off from product + operations before scheduling production window
+
+## Cutover Checklist
+
+- [ ] Final schema mapping reviewed
+- [ ] Migration scripts merged and tagged
+- [ ] Downtime window communicated
+- [ ] Backups verified
+- [ ] Monitoring/alerting adjusted for ERPNext endpoints
+- [ ] Support plan staffed during migration window
+
+## Risk Assessment
+
+- **Data integrity:** Mitigate via validated scripts and backups.
+- **Downtime overrun:** Dry-run timings, add 50% buffer.
+- **Permission misconfiguration:** Include post-migration QA scripts to test
+  role access.
+- **API contract drift:** Freeze upstream OpenProject writes during cutover.
+
+## References
+
+- `docs/migration/schema-mapping.md`
+- ERPNext Data Import Tool documentation
+- Frappe backup/restore guides
+- Linear issue [10N-232](https://linear.app/10netzero/issue/10N-232)
