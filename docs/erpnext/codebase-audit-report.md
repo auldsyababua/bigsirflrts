@@ -1,17 +1,18 @@
 # FLRTS Codebase Audit for ERPNext Migration
 
-**Status:** Complete
-**Phase:** 1.4
-**Agent:** Claude (general-purpose)
-**Date Created:** 2025-09-30
-**Date Completed:** 2025-10-01
-**Prerequisites:** ✅ Architecture docs reviewed, naming standards read
+**Status:** Complete **Phase:** 1.4 **Agent:** Claude (general-purpose) **Date
+Created:** 2025-09-30 **Date Completed:** 2025-10-01 **Prerequisites:** ✅
+Architecture docs reviewed, naming standards read
 
 ## Executive Summary
 
-This audit identifies all code, configuration, and infrastructure components requiring modification to migrate from OpenProject to ERPNext as the FSM backend. The migration affects **3 core packages**, **5+ infrastructure configurations**, and approximately **22+ files**.
+This audit identifies all code, configuration, and infrastructure components
+requiring modification to migrate from OpenProject to ERPNext as the FSM
+backend. The migration affects **3 core packages**, **5+ infrastructure
+configurations**, and approximately **22+ files**.
 
-**Total Estimated Effort:** 17-22 developer days (3-4 weeks with 1 full-time developer)
+**Total Estimated Effort:** 17-22 developer days (3-4 weeks with 1 full-time
+developer)
 
 **Migration Complexity:** Medium-High
 
@@ -25,10 +26,13 @@ This audit identifies all code, configuration, and infrastructure components req
 
 **Documents Reviewed:**
 
-- ✅ `docs/erpnext/architecture/ADR-006-erpnext-backend-adoption.md` - ERPNext adoption decision
-- ✅ `docs/erpnext/architecture/erpnext-migration-workflow.md` - Migration workflow
+- ✅ `docs/erpnext/architecture/ADR-006-erpnext-backend-adoption.md` - ERPNext
+  adoption decision
+- ✅ `docs/erpnext/architecture/erpnext-migration-workflow.md` - Migration
+  workflow
 - ✅ `docs/erpnext/ERPNext-Migration-Naming-Standards.md` - Naming conventions
-- ✅ `docs/erpnext/research/erpnext-fsm-module-analysis.md` - FSM module analysis
+- ✅ `docs/erpnext/research/erpnext-fsm-module-analysis.md` - FSM module
+  analysis
 - ✅ `docs/architecture/system-connections.md` - System architecture
 - ✅ `README.md` - Project overview
 
@@ -110,7 +114,8 @@ infrastructure/monitoring/production/prometheus.prod.yml:34-37 - OpenProject hea
 
 - **File:** `packages/sync-service/src/index.ts`
   - **Lines:** 25-53
-  - **What it does:** Initializes OpenProject API client with axios, base URL, and authentication
+  - **What it does:** Initializes OpenProject API client with axios, base URL,
+    and authentication
   - **Required change:** Replace with ERPNext REST API client (token-based auth)
   - **Complexity:** Medium
   - **Estimated effort:** 2 days
@@ -124,21 +129,26 @@ infrastructure/monitoring/production/prometheus.prod.yml:34-37 - OpenProject hea
 
 - **File:** `packages/sync-service/src/index.ts`
   - **Lines:** 108-192
-  - **What it does:** Dictionary caches for OpenProject statuses, priorities, types
-  - **Required change:** Replace with ERPNext entity caching (Workflow States, custom fields)
+  - **What it does:** Dictionary caches for OpenProject statuses, priorities,
+    types
+  - **Required change:** Replace with ERPNext entity caching (Workflow States,
+    custom fields)
   - **Complexity:** Medium
   - **Estimated effort:** 4 hours
 
 - **File:** `packages/sync-service/src/index.ts`
   - **Lines:** 279-389
-  - **What it does:** Fetches dictionaries from OpenProject (`/statuses`, `/priorities`, `/types`)
-  - **Required change:** Fetch from ERPNext endpoints (`/api/resource/Workflow State`, etc.)
+  - **What it does:** Fetches dictionaries from OpenProject (`/statuses`,
+    `/priorities`, `/types`)
+  - **Required change:** Fetch from ERPNext endpoints
+    (`/api/resource/Workflow State`, etc.)
   - **Complexity:** Medium
   - **Estimated effort:** 4 hours
 
 - **File:** `packages/sync-service/src/index.ts`
   - **Lines:** 391-431
-  - **What it does:** Maps Supabase task data to OpenProject work package structure
+  - **What it does:** Maps Supabase task data to OpenProject work package
+    structure
   - **Required change:** Map to ERPNext Maintenance Visit structure
   - **Complexity:** High (critical logic)
   - **Estimated effort:** 1 day
@@ -146,7 +156,8 @@ infrastructure/monitoring/production/prometheus.prod.yml:34-37 - OpenProject hea
 - **File:** `packages/sync-service/src/index.ts`
   - **Lines:** 433-537
   - **What it does:** `syncTaskToOpenProject()` - creates/updates work packages
-  - **Required change:** Rewrite as `syncTaskToERPNext()` using Maintenance Visit API
+  - **Required change:** Rewrite as `syncTaskToERPNext()` using Maintenance
+    Visit API
   - **Complexity:** High (critical logic)
   - **Estimated effort:** 2 days
 
@@ -190,9 +201,11 @@ infrastructure/monitoring/production/prometheus.prod.yml:34-37 - OpenProject hea
 
 **Testing Impact:**
 
-- Unit tests to update: `packages/sync-service/src/__tests__/sync-service.test.ts`
+- Unit tests to update:
+  `packages/sync-service/src/__tests__/sync-service.test.ts`
 - Integration tests to update: None identified yet
-- New tests required: ERPNext client tests, ERPNext mapper tests, ERPNext sync flow tests
+- New tests required: ERPNext client tests, ERPNext mapper tests, ERPNext sync
+  flow tests
 
 **Total Module Effort:** 7-10 days
 
@@ -214,7 +227,8 @@ infrastructure/monitoring/production/prometheus.prod.yml:34-37 - OpenProject hea
 - **File:** `packages/nlp-service/src/schemas.ts`
   - **Lines:** Unknown (not read yet)
   - **What it does:** Likely defines TypeScript schemas for work package parsing
-  - **Required change:** Update schemas to match ERPNext Maintenance Visit fields
+  - **Required change:** Update schemas to match ERPNext Maintenance Visit
+    fields
   - **Complexity:** Medium
   - **Estimated effort:** 4 hours
 
@@ -332,36 +346,36 @@ None (pure JavaScript extension)
 
 ### Files to Modify
 
-| File Path | Lines | Change Type | Complexity | Effort | Priority |
-|-----------|-------|-------------|------------|--------|----------|
-| `packages/sync-service/src/index.ts` | 25-647 | Replace API client, rewrite sync logic | High | 5-7 days | Critical |
-| `packages/nlp-service/src/prompt.ts` | 40-52 | Update prompt template | Medium | 1 day | High |
-| `packages/nlp-service/src/schemas.ts` | TBD | Update TypeScript schemas | Medium | 4 hours | High |
-| `packages/flrts-extension/content.js` | Multiple | Update UI detection and API calls | High | 3-4 days | Medium (or deprecate) |
-| `.env` | 14-21, 113-114 | Add ERPNext config, keep OpenProject | Low | 1 hour | Critical |
-| `infrastructure/digitalocean/.env.example` | 1-66 | Add ERPNext config template | Low | 2 hours | High |
-| `docker-compose.yml` | 5-54, 85-111 | Replace OpenProject service with ERPNext | High | 1 day | Critical |
-| `infrastructure/digitalocean/docker-compose.prod.yml` | 5-67 | Production ERPNext configuration | High | 1-2 days | Critical |
-| `infrastructure/monitoring/production/prometheus.prod.yml` | 34-37 | Add ERPNext health checks | Low | 2 hours | Medium |
-| `infrastructure/digitalocean/cloudflare-monitoring-config.yml` | 8-14 | Add ERPNext ingress route | Low | 1 hour | Medium |
-| `packages/sync-service/src/__tests__/sync-service.test.ts` | All | Update test fixtures and assertions | Medium | 1 day | High |
-| `tests/integration/services/nlp-parser.test.ts` | All | Update test fixtures | Medium | 4 hours | High |
-| `tests/integration/services/nlp-parser.script.ts` | All | Update test script | Low | 2 hours | Medium |
+| File Path                                                      | Lines          | Change Type                              | Complexity | Effort   | Priority              |
+| -------------------------------------------------------------- | -------------- | ---------------------------------------- | ---------- | -------- | --------------------- |
+| `packages/sync-service/src/index.ts`                           | 25-647         | Replace API client, rewrite sync logic   | High       | 5-7 days | Critical              |
+| `packages/nlp-service/src/prompt.ts`                           | 40-52          | Update prompt template                   | Medium     | 1 day    | High                  |
+| `packages/nlp-service/src/schemas.ts`                          | TBD            | Update TypeScript schemas                | Medium     | 4 hours  | High                  |
+| `packages/flrts-extension/content.js`                          | Multiple       | Update UI detection and API calls        | High       | 3-4 days | Medium (or deprecate) |
+| `.env`                                                         | 14-21, 113-114 | Add ERPNext config, keep OpenProject     | Low        | 1 hour   | Critical              |
+| `infrastructure/digitalocean/.env.example`                     | 1-66           | Add ERPNext config template              | Low        | 2 hours  | High                  |
+| `docker-compose.yml`                                           | 5-54, 85-111   | Replace OpenProject service with ERPNext | High       | 1 day    | Critical              |
+| `infrastructure/digitalocean/docker-compose.prod.yml`          | 5-67           | Production ERPNext configuration         | High       | 1-2 days | Critical              |
+| `infrastructure/monitoring/production/prometheus.prod.yml`     | 34-37          | Add ERPNext health checks                | Low        | 2 hours  | Medium                |
+| `infrastructure/digitalocean/cloudflare-monitoring-config.yml` | 8-14           | Add ERPNext ingress route                | Low        | 1 hour   | Medium                |
+| `packages/sync-service/src/__tests__/sync-service.test.ts`     | All            | Update test fixtures and assertions      | Medium     | 1 day    | High                  |
+| `tests/integration/services/nlp-parser.test.ts`                | All            | Update test fixtures                     | Medium     | 4 hours  | High                  |
+| `tests/integration/services/nlp-parser.script.ts`              | All            | Update test script                       | Low        | 2 hours  | Medium                |
 
 ### Files to Create
 
-| File Path | Purpose | Lines (est) | Effort | Priority |
-|-----------|---------|-------------|--------|----------|
-| `packages/sync-service/src/erpnext-client.ts` | ERPNext API client | 400 | 2 days | Critical |
-| `packages/sync-service/src/erpnext-mapper.ts` | Data mapping logic | 200 | 1 day | Critical |
-| `infrastructure/docker/erpnext/docker-compose.yml` | ERPNext Docker config | 200 | 1 day | Critical |
-| `docs/setup/erpnext.md` | ERPNext setup guide | N/A | 2 hours | High |
+| File Path                                          | Purpose               | Lines (est) | Effort  | Priority |
+| -------------------------------------------------- | --------------------- | ----------- | ------- | -------- |
+| `packages/sync-service/src/erpnext-client.ts`      | ERPNext API client    | 400         | 2 days  | Critical |
+| `packages/sync-service/src/erpnext-mapper.ts`      | Data mapping logic    | 200         | 1 day   | Critical |
+| `infrastructure/docker/erpnext/docker-compose.yml` | ERPNext Docker config | 200         | 1 day   | Critical |
+| `docs/setup/erpnext.md`                            | ERPNext setup guide   | N/A         | 2 hours | High     |
 
 ### Dependencies to Update
 
-| Package | Current | New | Reason |
-|---------|---------|-----|--------|
-| None to remove | - | - | Using standard axios for both OpenProject and ERPNext |
+| Package        | Current | New | Reason                                                |
+| -------------- | ------- | --- | ----------------------------------------------------- |
+| None to remove | -       | -   | Using standard axios for both OpenProject and ERPNext |
 
 ### Environment Variables
 
@@ -369,7 +383,7 @@ None (pure JavaScript extension)
 
 ```bash
 # ERPNext Configuration (see naming standards)
-ERPNEXT_URL=https://erpnext-dev.10nz.tools
+ERPNEXT_URL=https://ops.10nz.tools
 ERPNEXT_API_KEY=
 ERPNEXT_API_SECRET=
 ERPNEXT_SITE=site1.local
@@ -439,12 +453,14 @@ ALTER TABLE tasks DROP COLUMN openproject_last_sync;
 
 1. **Change:** Rewriting sync-service core sync logic
    - **Risk:** Data loss, sync failures, broken Telegram bot
-   - **Mitigation:** Feature flag, comprehensive testing, keep OpenProject running during transition
+   - **Mitigation:** Feature flag, comprehensive testing, keep OpenProject
+     running during transition
    - **Rollback:** Flip feature flag back to OpenProject, zero data loss
 
 2. **Change:** Database schema updates (adding ERPNext columns)
    - **Risk:** Migration script errors, downtime
-   - **Mitigation:** Test on dev database first, backup production, reversible migrations
+   - **Mitigation:** Test on dev database first, backup production, reversible
+     migrations
    - **Rollback:** Keep old columns, no data loss
 
 ### Medium Risk Changes
@@ -480,7 +496,7 @@ ALTER TABLE tasks DROP COLUMN openproject_last_sync;
 **Order of Operations:**
 
 1. ✅ Create ERPNext dev instance (COMPLETE)
-2. Add ERPNEXT_* env vars (with FEATURE_USE_ERPNEXT=false)
+2. Add ERPNEXT\_\* env vars (with FEATURE_USE_ERPNEXT=false)
 3. Create ERPNext API client (`packages/sync-service/src/erpnext-client.ts`)
 4. Create ERPNext mapper (`packages/sync-service/src/erpnext-mapper.ts`)
 5. Write unit tests for client and mapper
@@ -494,7 +510,8 @@ ALTER TABLE tasks DROP COLUMN openproject_last_sync;
 
 **Order of Operations:**
 
-1. Update sync-service with dual-mode support (if FEATURE_USE_ERPNEXT then ERPNext else OpenProject)
+1. Update sync-service with dual-mode support (if FEATURE_USE_ERPNEXT then
+   ERPNext else OpenProject)
 2. Update nlp-service prompts and schemas
 3. Add database columns for ERPNext (keep OpenProject columns)
 4. Update docker-compose with ERPNext service (commented out initially)
@@ -544,18 +561,19 @@ ALTER TABLE tasks DROP COLUMN openproject_last_sync;
 
 ## Total Effort Estimate
 
-| Category | Days |
-|----------|------|
-| **Phase 1: Foundation** | 3-4 |
-| **Phase 2: Integration** | 7-10 |
-| **Phase 3: Testing** | 3-4 |
-| **Phase 4: Deployment** | 1 |
-| **Documentation** | 2-3 |
-| **TOTAL** | **17-22 days** |
+| Category                 | Days           |
+| ------------------------ | -------------- |
+| **Phase 1: Foundation**  | 3-4            |
+| **Phase 2: Integration** | 7-10           |
+| **Phase 3: Testing**     | 3-4            |
+| **Phase 4: Deployment**  | 1              |
+| **Documentation**        | 2-3            |
+| **TOTAL**                | **17-22 days** |
 
 **Timeline:** Approximately 3-4 weeks with 1 full-time developer
 
 **Confidence Level:** 75% (Medium) - Based on:
+
 - ERPNext API is well-documented
 - Clear migration path identified
 - Feature flag strategy reduces risk
@@ -567,9 +585,10 @@ ALTER TABLE tasks DROP COLUMN openproject_last_sync;
 
 **Must Complete Before Code Changes:**
 
-- ✅ ERPNext dev instance deployed (COMPLETE - https://erpnext-dev.10nz.tools)
+- ✅ ERPNext dev instance deployed (COMPLETE - <https://ops.10nz.tools>)
 - ✅ ERPNext schema understood (Phase 1.1 - COMPLETE)
-- ✅ Custom DocTypes designed (Phase 2.1 - see ERPNext-Migration-Naming-Standards.md)
+- ✅ Custom DocTypes designed (Phase 2.1 - see
+  ERPNext-Migration-Naming-Standards.md)
 - ✅ Naming standards reviewed (COMPLETE)
 
 **External Dependencies:**
@@ -586,7 +605,8 @@ ALTER TABLE tasks DROP COLUMN openproject_last_sync;
 
 Before considering this audit complete:
 
-- ✅ All modules reviewed (sync-service, nlp-service, flrts-extension, n8n, infrastructure)
+- ✅ All modules reviewed (sync-service, nlp-service, flrts-extension, n8n,
+  infrastructure)
 - ✅ All OpenProject references found and documented
 - ✅ Change inventory complete with effort estimates
 - ✅ Risk assessment complete
@@ -599,7 +619,8 @@ Before considering this audit complete:
 ## Next Steps
 
 1. ✅ Review codebase audit report (this document)
-2. ✅ Validate migration prompt template (`docs/erpnext/prompts/module-migration-prompt.md`)
+2. ✅ Validate migration prompt template
+   (`docs/erpnext/prompts/module-migration-prompt.md`)
 3. Update Linear story 10N-227 with completion status and document references
 4. Create Linear stories for each phase of migration
 5. Begin Phase 1: Foundation (create ERPNext client and mapper)
@@ -608,5 +629,7 @@ Before considering this audit complete:
 
 **Files Generated by This Audit:**
 
-- This document: [docs/erpnext/codebase-audit-report.md](docs/erpnext/codebase-audit-report.md)
-- Migration template: [docs/erpnext/prompts/module-migration-prompt.md](docs/erpnext/prompts/module-migration-prompt.md)
+- This document:
+  [docs/erpnext/codebase-audit-report.md](docs/erpnext/codebase-audit-report.md)
+- Migration template:
+  [docs/erpnext/prompts/module-migration-prompt.md](docs/erpnext/prompts/module-migration-prompt.md)

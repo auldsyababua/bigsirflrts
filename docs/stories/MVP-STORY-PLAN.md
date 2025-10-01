@@ -2,11 +2,15 @@
 
 ## Executive Summary
 
-**Goal**: Deliver a working NLP demo ASAP that showcases natural language task creation via Telegram → ERPNext
+**Goal**: Deliver a working NLP demo ASAP that showcases natural language task
+creation via Telegram → ERPNext
 
-**Core Demo Flow**: User sends message to Telegram → OpenAI parses → Creates Maintenance Visit in ERPNext → Confirms to user
+**Core Demo Flow**: User sends message to Telegram → OpenAI parses → Creates
+Maintenance Visit in ERPNext → Confirms to user
 
-**Note**: This plan has been updated to reflect the ERPNext backend adoption (see [10N-227](https://linear.app/10netzero/issue/10N-227)). OpenProject has been replaced with ERPNext as the FSM backend platform.
+**Note**: This plan has been updated to reflect the ERPNext backend adoption
+(see [10N-227](https://linear.app/10netzero/issue/10N-227)). OpenProject has
+been replaced with ERPNext as the FSM backend platform.
 
 ## Story Categorization
 
@@ -47,13 +51,15 @@ All infrastructure stories completed and validated. Ready for application layer.
 
 #### Deferred to Post-MVP:
 
-- Story 3.2: ERPNext Webhooks (for bidirectional sync - ERPNext → Telegram notifications)
+- Story 3.2: ERPNext Webhooks (for bidirectional sync - ERPNext → Telegram
+  notifications)
 - Story 3.3: Batch Sync Workflows (not needed for creation-only MVP)
 - Story 3.5: Timezone Conversion Logic (use simple defaults for MVP)
 
 ### ❌ Epic 4 - Lists Feature (DEFERRED - Post-MVP)
 
-**Note**: Lists feature is deferred to Post-MVP Phase 2. MVP focuses solely on Maintenance Visit (work order) creation.
+**Note**: Lists feature is deferred to Post-MVP Phase 2. MVP focuses solely on
+Maintenance Visit (work order) creation.
 
 #### Deferred to Post-MVP:
 
@@ -63,21 +69,26 @@ All infrastructure stories completed and validated. Ready for application layer.
 - Story 4.4: List Sharing Permissions
 - Story 4.5: List Notifications
 
-**ERPNext Implementation**: Lists will be implemented as custom "FLRTS List" DocType with child table for list items (see [docs/research/flrts-functional-requirements.md](../research/flrts-functional-requirements.md))
+**ERPNext Implementation**: Lists will be implemented as custom "FLRTS List"
+DocType with child table for list items (see
+[docs/research/flrts-functional-requirements.md](../research/flrts-functional-requirements.md))
 
 ## Implementation Sequence
 
 ### Phase 1: Core Creation Pipeline (Week 1)
 
 **Prerequisites:**
-- ERPNext Phase 1.5 complete: Dev instance deployed at `https://erpnext-dev.10nz.tools`
+
+- ERPNext Phase 1.5 complete: Dev instance deployed at `https://ops.10nz.tools`
 - API credentials configured
 - Test users and sites created in ERPNext
 
 **Implementation:**
+
 1. **Day 1-2**: Configure Story 2.1 (Telegram webhook activation)
 2. **Day 2-3**: Implement Story 3.1 (ERPNext Maintenance Visit CREATE API)
-3. **Day 3-4**: Implement Story 3.4 (OpenAI context injection with ERPNext entities)
+3. **Day 3-4**: Implement Story 3.4 (OpenAI context injection with ERPNext
+   entities)
 4. **Day 4-5**: Simplified Story 2.5 (/create command only)
 5. **Day 5**: End-to-end testing and demo prep
 6. **Throughout**: Implement OpenAI Parser Audit Log (parallel to above tasks)
@@ -101,7 +112,8 @@ Based on feedback, implement:
 
 ### Must Have:
 
-- ✅ User can send "Colin needs to check the compressor at Big Sky tomorrow" → Maintenance Visit created
+- ✅ User can send "Colin needs to check the compressor at Big Sky tomorrow" →
+  Maintenance Visit created
 - ✅ Confirmation message shows what was created (assignee, site, due date)
 - ✅ Maintenance Visits visible in ERPNext UI
 - ✅ OpenAI Parser Audit Log captures all requests with model rationale
@@ -184,7 +196,7 @@ Update parser log with user_accepted status
 ### ERPNext API (Single Endpoint for MVP):
 
 ```http
-POST https://erpnext-dev.10nz.tools/api/resource/Maintenance Visit
+POST https://ops.10nz.tools/api/resource/Maintenance Visit
 Authorization: token <api_key>:<api_secret>
 Content-Type: application/json
 
@@ -205,6 +217,7 @@ Content-Type: application/json
 ```
 
 **Custom Fields Required in ERPNext:**
+
 - `custom_site` (Link to FLRTS Site Location)
 - `custom_assignee` (Link to User)
 - `custom_due_date` (Date)
@@ -226,7 +239,8 @@ if ambiguous
 
 ### Risk: ERPNext API complexity
 
-**Mitigation**: Start with minimal required fields only, use ERPNext dev instance for testing
+**Mitigation**: Start with minimal required fields only, use ERPNext dev
+instance for testing
 
 ### Risk: Credential/auth issues
 
@@ -234,18 +248,21 @@ if ambiguous
 
 ## Critical MVP Feature: OpenAI Parser Audit Log
 
-**Priority:** CRITICAL (Must have before launch)
-**Status:** Not Yet Implemented
+**Priority:** CRITICAL (Must have before launch) **Status:** Not Yet Implemented
 **Owner:** Development Team
 
 ### Why This Is Critical
 
-Complete logging of all OpenAI API interactions is **non-negotiable** for MVP because:
+Complete logging of all OpenAI API interactions is **non-negotiable** for MVP
+because:
 
-1. **Debugging:** When users report "it parsed wrong", you need to see exactly what the model received and why it made each decision
-2. **Prompt Engineering:** The `rationale` field from the LLM tells you what to fix in your prompts to improve accuracy
+1. **Debugging:** When users report "it parsed wrong", you need to see exactly
+   what the model received and why it made each decision
+2. **Prompt Engineering:** The `rationale` field from the LLM tells you what to
+   fix in your prompts to improve accuracy
 3. **Cost Tracking:** Monitor OpenAI API spend and project monthly costs
-4. **Quality Improvement:** Track success rate over time, identify patterns in failures
+4. **Quality Improvement:** Track success rate over time, identify patterns in
+   failures
 5. **Compliance:** Audit trail of all AI-generated content
 
 ### Database Schema Required
@@ -336,10 +353,11 @@ CREATE TABLE openai_parser_logs (
 
 ### Example: Correction Flow
 
-**Original Parse:**
-User: "Colin needs to check the compressor at Big Sky tomorrow afternoon"
+**Original Parse:** User: "Colin needs to check the compressor at Big Sky
+tomorrow afternoon"
 
 Model Output:
+
 ```json
 {
   "task_title": "Check compressor at Big Sky",
@@ -352,6 +370,7 @@ Model Output:
 **User Rejects:** "No, I meant tomorrow MORNING, and it's URGENT"
 
 **Correction Parse:**
+
 ```json
 {
   "task_title": "Check compressor at Big Sky",
@@ -363,22 +382,25 @@ Model Output:
 }
 ```
 
-This correction chain lets you analyze: "Why did it get it wrong the first time? What pattern should I add to the prompt?"
+This correction chain lets you analyze: "Why did it get it wrong the first time?
+What pattern should I add to the prompt?"
 
 ### Estimated Effort
 
 **Implementation:** 1 day
+
 - Database schema: 2 hours
 - Parser service updates: 4 hours
 - Telegram bot updates: 2 hours
 
-**See:** `/docs/MVP-FEATURES.md` for complete technical spec including analytics queries and ERPNext migration strategy.
+**See:** `/docs/MVP-FEATURES.md` for complete technical spec including analytics
+queries and ERPNext migration strategy.
 
 ---
 
 ## Definition of Demo Done
 
-- [ ] **ERPNext dev instance deployed** at `https://erpnext-dev.10nz.tools`
+- [ ] **ERPNext dev instance deployed** at `https://ops.10nz.tools`
 - [ ] **Custom fields added to Maintenance Visit** DocType (see above)
 - [ ] **OpenAI Parser Audit Log fully implemented** (see above)
 - [ ] User can create Maintenance Visits via Telegram natural language

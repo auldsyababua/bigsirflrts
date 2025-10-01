@@ -57,8 +57,8 @@ isn't covered, STOP and ask the user.
 
 **Examples:**
 
-- `https://erpnext.10nz.tools` - Production ERPNext
-- `https://erpnext-dev.10nz.tools` - Development ERPNext
+- `https://erpnext.10nz.tools` - Production ERPNext (future)
+- `https://ops.10nz.tools` - Development/Staging ERPNext (current)
 - `https://api.10nz.tools` - FLRTS API gateway (if created)
 
 **ERPNext API Paths:**
@@ -76,7 +76,7 @@ isn't covered, STOP and ask the user.
 
 ```bash
 # ERPNext connection
-ERPNEXT_API_URL=https://erpnext-dev.10nz.tools
+ERPNEXT_API_URL=https://ops.10nz.tools
 ERPNEXT_API_KEY=your-api-key-here
 ERPNEXT_API_SECRET=your-api-secret-here
 

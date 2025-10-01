@@ -278,7 +278,7 @@ Research output documents:
 
 - Deployment steps documented in issue comments
 - Admin credentials stored in 1Password
-- ERPNext dev instance accessible at https://erpnext-dev.10nz.tools
+- ERPNext dev instance accessible at https://ops.10nz.tools
 
 This task does NOT produce a separate markdown file - deployment steps are
 documented inline.
