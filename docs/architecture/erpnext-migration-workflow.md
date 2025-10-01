@@ -1,7 +1,17 @@
 # ERPNext Migration Workflow
 
-**Status:** Planning **Date:** 2025-09-30 **Related ADR:**
+**Status:** Planning **Date:** 2025-09-30
+
+**📌 Source of Truth:**
+[Linear Epic 10N-227](https://linear.app/10netzero/issue/10N-227/erpnext-backend-adoption)
+
+**Related ADR:**
 [ADR-006: ERPNext Backend Adoption](adr/ADR-006-erpnext-backend-adoption.md)
+
+> **Note:** This document provides detailed implementation guidance for the
+> ERPNext migration. For current status, phase tracking, and overall progress,
+> see **Linear Epic 10N-227** which is the master source of truth. This document
+> is referenced by Linear for technical details and step-by-step procedures.
 
 ## Purpose
 
