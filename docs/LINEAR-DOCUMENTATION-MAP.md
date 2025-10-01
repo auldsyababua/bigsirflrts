@@ -198,23 +198,23 @@ Phase 1 execution.
 Based on Linear issues and workflow documents, these docs are referenced but
 don't exist yet:
 
-| Expected Document                                      | Purpose                   | Related Linear | Priority |
-| ------------------------------------------------------ | ------------------------- | -------------- | -------- |
-| `docs/erpnext/research/erpnext-fsm-module-analysis.md` | Phase 1.3 FSM analysis    | 10N-230        | Phase 1  |
-| `docs/prompts/module-migration-prompt.md`              | Module migration template | Phase 1.4      | Phase 1  |
-| `docs/migration/schema-mapping.md`                     | Schema mapping doc        | 10N-232        | Phase 1  |
-| `docs/migration/data-migration-strategy.md`            | Data migration plan       | 10N-232        | Phase 1  |
-| `docs/migration/custom-doctypes-design.md`             | Custom DocType design     | Phase 2.1      | Phase 2  |
-| `docs/migration/custom-fields-standard-doctypes.md`    | Custom fields doc         | Phase 2.1      | Phase 2  |
-| `docs/migration/data-audit-report.md`                  | Production data audit     | Phase 2.2      | Phase 2  |
-| `docs/migration/data-transformation-logic.md`          | Transformation logic      | Phase 2.2      | Phase 2  |
-| `docs/migration/migration-scripts-guide.md`            | Migration scripts doc     | Phase 2.3      | Phase 2  |
-| `docs/migration/test-migration-report.md`              | Test migration results    | Phase 2.4      | Phase 2  |
-| `docs/migration/rollback-procedure.md`                 | Rollback procedures       | Phase 2.4      | Phase 2  |
-| `docs/migration/sync-service-migration-plan.md`        | sync-service plan         | Phase 3.2      | Phase 3  |
-| `docs/migration/telegram-bot-migration-plan.md`        | Telegram bot plan         | Phase 3.2      | Phase 3  |
-| `docs/migration/n8n-workflows-migration-plan.md`       | n8n workflows plan        | Phase 3.2      | Phase 3  |
-| `docs/development/erpnext-client-api.md`               | API client docs           | Phase 3.1      | Phase 3  |
+| Expected Document                                      | Purpose                   | Related Linear | Priority       |
+| ------------------------------------------------------ | ------------------------- | -------------- | -------------- |
+| `docs/erpnext/research/erpnext-fsm-module-analysis.md` | Phase 1.3 FSM analysis    | 10N-230        | 🚧 Placeholder |
+| `docs/prompts/module-migration-prompt.md`              | Module migration template | Phase 1.4      | 🚧 Placeholder |
+| `docs/migration/schema-mapping.md`                     | Schema mapping doc        | 10N-232        | 🚧 Placeholder |
+| `docs/migration/data-migration-strategy.md`            | Data migration plan       | 10N-232        | 🚧 Placeholder |
+| `docs/migration/custom-doctypes-design.md`             | Custom DocType design     | Phase 2.1      | Phase 2        |
+| `docs/migration/custom-fields-standard-doctypes.md`    | Custom fields doc         | Phase 2.1      | Phase 2        |
+| `docs/migration/data-audit-report.md`                  | Production data audit     | Phase 2.2      | Phase 2        |
+| `docs/migration/data-transformation-logic.md`          | Transformation logic      | Phase 2.2      | Phase 2        |
+| `docs/migration/migration-scripts-guide.md`            | Migration scripts doc     | Phase 2.3      | Phase 2        |
+| `docs/migration/test-migration-report.md`              | Test migration results    | Phase 2.4      | Phase 2        |
+| `docs/migration/rollback-procedure.md`                 | Rollback procedures       | Phase 2.4      | Phase 2        |
+| `docs/migration/sync-service-migration-plan.md`        | sync-service plan         | Phase 3.2      | Phase 3        |
+| `docs/migration/telegram-bot-migration-plan.md`        | Telegram bot plan         | Phase 3.2      | Phase 3        |
+| `docs/migration/n8n-workflows-migration-plan.md`       | n8n workflows plan        | Phase 3.2      | Phase 3        |
+| `docs/development/erpnext-client-api.md`               | API client docs           | Phase 3.1      | Phase 3        |
 
 ---
 
@@ -242,8 +242,9 @@ All previously orphaned migration documents have been linked to Linear issues.
    - Example format provided below
 
 2. **Create Missing Phase 1 Deliverables**
-   - `docs/erpnext/research/erpnext-fsm-module-analysis.md` (Phase 1.3)
-   - `docs/prompts/module-migration-prompt.md` (Phase 1.4)
+   - `docs/erpnext/research/erpnext-fsm-module-analysis.md` (Phase 1.3
+     placeholder in repo)
+   - `docs/prompts/module-migration-prompt.md` (Phase 1.4 placeholder in repo)
 
 3. **Link Active Stories to Docs**
    - Verify 10N-156, 10N-158 link to story files
