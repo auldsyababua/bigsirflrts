@@ -21,7 +21,7 @@ x-backend-defaults: &backend_defaults
   volumes:
     - erpnext_sites:/home/frappe/frappe-bench/sites
   networks:
-    - flrts_network
+    - ops_network
 
 services:
   # One-time configuration service (exits after setup)
@@ -50,7 +50,7 @@ services:
     volumes:
       - erpnext_sites:/home/frappe/frappe-bench/sites
     networks:
-      - flrts_network
+      - ops_network
     depends_on: {}
     restart: on-failure
 
@@ -115,7 +115,7 @@ services:
     volumes:
       - erpnext_sites:/home/frappe/frappe-bench/sites
     networks:
-      - flrts_network
+      - ops_network
     ports:
       - "127.0.0.1:8080:8080" # Only bind to localhost (Cloudflare tunnel will access)
     depends_on:
@@ -147,7 +147,7 @@ services:
     volumes:
       - erpnext_sites:/home/frappe/frappe-bench/sites
     networks:
-      - flrts_network
+      - ops_network
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "9000"]
       interval: 30s
@@ -202,7 +202,7 @@ services:
     restart: unless-stopped
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     networks:
-      - flrts_network
+      - ops_network
     volumes:
       - redis_cache_data:/data
     healthcheck:
@@ -222,7 +222,7 @@ services:
     container_name: flrts-redis-queue
     restart: unless-stopped
     networks:
-      - flrts_network
+      - ops_network
     volumes:
       - redis_queue_data:/data
     healthcheck:
@@ -245,7 +245,7 @@ services:
     environment:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
     networks:
-      - flrts_network
+      - ops_network
     depends_on:
       - erpnext-frontend
     deploy:
@@ -265,7 +265,7 @@ services:
     volumes:
       - uptime_kuma_data:/app/data
     networks:
-      - flrts_network
+      - ops_network
     ports:
       - "127.0.0.1:3001:3001"
     profiles:
@@ -277,11 +277,8 @@ services:
           memory: 256M
 
 networks:
-  flrts_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+  ops_network:
+    external: true
 
 volumes:
   erpnext_sites:
