@@ -1,8 +1,19 @@
 # Linear Documentation Map
 
-**Last updated:** 2025-09-30 **Source of Truth:** Linear Epic
+**Last updated:** 2025-10-01 **Source of Truth:** Linear Epic
 [10N-227](https://linear.app/10netzero/issue/10N-227/erpnext-backend-adoption)
 **Purpose:** Systematic mapping of all documentation to Linear issues
+
+**Audit Status:** ✅ **COMPLETED** - 2025-10-01
+
+**Related Reports:**
+
+- [DOCUMENTATION-AUDIT-SUMMARY.md](DOCUMENTATION-AUDIT-SUMMARY.md) - Executive
+  summary and recommendations
+- [ORPHANED-DOCUMENTATION-REPORT.md](ORPHANED-DOCUMENTATION-REPORT.md) -
+  Analysis of 4 orphaned documents
+- [MISSING-DOCUMENTATION-REPORT.md](MISSING-DOCUMENTATION-REPORT.md) - Tracking
+  for 15 missing documents
 
 ---
 
@@ -169,11 +180,16 @@ Phase 1 execution.
 
 ## Audit/Planning Documents
 
-| Document                                                                        | Purpose         | Related Linear Issues | Status      |
-| ------------------------------------------------------------------------------- | --------------- | --------------------- | ----------- |
-| [docs/architecture/audit-log.md](architecture/audit-log.md)                     | Change tracking | General               | ✅ Active   |
-| [docs/architecture/audit-plan.md](architecture/audit-plan.md)                   | Audit planning  | General               | ✅ Active   |
-| [docs/architecture/final-audit-summary.md](architecture/final-audit-summary.md) | Audit summary   | Audit completion      | ✅ Complete |
+| Document                                                                                              | Purpose                                   | Related Linear Issues | Status      |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------- | --------------------- | ----------- |
+| [docs/architecture/audit-log.md](architecture/audit-log.md)                                           | Change tracking                           | General               | ✅ Active   |
+| [docs/architecture/audit-plan.md](architecture/audit-plan.md)                                         | Audit planning                            | General               | ✅ Active   |
+| [docs/architecture/final-audit-summary.md](architecture/final-audit-summary.md)                       | Audit summary                             | Audit completion      | ✅ Complete |
+| [docs/LINEAR-DOCUMENTATION-MAP.md](LINEAR-DOCUMENTATION-MAP.md)                                       | Complete documentation inventory          | 10N-228               | ✅ Active   |
+| [docs/DOCUMENTATION-AUDIT-SUMMARY.md](DOCUMENTATION-AUDIT-SUMMARY.md)                                 | Documentation audit executive summary     | 10N-228               | ✅ Complete |
+| [docs/ORPHANED-DOCUMENTATION-REPORT.md](ORPHANED-DOCUMENTATION-REPORT.md)                             | Analysis of 4 documents with weak linkage | 10N-228               | ✅ Complete |
+| [docs/MISSING-DOCUMENTATION-REPORT.md](MISSING-DOCUMENTATION-REPORT.md)                               | Tracking for 15 missing documents         | 10N-228               | ✅ Complete |
+| [docs/architecture/linear-audit-erpnext-migration.md](architecture/linear-audit-erpnext-migration.md) | Linear audit report for ERPNext migration | 10N-227               | ✅ Complete |
 
 ---
 
