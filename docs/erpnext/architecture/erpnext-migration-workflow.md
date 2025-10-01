@@ -121,12 +121,12 @@ before mapping our needs to it.
 
 **Deliverables:**
 
-- **Document:** `docs/research/erpnext-schema-philosophy.md`
+- **Document:** `docs/erpnext/research/erpnext-schema-philosophy.md`
   - ERPNext data model explained
   - DocType lifecycle and patterns
   - Naming conventions guide
   - Customization best practices
-- **Document:** `docs/research/erpnext-vs-traditional-sql.md`
+- **Document:** `docs/erpnext/research/erpnext-vs-traditional-sql.md`
   - Comparison table: PostgreSQL concepts → ERPNext equivalents
   - Migration mental model guide
 
@@ -164,12 +164,12 @@ before mapping our needs to it.
 
 **Deliverables:**
 
-- **Document:** `docs/research/flrts-functional-requirements.md`
+- **Document:** `docs/erpnext/research/flrts-functional-requirements.md`
   - Business entity definitions (not technical tables)
   - Workflow diagrams (how work flows through system)
   - Required reports and analytics
   - Critical integration points
-- **Document:** `docs/research/erpnext-feature-mapping.md`
+- **Document:** `docs/erpnext/research/erpnext-feature-mapping.md`
   - Which ERPNext modules map to our needs
   - Which features we'll use immediately
   - Which features we'll grow into later
@@ -202,12 +202,12 @@ before mapping our needs to it.
 
 **Deliverables:**
 
-- **Document:** `docs/research/erpnext-doctype-patterns.md`
+- **Document:** `docs/erpnext/research/erpnext-doctype-patterns.md`
   - Master vs transactional DocType patterns
   - Child table design patterns
   - Customization strategies
   - Real-world examples and case studies
-- **Document:** `docs/research/erpnext-fsm-module-analysis.md`
+- **Document:** `docs/erpnext/research/erpnext-fsm-module-analysis.md`
   - Deep dive into ERPNext FSM module
   - Field-by-field analysis of relevant DocTypes
   - Workflow analysis (how FSM works out of the box)
@@ -252,7 +252,7 @@ before mapping our needs to it.
 
 **Deliverables:**
 
-- **Document:** `docs/migration/codebase-audit-report.md`
+- **Document:** `docs/erpnext/codebase-audit-report.md`
   - Complete inventory of code changes needed
   - Organized by module and priority
   - Estimated effort for each change

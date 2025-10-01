@@ -134,7 +134,7 @@ compatibility.
 
 ## Related ADR
 
-[ADR-006: ERPNext Backend Adoption](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/architecture/adr/ADR-006-erpnext-backend-adoption.md)
+[ADR-006: ERPNext Backend Adoption](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/architecture/ADR-006-erpnext-backend-adoption.md)
 
 ## Migration Phases
 
