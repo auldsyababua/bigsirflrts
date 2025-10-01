@@ -37,12 +37,12 @@
 
 | Document                                                                                                    | Purpose                             | Related Linear Issues | Status            |
 | ----------------------------------------------------------------------------------------------------------- | ----------------------------------- | --------------------- | ----------------- |
-| [docs/erpnext/research/erpnext-schema-philosophy.md](erpnext/research/erpnext-schema-philosophy.md)         | Phase 1.1 research template         | 10N-228               | ❌ Not linked yet |
-| [docs/erpnext/research/erpnext-vs-traditional-sql.md](erpnext/research/erpnext-vs-traditional-sql.md)       | Phase 1.1 research template         | 10N-228               | ❌ Not linked yet |
-| [docs/erpnext/research/flrts-functional-requirements.md](erpnext/research/flrts-functional-requirements.md) | Phase 1.2 requirements template     | 10N-229               | ❌ Not linked yet |
-| [docs/erpnext/research/erpnext-feature-mapping.md](erpnext/research/erpnext-feature-mapping.md)             | Phase 1.2 feature mapping template  | 10N-229               | ❌ Not linked yet |
-| [docs/erpnext/research/erpnext-doctype-patterns.md](erpnext/research/erpnext-doctype-patterns.md)           | Phase 1.3 DocType patterns template | 10N-230               | ❌ Not linked yet |
-| [docs/erpnext/codebase-audit-report.md](erpnext/codebase-audit-report.md)                                   | Phase 1.4 codebase audit template   | 10N-231               | ❌ Not linked yet |
+| [docs/erpnext/research/erpnext-schema-philosophy.md](erpnext/research/erpnext-schema-philosophy.md)         | Phase 1.1 research template         | 10N-228               | ✅ Linked in epic |
+| [docs/erpnext/research/erpnext-vs-traditional-sql.md](erpnext/research/erpnext-vs-traditional-sql.md)       | Phase 1.1 research template         | 10N-228               | ✅ Linked in epic |
+| [docs/erpnext/research/flrts-functional-requirements.md](erpnext/research/flrts-functional-requirements.md) | Phase 1.2 requirements template     | 10N-229               | ✅ Linked in epic |
+| [docs/erpnext/research/erpnext-feature-mapping.md](erpnext/research/erpnext-feature-mapping.md)             | Phase 1.2 feature mapping template  | 10N-229               | ✅ Linked in epic |
+| [docs/erpnext/research/erpnext-doctype-patterns.md](erpnext/research/erpnext-doctype-patterns.md)           | Phase 1.3 DocType patterns template | 10N-230               | ✅ Linked in epic |
+| [docs/erpnext/codebase-audit-report.md](erpnext/codebase-audit-report.md)                                   | Phase 1.4 codebase audit template   | 10N-231               | ✅ Linked in epic |
 
 **Note:** These templates are intentionally empty and will be filled during
 Phase 1 execution.
@@ -220,7 +220,9 @@ don't exist yet:
 
 ## Orphaned Documentation (No Clear Linear Linkage)
 
-These documents exist but have weak or no connection to Linear issues:
+All previously orphaned migration documents have been linked to Linear issues.
+
+### Remaining Orphaned Documents
 
 | Document                                                                              | Purpose         | Recommendation                          |
 | ------------------------------------------------------------------------------------- | --------------- | --------------------------------------- |
