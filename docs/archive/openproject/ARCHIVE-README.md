@@ -14,6 +14,8 @@ from January 2025 through September 2025.
   Jaeger) deployment for OpenProject infrastructure
 - **.env.example** - Environment variable template for OpenProject + Supabase +
   Cloudflare Tunnel deployment
+- **wrangler.toml** - Cloudflare Wrangler configuration for OpenProject Workers
+  at ops.10nz.tools
 
 ## Why It Was Deprecated
 
