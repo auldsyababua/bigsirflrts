@@ -35,24 +35,25 @@ review:
 
 ## Quick Summary
 
-**Product**: FLRTS (Fast Low-friction Repeatable Task System)  
-**Purpose**: Natural language task management layer for OpenProject  
-**Key Innovation**: Conversational task creation with automatic timezone
-handling  
-**Target Users**: Distributed bitcoin mining operations team  
-**Timeline**: 12-week MVP across 4 epics  
-**Tech Stack**: TypeScript, OpenAI GPT-4o, OpenProject API v3
+**Product**: FLRTS (Fast Low-friction Repeatable Task System) **Purpose**:
+Natural language task management layer for ERPNext FSM **Key Innovation**:
+Conversational task creation with automatic timezone handling **Target Users**:
+Distributed bitcoin mining operations team **Timeline**: 12-week MVP across 4
+epics **Tech Stack**: TypeScript, OpenAI GPT-4o, ERPNext REST API, Frappe Cloud
 
-## Key Decision: OpenProject Integration
+## Key Decision: ERPNext on Frappe Cloud
 
-This PRD reflects the strategic decision to build on **OpenProject** rather than
-tududi, providing:
+This PRD reflects the strategic decision to build on **ERPNext Field Service
+Management** (hosted on Frappe Cloud) rather than OpenProject, providing:
 
-- Enterprise-grade work package management
-- Custom fields for mining-specific metadata
-- Team collaboration features
-- Mature REST API v3
-- Self-hosted data sovereignty
+- Industry-standard FSM workflows (service calls, maintenance, installations)
+- Custom DocTypes for mining-specific metadata
+- Managed MariaDB, Redis, and background workers
+- Mature REST API and webhooks
+- Git-based deployment for custom apps (flrts_extensions)
+
+See [ADR-006](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
+migration rationale.
 
 ## Reading Order for Stakeholders
 
