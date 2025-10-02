@@ -29,12 +29,14 @@ Cloud docs added, OpenProject docs archived - 2025-10-02 (10N-238)
 | [docs/erpnext/architecture/erpnext-migration-workflow.md](erpnext/architecture/erpnext-migration-workflow.md)                 | Detailed migration workflow                | 10N-227               | ✅ Linked in epic      |
 | [docs/architecture/linear-audit-erpnext-migration.md](architecture/linear-audit-erpnext-migration.md)                         | Linear audit report for ERPNext transition | 10N-227               | ✅ Referenced in audit |
 
-### Frappe Cloud Setup & Operations (New - 10N-238)
+### Frappe Cloud Setup & Operations (Stage 2 - 10N-233)
 
-| Document                                                                                  | Purpose                             | Related Linear Issues | Status    |
-| ----------------------------------------------------------------------------------------- | ----------------------------------- | --------------------- | --------- |
-| [docs/setup/frappe-cloud-site.md](setup/frappe-cloud-site.md)                             | Frappe Cloud access, auth, secrets  | 10N-238               | ✅ Active |
-| [docs/architecture/frappe-cloud-environment.md](architecture/frappe-cloud-environment.md) | Frappe Cloud component architecture | 10N-238               | ✅ Active |
+| Document                                                                                    | Purpose                                              | Related Linear Issues | Status    |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------- | --------- |
+| [docs/setup/frappe-cloud-site.md](setup/frappe-cloud-site.md)                               | Frappe Cloud access, auth, secrets                   | 10N-238               | ✅ Active |
+| [docs/architecture/frappe-cloud-environment.md](architecture/frappe-cloud-environment.md)   | Frappe Cloud component architecture                  | 10N-238               | ✅ Active |
+| [docs/deployment/FRAPPE_CLOUD_DEPLOYMENT.md](deployment/FRAPPE_CLOUD_DEPLOYMENT.md)         | Frappe Cloud deployment guide (Phase 1-10)           | 10N-236               | ✅ Active |
+| [docs/infrastructure/frappe-cloud-operations.md](infrastructure/frappe-cloud-operations.md) | Operations playbook (backups, monitoring, incidents) | 10N-237               | ✅ Active |
 
 ### Standards & Critical Docs
 
