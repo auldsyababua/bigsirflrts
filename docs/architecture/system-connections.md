@@ -1,89 +1,104 @@
-# System Connections & Health (Supabase-Only)
+# System Connections & Health (Frappe Cloud Architecture)
 
-This project runs with a single Supabase PostgreSQL database for all services
-(ADR‑002) and n8n in single‑instance mode (ADR‑001). No local Postgres
-containers are used in production.
+> ⚠️ **MIGRATION NOTICE**: Replaced OpenProject/Supabase topology with ERPNext
+> on Frappe Cloud per [ADR-006](adr/ADR-006-erpnext-frappe-cloud-migration.md).
+> n8n remains in single‑instance mode (ADR‑001).
 
 ## Current Topology (Production)
 
-- OpenProject → Supabase PostgreSQL
-  - Conn: `DATABASE_URL` via Supabase pooler (port 5432)
-  - **Known Issue**: Currently using `public` schema instead of `openproject`
-    schema
-  - Deploy: `/root/docker-compose.yml` on droplet (165.227.216.172)
-  - Migrations: `openproject-migrate` init container (db:migrate db:seed)
-  - Health: `curl -f http://localhost:8080` → 302 (redirects to login)
-  - Attachments: Cloudflare R2 bucket `10netzero-docs`; fog adapter with
-    path-style S3
-- OpenProject → Memcached
-  - Conn: `OPENPROJECT_CACHE__MEMCACHE__SERVER=memcached:11211`
-  - Status: **NOT running** (removed as orphaned container)
-- Cloudflare Tunnel → OpenProject
-  - Exposes 127.0.0.1:8080 securely at `https://ops.10nz.tools`
-  - Forwards `Host: openproject.10nz.tools`; allowed via
-    `OPENPROJECT_ADDITIONAL__HOST__NAMES`
-  - Env: `CLOUDFLARE_TUNNEL_TOKEN` (see root `.env*`)
-- n8n (single‑instance)
-  - Mode: single‑instance per ADR‑001; uses Supabase when self‑hosted
-  - Current: remote/cloud deployment in `.env.n8n` (not on the OpenProject VM)
-- NLP service (packages/nlp-service)
-  - Dev‑only locally; not deployed on VM; depends on OpenAI + Supabase
-- Telegram
-  - Canonical: Supabase Edge Function `supabase/functions/telegram-webhook`
-  - Deployment helper: `supabase/deploy-telegram-webhook.sh`
-  - Dockerized bot: removed; no local Telegram container in production
+### ERPNext Backend (Frappe Cloud)
+
+- **Platform**: Frappe Cloud Private Bench
+- **Database**: Managed MariaDB (Frappe Cloud provisioned)
+- **Cache/Queue**: Managed Redis (Frappe Cloud provisioned)
+- **Background Workers**: Managed by Frappe Cloud scheduler
+- **Public Access**: `https://ops.10nz.tools` (Cloudflare DNS-only → Frappe
+  Cloud ingress)
+- **Custom Apps**: flrts_extensions (Git push-to-deploy)
+- **File Storage**: Native ERPNext attachments (optional R2 via marketplace app)
+- **API Access**: ERPNext REST API + webhooks
+- **Health**: Frappe Cloud dashboard monitoring + built-in uptime checks
+
+### Supporting Services
+
+- **n8n** (single‑instance per ADR‑001)
+  - Mode: single‑instance; optionally self‑hosted on DigitalOcean or n8n.cloud
+  - Integration: calls ERPNext REST API for task/service call operations
+  - Config: `.env.n8n` (webhook URL, ERPNext API credentials)
+- **NLP service** (packages/nlp-service)
+  - Dev‑only locally; not deployed on VM
+  - Dependencies: OpenAI API + ERPNext REST API (replaces Supabase logging)
+- **Telegram Bot**
+  - Webhook handler: Supabase Edge Function
+    `supabase/functions/telegram-webhook` (if retained) or direct ERPNext
+    webhook
+  - Deployment: `supabase/deploy-telegram-webhook.sh` (if Supabase Edge
+    Functions remain active)
+- **Monitoring** (optional)
+  - Frappe Cloud built-in: logs, metrics, uptime monitoring
+  - External: Prometheus/Grafana on DigitalOcean (if custom observability
+    needed)
 
 ## Environment Variables (by component)
 
-- OpenProject (on VM)
-  - `SECRET_KEY_BASE`, `DATABASE_URL` (Supabase pooler, `schema=openproject`),
-    `RAILS_ENV=production`
-  - R2 storage: `OPENPROJECT_FOG_*`,
-    `OPENPROJECT_ADDITIONAL__HOST__NAMES=openproject.10nz.tools`
-- Cloudflared (on VM)
-  - `CLOUDFLARE_TUNNEL_TOKEN`
-- n8n (remote or self‑hosted)
-  - `N8N_HOST`, `WEBHOOK_URL`; DB `DB_POSTGRESDB_*` → Supabase if self‑hosted
-- Supabase (root .env files)
-  - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- **ERPNext (Frappe Cloud)**
+  - Managed via Frappe Cloud dashboard (no direct .env access)
+  - API credentials: `FRAPPE_API_KEY`, `FRAPPE_API_SECRET` (for external
+    integrations)
+  - Site URL: `FRAPPE_SITE_URL=https://ops.10nz.tools`
+- **n8n** (remote or self‑hosted)
+  - `N8N_HOST`, `WEBHOOK_URL`
+  - ERPNext integration: `ERPNEXT_API_KEY`, `ERPNEXT_SITE_URL`
+  - Database: `DB_POSTGRESDB_*` (if self‑hosted) or n8n.cloud managed
+- **Supporting Services** (root .env files)
+  - Telegram: `TELEGRAM_BOT_TOKEN`
+  - OpenAI: `OPENAI_API_KEY`
+  - Monitoring: service-specific credentials
 
-Tip: Use root `.env*` files (.env, .env.supabase, .env.n8n, .env.digitalocean,
-.env.openai, .env.telegram) as the first source of truth for credentials.
+Tip: Use root `.env*` files (.env, .env.n8n, .env.digitalocean, .env.openai,
+.env.telegram) as the first source of truth for credentials. ERPNext backend
+credentials managed in Frappe Cloud dashboard.
 
-## Validation Commands (Production VM)
+## Validation Commands
 
-- App health: `curl -sf http://localhost:8080/health_checks/default`
-- Logs: `docker logs openproject --tail 100`
-- Tunnel: `docker logs cloudflared --tail 100`
-- R2 object check:
-  `AWS_ACCESS_KEY_ID=… AWS_SECRET_ACCESS_KEY=… aws --endpoint-url <R2_ENDPOINT> s3 ls s3://10netzero-docs/uploads/attachment/`
-- DB sanity (Supabase):
-  `psql "$DATABASE_URL" -t -c "select current_database(), current_schema();"`
+### ERPNext (Frappe Cloud)
 
-## Known Good State (as of Sept 18, 2025)
+- **Site Health**: Check Frappe Cloud dashboard status page
+- **API Health**:
+  `curl -sf https://ops.10nz.tools/api/method/frappe.auth.get_logged_user`
+- **Logs**: Access via Frappe Cloud dashboard → Logs tab
+- **SSH Access** (Private Bench plans):
+  `ssh <bench-name>@<frappe-cloud-hostname>`
+- **Bench Commands** (via SSH):
+  - `bench version` - Check installed apps and versions
+  - `bench doctor` - System health check
+  - `bench mariadb` - Database console access
 
-- OpenProject: healthy, running on Supabase with migrations applied (init
-  container)
-- Task #38 created successfully in Supabase (in `public` schema)
-- Attachments: 2 PDFs uploaded (stored in R2 bucket `10netzero-docs`)
-- Memcached: NOT running (removed)
-- Cloudflared: running; ops.10nz.tools reachable
-- Local Postgres: none (removed)
+### Supporting Services (if self-hosted on DigitalOcean)
 
-## Gaps / Next Work
+- **n8n Status**: `docker ps | grep n8n` (if self-hosted)
+- **Monitoring**: Access Grafana at configured subdomain
 
-- **Schema Issue**: Resolve data being in `public` schema instead of
-  `openproject`
-- Verify R2 attachments are downloadable through OpenProject UI
-- Memcached not configured (may impact performance)
-- Supabase Telegram edge function deployment & webhook handshake outstanding
-- Monitoring stack containers (`flrts-*`) created but not running; bring up and
-  validate ingress
-- Lint/test backlog (see `npm run lint`) requires cleanup before Story 1.1
-  closure
-- Container naming standardization (see INFRA‑002) for local/dev stacks
+## Known Good State (as of October 2, 2025)
+
+- **ERPNext**: Deployed on Frappe Cloud with flrts_extensions app
+- **Database**: Managed MariaDB with native ERPNext schema
+- **DNS**: ops.10nz.tools → Frappe Cloud (DNS-only routing via Cloudflare)
+- **API Access**: ERPNext REST API endpoints functional
+- **File Storage**: Native ERPNext attachments (replaces R2 for backend)
+- **Monitoring**: Frappe Cloud built-in monitoring active
+
+## Next Work / Integration TODOs
+
+- Complete application code refactor (Category 3 - deferred to separate issue)
+- Integrate n8n workflows with ERPNext REST API
+- Update Telegram webhook to call ERPNext endpoints
+- Migrate existing task data from OpenProject to ERPNext (if needed)
+- Validate flrts_extensions custom DocTypes functionality
+- Set up external monitoring (optional) for n8n and Telegram integrations
 
 ## Source of Truth
 
 - ADR‑001: `docs/architecture/adr/ADR-001-n8n-deployment-mode.md`
-- ADR‑002: `docs/architecture/adr/ADR-002-openproject-migration-pattern.md`
+- ADR‑006: `docs/architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md`
+- Deployment Guide: `docs/deployment/FRAPPE_CLOUD_DEPLOYMENT.md`
