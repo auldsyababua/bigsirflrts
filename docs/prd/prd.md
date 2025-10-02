@@ -240,22 +240,22 @@ Migrate from single-instance to queue mode when:
 
 ### Additional Technical Assumptions and Requests
 
-• **Single Supabase PostgreSQL database** with logical schema separation
-(openproject schema owned by OpenProject, flrts schema for FLRTS logs/metrics
-only) • **OpenProject connects directly to Supabase** via DATABASE_URL - no
-synchronization needed • **FLRTS never writes to openproject schema** - all
-writes go through OpenProject REST API • **All parsing logic in single OpenAI
-GPT-4o prompt** - no preprocessing or separate intent detection for MVP •
-**Hardcoded entity lists in prompt** (team member names, project names) rather
-than dynamic lookups for MVP • **Node.js/TypeScript** for FLRTS NLP service with
-Zod schema validation • **Telegram Bot API** for primary user interface •
-**Cloudflare Tunnel** for secure external access to services • **Cloudflare R2**
-for object storage (replaces local file uploads) • **Digital Ocean VM**
-deployment in same region as Supabase • **Docker Compose** for service
-orchestration and container management • **OpenProject REST API** for all task
-operations (not direct database access) • **n8n in Queue Mode** with Redis for
-workflow orchestration • **Supabase Edge Functions** for latency-critical
-operations • **Lists Management** as core feature alongside Tasks
+• **ERPNext on Frappe Cloud** with managed MariaDB, Redis, background workers,
+and scheduler • **FLRTS writes through ERPNext REST API only** - no direct
+database access • **All parsing logic in single OpenAI GPT-4o prompt** - no
+preprocessing or separate intent detection for MVP • **Hardcoded entity lists in
+prompt** (team member names, project names) rather than dynamic lookups for MVP
+• **Node.js/TypeScript** for FLRTS NLP service with Zod schema validation •
+**Telegram Bot API** for primary user interface • **Cloudflare DNS** (no tunnel;
+direct DNS-only routing to Frappe Cloud) • **Native ERPNext attachments** for
+file storage (optional R2 integration via marketplace app) • **Custom Frappe
+app** (flrts_extensions) for mining-specific DocTypes and automation • **ERPNext
+REST API and webhooks** for all task/service call operations • **n8n** for
+workflow orchestration (optional; may be replaced by Frappe automation) •
+**Lists Management** as core feature alongside Tasks
+
+See [ADR-006](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
+platform migration details.
 
 ## Epic List
 
