@@ -68,12 +68,14 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
+      "eslint --fix",
+      "prettier --write"
     ],
-    "*.{js,jsx,ts,tsx,json,md,yml,yaml}": [
+    "*.{json,yml,yaml}": [
       "prettier --write"
     ],
     "*.md": [
+      "prettier --write",
       "markdownlint --fix --config .markdownlint.json --ignore-path .markdownlintignore"
     ]
   },
