@@ -1,35 +1,32 @@
-# FLRTS OpenProject Infrastructure
+# FLRTS Infrastructure
+
+> ⚠️ **MIGRATION NOTICE**: OpenProject infrastructure has been replaced by
+> ERPNext on Frappe Cloud. See
+> [ADR-006](../docs/architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md)
+> for rationale.
 
 ## Overview
 
-This directory contains all infrastructure configuration and deployment scripts
-for the FLRTS OpenProject deployment on Digital Ocean.
+This directory contains infrastructure configuration for the FLRTS ERPNext
+deployment on Frappe Cloud and supporting services (n8n, monitoring).
 
 ## Directory Structure
 
 ```
 infrastructure/
-├── digitalocean/               # Digital Ocean specific configurations
-│   ├── docker-compose.supabase.yml # Canonical Supabase-based Docker Compose
+├── digitalocean/               # Digital Ocean configurations (n8n, monitoring)
+│   ├── docker-compose.erpnext.yml # ERPNext development stack (archived; use Frappe Cloud)
 │   ├── docker-compose.monitoring.prod.yml # Production monitoring stack
 │   ├── .env.production             # Environment variables template
-│   └── DEPLOYMENT_GUIDE.md        # Complete deployment documentation
+│   └── DEPLOYMENT_GUIDE.md        # Deployment documentation
 ├── docker/                     # Local development Docker configurations
 │   ├── docker-compose.yml     # Main development compose
 │   └── docker-compose.monitoring.yml # Local monitoring stack
 ├── monitoring/                 # Consolidated monitoring configurations
 │   ├── local/                # Development monitoring configs
-│   │   ├── prometheus.yml    # Local Prometheus config
-│   │   ├── grafana/          # Local Grafana dashboards
-│   │   └── n8n-webhook-monitor.js # Webhook monitoring
 │   ├── production/           # Production monitoring configs
-│   │   ├── prometheus.prod.yml # Production Prometheus
-│   │   ├── grafana/          # Production Grafana dashboards
-│   │   └── n8n-monitor.js    # Production n8n monitoring
 │   └── shared/               # Shared monitoring components
 ├── scripts/                    # Infrastructure operation scripts
-│   ├── deploy-queue-mode.sh  # Queue mode deployment
-│   ├── deploy-monitoring-remote.sh # Monitoring deployment
 │   ├── generate-secure-env.sh # Secure environment generation
 │   ├── health-check.sh       # Health check utilities
 │   └── run-resilience-tests.sh # Resilience testing
@@ -52,207 +49,101 @@ Symlinks are maintained for moved resources:
 - `/scripts/deploy-monitoring-remote.sh` →
   `/infrastructure/scripts/deploy-monitoring-remote.sh`
 
-## Current Deployment Status
+## Current Deployment Architecture
 
-### ✅ Completed
+### ERPNext Backend (Frappe Cloud)
 
-- [x] Digital Ocean Droplet provisioned (165.227.216.172)
-- [x] Docker Compose configuration created
-- [x] Environment template prepared
-- [x] Deployment scripts ready
-- [x] Documentation complete
+- **Platform**: Frappe Cloud Private Bench
+- **Hosting**: Managed MariaDB, Redis, background workers, scheduler
+- **Custom Apps**: flrts_extensions deployed via Git push-to-deploy
+- **Domain**: ops.10nz.tools (Cloudflare DNS-only routing)
+- **Deployment Guide**:
+  [docs/deployment/FRAPPE_CLOUD_DEPLOYMENT.md](../docs/deployment/FRAPPE_CLOUD_DEPLOYMENT.md)
 
-### ⏳ Pending
+### Supporting Services (Digital Ocean)
 
-- [ ] Environment variables configuration
-- [ ] Cloudflare R2 bucket setup
-- [ ] Cloudflare Tunnel configuration
-- [ ] OpenProject deployment
-- [ ] SSL/HTTPS configuration
-- [ ] Initial testing
+- **n8n**: Workflow orchestration (single-instance mode per ADR-001)
+- **Monitoring**: Prometheus + Grafana for observability
+- **Region**: NYC3
+- **Access**: SSH via configured keys
 
 ## Quick Start
 
-### 1. Server is Already Provisioned
+### 1. ERPNext Site Access
 
-- **IP**: 165.227.216.172
-- **Name**: flrts-openproject-prod
-- **Size**: s-4vcpu-8gb
-- **Region**: NYC3
-- **OS**: Ubuntu 22.04 LTS
+- Access Frappe Cloud dashboard to manage the ERPNext site
+- SSH access available on Private Bench plans ($25/mo+)
+- Custom app deployment via `git push frappe main`
 
-### 2. Configure Environment
+### 2. Supporting Services
 
 ```bash
-# Copy and edit environment file
-cp infrastructure/digitalocean/.env.production infrastructure/digitalocean/.env
+# SSH to Digital Ocean monitoring instance (if applicable)
+ssh root@<monitoring-droplet-ip>
 
-# Edit with your actual values
-nano infrastructure/digitalocean/.env
+# Check n8n status
+docker ps | grep n8n
+
+# View monitoring dashboard
+# Access via Cloudflare DNS at configured subdomain
 ```
 
-### 3. Deploy to Server
+### 3. Local Development
 
 ```bash
-# Run automated deployment
-./infrastructure/scripts/deploy.sh 165.227.216.172
+# Option 1: Use Frappe Cloud development branch
+# Create branch via Frappe Cloud dashboard
+
+# Option 2: Local frappe_docker setup (requires MariaDB)
+cd infrastructure/digitalocean
+docker compose -f docker-compose.erpnext.yml up -d
 ```
 
-### 4. Manual Deployment (Alternative)
+## Key Configuration
 
-```bash
-# SSH to server
-ssh root@165.227.216.172
+### Frappe Cloud Integration
 
-# Run setup script
-bash < infrastructure/scripts/setup-server.sh
+- **API Access**: ERPNext REST API + webhooks
+- **Custom DocTypes**: Deployed via flrts_extensions app
+- **File Storage**: Native ERPNext attachments (optional R2 via marketplace app)
+- **Backups**: Managed by Frappe Cloud with PITR
 
-# Copy files manually
-scp infrastructure/digitalocean/docker-compose.supabase.yml root@165.227.216.172:/opt/flrts-openproject/docker-compose.yml
-scp infrastructure/digitalocean/.env root@165.227.216.172:/opt/flrts-openproject/.env
+### Environment Variables
 
-# Start services
-ssh root@165.227.216.172 "cd /opt/flrts-openproject && docker compose up -d"
-```
+Template for supporting services (n8n, monitoring):
 
-## Key Files
+- N8N_WEBHOOK_URL
+- FRAPPE_API_KEY (for ERPNext integration)
+- TELEGRAM_BOT_TOKEN
+- OPENAI_API_KEY
+- Monitoring credentials
 
-### docker-compose.supabase.yml
+## Migration Notes
 
-Canonical Docker Compose configuration with:
+**Historical OpenProject infrastructure has been retired.** See archived configs
+in `docs/archive/openproject/` and `docs/archive/tunnel/`. Key changes:
 
-- OpenProject Community Edition 14-slim
-- Supabase PostgreSQL (single database; no local Postgres container)
-- Migration init-container (db:migrate db:seed)
-- Memcached for caching
-- Cloudflare Tunnel for secure access
+- **Database**: MariaDB (Frappe Cloud managed) replaces Supabase PostgreSQL
+- **Access**: Direct DNS routing replaces Cloudflare Tunnel
+- **Deployment**: Git push-to-deploy replaces Docker Compose self-hosting
+- **Monitoring**: Frappe Cloud built-in tools supplement custom monitoring
 
-### .env.production
+## Cost Summary (Current)
 
-Template for all required environment variables:
-
-- Supabase connection string (pooler, schema=openproject)
-- OpenProject configuration
-- Cloudflare R2 storage
-- Cloudflare Tunnel token
-- Email settings (optional)
-
-### setup-server.sh
-
-Automated server setup that:
-
-- Installs Docker and Docker Compose
-- Configures firewall (UFW)
-- Sets up fail2ban
-- Optimizes system parameters
-- Creates swap space
-- Installs monitoring tools
-
-### deploy.sh
-
-Automated deployment that:
-
-- Runs server setup
-- Copies all configuration files
-- Creates necessary directories
-- Sets up systemd service
-- Configures automated backups
-- Starts all services
-
-## Next Steps
-
-1. **Configure Cloudflare R2**:
-   - Create bucket `openproject-files`
-   - Generate API credentials
-   - Add to .env file
-
-2. **Setup Cloudflare Tunnel**:
-
-   ```bash
-   cloudflared tunnel create openproject-tunnel
-   cloudflared tunnel token openproject-tunnel
-   ```
-
-   - Add token to .env file
-   - Configure ingress rules in Cloudflare Dashboard
-
-3. **Deploy OpenProject**:
-
-   ```bash
-   ./infrastructure/scripts/deploy.sh 165.227.216.172
-   ```
-
-4. **Verify Deployment**:
-   - Check health: <http://165.227.216.172:8080/health_checks/default>
-   - Access UI: <http://165.227.216.172:8080>
-   - Complete setup wizard
-
-5. **Secure Access**:
-   - Verify Cloudflare Tunnel working
-   - Remove direct port access
-   - Update firewall rules
-
-## Monitoring
-
-### Check Service Status
-
-```bash
-ssh root@165.227.216.172 "docker ps"
-```
-
-### View Logs
-
-```bash
-ssh root@165.227.216.172 "cd /opt/flrts-openproject && docker compose logs -f"
-```
-
-### Health Check
-
-```bash
-ssh root@165.227.216.172 "/opt/flrts-openproject/scripts/health-check.sh"
-```
-
-## Troubleshooting
-
-### Cannot Connect to Server
-
-```bash
-# Check droplet status
-doctl compute droplet get 518515575
-```
-
-### Services Won't Start
-
-```bash
-# Check logs
-ssh root@165.227.216.172 "docker compose logs openproject"
-
-# Check environment
-ssh root@165.227.216.172 "cat /opt/flrts-openproject/.env"
-```
-
-### High Resource Usage
-
-```bash
-# Check resource usage
-ssh root@165.227.216.172 "docker stats --no-stream"
-
-# Restart services
-ssh root@165.227.216.172 "docker compose restart"
-```
-
-## Cost Summary
-
-- Digital Ocean Droplet: $48/month
-- Cloudflare R2: ~$2/month
-- Cloudflare Tunnel: Free
-- **Total**: ~$50/month
+- **Frappe Cloud Private Bench**: $25+/month (includes MariaDB, Redis, backups)
+- **Digital Ocean (n8n/monitoring)**: ~$10-20/month (if retained)
+- **Cloudflare**: Free (DNS-only; no tunnel)
+- **Total**: ~$35-45/month
 
 ## Support
 
 For issues or questions:
 
-1. Check DEPLOYMENT_GUIDE.md for detailed instructions
-2. Review Docker logs for error messages
-3. Consult OpenProject documentation
-4. Contact team lead for infrastructure access
+1. Check
+   [FRAPPE_CLOUD_DEPLOYMENT.md](../docs/deployment/FRAPPE_CLOUD_DEPLOYMENT.md)
+   for ERPNext deployment
+2. Review
+   [ADR-006](../docs/architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md)
+   for architecture decisions
+3. Check Frappe Cloud dashboard logs for ERPNext errors
+4. Contact team lead for Frappe Cloud access
