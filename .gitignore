@@ -132,3 +132,8 @@ infrastructure/github-runner/test-*.sh
 infrastructure/github-runner/.env
 infrastructure/github-runner/work/
 infrastructure/github-runner/_work/
+
+# === ARCHIVE ALLOWLIST ===
+# Allow canonical docs/archive/ tree for historical documentation
+!docs/archive/
+!docs/archive/**
