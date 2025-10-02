@@ -1,4 +1,21 @@
-# OpenProject Deployment Documentation
+---
+status: archived
+superseded_by: ADR-006 (ERPNext Frappe Cloud Migration)
+archived_date: 2025-10-02
+original_location: docs/deployment/OPENPROJECT_DEPLOYMENT.md
+---
+
+# ⚠️ ARCHIVED: OpenProject Deployment Documentation
+
+> **This document is archived and represents obsolete infrastructure.**
+>
+> **Migration Status**: OpenProject deployment has been superseded by ERPNext on Frappe Cloud.
+>
+> **See**: [ADR-006: ERPNext Frappe Cloud Migration](../../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md)
+>
+> **Current Setup**: [Frappe Cloud Site Setup Guide](../../setup/frappe-cloud-site.md)
+
+---
 
 ## Overview
 

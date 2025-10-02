@@ -21,7 +21,8 @@ isn't covered, STOP and ask the user.
 
 - `flrts-erpnext-dev` - Development ERPNext instance
 - `flrts-erpnext-prod` - Production ERPNext instance
-- `flrts-postgres-dev` - Development PostgreSQL (if separate from Supabase)
+- `flrts-mariadb-dev` - Dedicated MariaDB instance (if using external managed
+  DB)
 - `flrts-redis-dev` - Redis cache for ERPNext
 
 **Rules:**
@@ -179,7 +180,6 @@ class ERPNextClient {}
 class WorkOrderService {}
 class LocationRepository {}
 class ERPNextSyncService {}
-class OpenProjectSyncService {} // Keep for comparison
 ```
 
 ### Function Names
@@ -276,7 +276,10 @@ interface ERPNextClientOptions {}
 
 ## Database Naming
 
-### Supabase Cache Tables
+### ERPNext Cache Tables (Optional)
+
+For Frappe Cloud we rely on the managed MariaDB instance. If we provision an
+external read replica or analytics database, follow this naming.
 
 **Format:** `erpnext_{entity}_cache`
 

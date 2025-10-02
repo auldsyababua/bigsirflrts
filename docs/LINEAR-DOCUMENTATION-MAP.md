@@ -1,10 +1,11 @@
 # Linear Documentation Map
 
-**Last updated:** 2025-10-01 **Source of Truth:** Linear Epic
+**Last updated:** 2025-10-02 **Source of Truth:** Linear Epic
 [10N-227](https://linear.app/10netzero/issue/10N-227/erpnext-backend-adoption)
 **Purpose:** Systematic mapping of all documentation to Linear issues
 
-**Audit Status:** ✅ **COMPLETED** - 2025-10-01
+**Audit Status:** ✅ **COMPLETED** - 2025-10-01 **Last Update:** New Frappe
+Cloud docs added, OpenProject docs archived - 2025-10-02 (10N-238)
 
 **Related Reports:**
 
@@ -21,11 +22,19 @@
 
 ### Architecture & ADRs
 
-| Document                                                                                                                  | Purpose                                    | Related Linear Issues | Status                 |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------------------- | ---------------------- |
-| [docs/erpnext/architecture/ADR-006-erpnext-backend-adoption.md](erpnext/architecture/ADR-006-erpnext-backend-adoption.md) | ERPNext migration decision record          | 10N-227               | ✅ Linked in epic      |
-| [docs/erpnext/architecture/erpnext-migration-workflow.md](erpnext/architecture/erpnext-migration-workflow.md)             | Detailed migration workflow                | 10N-227               | ✅ Linked in epic      |
-| [docs/architecture/linear-audit-erpnext-migration.md](architecture/linear-audit-erpnext-migration.md)                     | Linear audit report for ERPNext transition | 10N-227               | ✅ Referenced in audit |
+| Document                                                                                                                      | Purpose                                    | Related Linear Issues | Status                 |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------------------- | ---------------------- |
+| [docs/architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md](architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) | Frappe Cloud migration decision record     | 10N-227, 10N-233      | ✅ Active              |
+| [docs/erpnext/architecture/ADR-006-erpnext-backend-adoption.md](erpnext/architecture/ADR-006-erpnext-backend-adoption.md)     | ERPNext migration decision record          | 10N-227               | ✅ Linked in epic      |
+| [docs/erpnext/architecture/erpnext-migration-workflow.md](erpnext/architecture/erpnext-migration-workflow.md)                 | Detailed migration workflow                | 10N-227               | ✅ Linked in epic      |
+| [docs/architecture/linear-audit-erpnext-migration.md](architecture/linear-audit-erpnext-migration.md)                         | Linear audit report for ERPNext transition | 10N-227               | ✅ Referenced in audit |
+
+### Frappe Cloud Setup & Operations (New - 10N-238)
+
+| Document                                                                                  | Purpose                             | Related Linear Issues | Status    |
+| ----------------------------------------------------------------------------------------- | ----------------------------------- | --------------------- | --------- |
+| [docs/setup/frappe-cloud-site.md](setup/frappe-cloud-site.md)                             | Frappe Cloud access, auth, secrets  | 10N-238               | ✅ Active |
+| [docs/architecture/frappe-cloud-environment.md](architecture/frappe-cloud-environment.md) | Frappe Cloud component architecture | 10N-238               | ✅ Active |
 
 ### Standards & Critical Docs
 
@@ -58,8 +67,8 @@ Phase 1 execution.
 | [docs/architecture/adr/ADR-002-openproject-migration-pattern.md](architecture/adr/ADR-002-openproject-migration-pattern.md) | OpenProject migration decision | Superseded by ADR-006             | 📦 Historical |
 | [docs/architecture/adr/ADR-003-supabase-connection-pooling.md](architecture/adr/ADR-003-supabase-connection-pooling.md)     | Supabase connection patterns   | Still applies to ERPNext          | ✅ Active     |
 | [docs/architecture/openproject-integration-strategy.md](architecture/openproject-integration-strategy.md)                   | OpenProject integration guide  | Superseded by ERPNext workflow    | 📦 Historical |
-| [docs/deployment/OPENPROJECT_DEPLOYMENT.md](deployment/OPENPROJECT_DEPLOYMENT.md)                                           | OpenProject deployment guide   | Historical reference only         | 📦 Historical |
-| [docs/setup/openproject.md](setup/openproject.md)                                                                           | OpenProject setup instructions | Superseded by ERPNext setup (TBD) | 📦 Historical |
+| [docs/archive/openproject/OPENPROJECT_DEPLOYMENT.md](archive/openproject/OPENPROJECT_DEPLOYMENT.md)                         | OpenProject deployment guide   | **ARCHIVED 2025-10-02** (10N-238) | 📦 Archived   |
+| [docs/archive/openproject/openproject.md](archive/openproject/openproject.md)                                               | OpenProject setup instructions | **ARCHIVED 2025-10-02** (10N-238) | 📦 Archived   |
 
 ### OpenProject Stories (Historical)
 
