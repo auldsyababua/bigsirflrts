@@ -13,9 +13,10 @@ Internet → Cloudflare CDN → Cloudflare Tunnel → cloudflared container → 
 
 ## Current Configuration
 
-- **Subdomain:** ops.10nz.tools
-- **Target Service:** erpnext-frontend container (nginx on port 8080)
-- **Network:** flrts_network (Docker bridge network)
+- **Public hostname:** `ops.10nz.tools`
+- **Service target:** `http://erpnext-frontend:8080`
+- **Tunnel name:** `ERPNext-ops` (Cloudflare Zero Trust)
+- **Network:** `flrts_network` (Docker bridge network)
 - **Access:** Zero-trust via Cloudflare (no direct port exposure)
 
 ## Cloudflare Dashboard Setup
@@ -26,12 +27,11 @@ If creating a new tunnel or updating existing:
 
 1. Go to [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/)
 2. Navigate to **Access** → **Tunnels**
-3. Find tunnel: **FLRTS Production Tunnel** (or create new)
-4. Under **Public Hostnames**, configure:
-   - **Subdomain:** `ops`
-   - **Domain:** `10nz.tools`
-   - **Service Type:** HTTP
-   - **URL:** `erpnext-frontend:8080`
+3. Select tunnel **ERPNext-ops** (created 2025-10-02 for the ERPNext migration)
+4. Under **Published application routes**, configure:
+   - **Hostname:** `ops.10nz.tools`
+   - **Type:** HTTP
+   - **URL:** `http://erpnext-frontend:8080`
 
 ### 2. DNS Configuration
 
@@ -76,9 +76,9 @@ cloudflared:
   image: cloudflare/cloudflared:latest
   container_name: flrts-cloudflared
   restart: unless-stopped
-  command: tunnel --no-autoupdate run
+  command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
   environment:
-    TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    CLOUDFLARE_TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
   networks:
     - flrts_network
   depends_on:
@@ -95,10 +95,9 @@ CLOUDFLARE_TUNNEL_TOKEN=<your-tunnel-token>
 
 **Get token from:**
 
-1. Cloudflare Dashboard → Access → Tunnels
-2. Click on your tunnel
-3. Click **Configure**
-4. Copy the token from the install command
+1. Cloudflare Dashboard → Zero Trust → Network → Tunnels → **ERPNext-ops**
+2. Click **Install connector**
+3. Copy the token from the `cloudflared tunnel run --token …` command
 
 **Store in 1Password:**
 
@@ -119,7 +118,17 @@ docker ps | grep cloudflared
 Should show:
 
 ```
-flrts-cloudflared   cloudflare/cloudflared:latest   "tunnel --no-autoupdate run"   Up X minutes
+flrts-cloudflared   cloudflare/cloudflared:latest   "tunnel run --token *****"   Up X minutes
+
+```
+
+### 2. Manual Connector Launch
+
+If you need to run the connector manually (for diagnostics or one-off tests):
+
+```bash
+cloudflared tunnel run --token \
+  eyJhIjoiYzRkNmMwNTBkMmIyNTMwOWQ5NTNkOTk2ODU5MmY3NDIiLCJ0IjoiMDRlZjUwNGQtOWU3Ni00YzAxLWJiMjQtMzI5MGVlZjQ0ZTY1IiwicyI6Ik1ESXdaREZqTkdVdE1qWXpaaTAwTVdObExXSmpZMkV0TWpKbFpHRXpOVGhqT1RRMiJ9
 ```
 
 ### 2. Check Tunnel Logs

@@ -76,9 +76,10 @@ Get from
 
 Get from [Cloudflare Dashboard](https://one.dash.cloudflare.com/):
 
-1. Navigate to Access → Tunnels
-2. Find: "FLRTS Production Tunnel"
-3. Copy tunnel token
+1. Navigate to Zero Trust → Network → Tunnels
+2. Find tunnel **ERPNext-ops** (created for the ERPNext deployment)
+3. Click _Install connector_ and copy the token from the
+   `cloudflared tunnel run --token …` command
 4. Store in 1Password: Cloudflare / FLRTS Tunnel / Token
 
 ### 3. Cloudflare R2 Credentials (Optional)
@@ -121,7 +122,7 @@ Fill in these REQUIRED variables:
 
 ```bash
 ERPNEXT_VERSION=latest
-SUPABASE_DB_HOST=aws-0-us-west-1.pooler.supabase.com
+SUPABASE_DB_HOST=aws-0-us-east-2.pooler.supabase.com
 SUPABASE_DB_PORT=5432
 SUPABASE_DB_NAME=postgres
 SUPABASE_DB_USER=postgres.thnwlykidzhrsagyjncc
