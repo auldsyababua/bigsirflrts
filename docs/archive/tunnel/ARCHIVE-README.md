@@ -10,9 +10,9 @@ OpenProject infrastructure.
 
 - **CLOUDFLARE-TUNNEL-SETUP.md** - Complete tunnel setup guide including DNS
   configuration, ingress rules, and token management
-- **cloudflared-config-secure.yml** - Production tunnel configuration (to be
-  moved here from infrastructure/digitalocean/)
-- **tunnel-config.yml** - Alternative tunnel configuration (to be moved here)
+- **cloudflared-config-secure.yml** - Production tunnel configuration for
+  OpenProject ingress
+- **tunnel-config.yml** - Alternative tunnel configuration
 
 ## Why It Was Deprecated
 
