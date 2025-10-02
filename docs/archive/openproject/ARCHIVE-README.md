@@ -12,6 +12,8 @@ from January 2025 through September 2025.
   OpenProject Community Edition with Supabase PostgreSQL
 - **MONITORING_DEPLOYMENT_GUIDE.md** - Monitoring stack (Prometheus, Grafana,
   Jaeger) deployment for OpenProject infrastructure
+- **.env.example** - Environment variable template for OpenProject + Supabase +
+  Cloudflare Tunnel deployment
 
 ## Why It Was Deprecated
 
