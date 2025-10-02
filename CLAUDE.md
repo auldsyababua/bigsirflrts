@@ -20,7 +20,7 @@ FLRTS stands for 'Field Reports, Lists, Reminders, Tasks, and Sub-Tasks.'
 
 - Use ripgrep (rg) not grep
 - Check .rgignore if searches are slow
-- Archives live in ~/Desktop/flrts-archives
+- Archives live in docs/archive/ (tracked in repository)
 
 ## CRITICAL: Search Commands That Preserve Context
 
