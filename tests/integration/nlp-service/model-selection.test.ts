@@ -55,7 +55,7 @@ describe('10N-175: Parameterized Model Selection', () => {
           'gpt-4o-mini',
           'gpt-3.5-turbo',
           'o1-preview',
-          'o1-mini'
+          'o1-mini',
         ];
 
         expect(supportedModels).toContain(config.primaryModel);
@@ -106,11 +106,11 @@ describe('10N-175: Parameterized Model Selection', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'model-test'
+          'X-User-Id': 'model-test',
         },
         body: JSON.stringify({
-          input: 'Create task for model validation'
-        })
+          input: 'Create task for model validation',
+        }),
       });
 
       const result = await response.json();
@@ -127,11 +127,11 @@ describe('10N-175: Parameterized Model Selection', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'model-test'
+          'X-User-Id': 'model-test',
         },
         body: JSON.stringify({
-          input: 'Test model metadata'
-        })
+          input: 'Test model metadata',
+        }),
       });
 
       const result = await response.json();
@@ -148,7 +148,7 @@ describe('10N-175: Parameterized Model Selection', () => {
         'gpt-4o-mini',
         'gpt-3.5-turbo',
         'o1-preview',
-        'o1-mini'
+        'o1-mini',
       ];
 
       expect(supportedModels).toContain(result.metadata.model);
@@ -212,22 +212,22 @@ describe('10N-175: Parameterized Model Selection', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'ab-test-1'
+          'X-User-Id': 'ab-test-1',
         },
         body: JSON.stringify({
-          input: 'First A/B test request'
-        })
+          input: 'First A/B test request',
+        }),
       });
 
       const response2 = await fetch(`${NLP_API_URL}/parse`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'ab-test-2'
+          'X-User-Id': 'ab-test-2',
         },
         body: JSON.stringify({
-          input: 'Second A/B test request'
-        })
+          input: 'Second A/B test request',
+        }),
       });
 
       const result1 = await response1.json();
@@ -305,11 +305,11 @@ describe('10N-175: Parameterized Model Selection', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'logging-test'
+          'X-User-Id': 'logging-test',
         },
         body: JSON.stringify({
-          input: 'Test model logging'
-        })
+          input: 'Test model logging',
+        }),
       });
 
       const result = await response.json();
@@ -351,11 +351,11 @@ describe('10N-175: Parameterized Model Selection', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'rollout-test'
+          'X-User-Id': 'rollout-test',
         },
         body: JSON.stringify({
-          input: 'Gradual rollout test'
-        })
+          input: 'Gradual rollout test',
+        }),
       });
 
       const result = await response.json();
@@ -381,7 +381,7 @@ describe('10N-175: Parameterized Model Selection', () => {
           'gpt-4o-mini',
           'gpt-3.5-turbo',
           'o1-preview',
-          'o1-mini'
+          'o1-mini',
         ];
 
         expect(validModels).toContain(config.primaryModel);

@@ -33,11 +33,11 @@ describe('10N-174: Data Retention and Secret Detection', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'test-user'
+          'X-User-Id': 'test-user',
         },
         body: JSON.stringify({
-          input: maliciousInput
-        })
+          input: maliciousInput,
+        }),
       });
 
       const result = await response.json();
@@ -47,7 +47,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
         expect(result.error).toMatch(/secret|key|sensitive/i);
       } else {
         // If request succeeds, verify secret not logged
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         const { data: logs } = await supabaseAdmin
           .from('parsing_logs')
@@ -66,7 +66,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
       const inputs = [
         'password: mySecretPass123',
         'api_key=supersecret456',
-        'token: bearer_abc123xyz'
+        'token: bearer_abc123xyz',
       ];
 
       for (const input of inputs) {
@@ -74,9 +74,9 @@ describe('10N-174: Data Retention and Secret Detection', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-User-Id': 'test-user'
+            'X-User-Id': 'test-user',
           },
-          body: JSON.stringify({ input })
+          body: JSON.stringify({ input }),
         });
 
         const result = await response.json();
@@ -94,7 +94,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
       const normalInputs = [
         'Create task for pump inspection tomorrow',
         'Assign equipment check to taylor@example.com',
-        'List all high priority tasks'
+        'List all high priority tasks',
       ];
 
       for (const input of normalInputs) {
@@ -102,9 +102,9 @@ describe('10N-174: Data Retention and Secret Detection', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-User-Id': 'test-user'
+            'X-User-Id': 'test-user',
           },
-          body: JSON.stringify({ input })
+          body: JSON.stringify({ input }),
         });
 
         const result = await response.json();
@@ -116,10 +116,12 @@ describe('10N-174: Data Retention and Secret Detection', () => {
   describe('Retention Policy Configuration', () => {
     it('should have 90-day retention policy configured @P0', async () => {
       // Query database metadata for retention policy
-      const { data: policies, error } = await supabaseAdmin
-        .rpc('get_retention_policies', { table_name: 'parsing_logs' });
+      const { data: policies, error } = await supabaseAdmin.rpc('get_retention_policies', {
+        table_name: 'parsing_logs',
+      });
 
-      if (error && error.code !== 'PGRST202') { // Ignore if function doesn't exist
+      if (error && error.code !== 'PGRST202') {
+        // Ignore if function doesn't exist
         // Alternatively, check for cron job or trigger
         const { data: cronJobs } = await supabaseAdmin
           .from('pg_cron.job')
@@ -130,8 +132,8 @@ describe('10N-174: Data Retention and Secret Detection', () => {
       } else {
         expect(policies).toBeDefined();
         // Verify 90-day policy exists
-        const retentionPolicy = policies?.find((p: any) =>
-          p.retention_days === 90 || p.interval === '90 days'
+        const retentionPolicy = policies?.find(
+          (p: any) => p.retention_days === 90 || p.interval === '90 days'
         );
         expect(retentionPolicy).toBeDefined();
       }
@@ -149,7 +151,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
           user_id: 'retention-test',
           input: 'Old test log',
           reasoning: 'Test retention',
-          timestamp: oldDate.toISOString()
+          timestamp: oldDate.toISOString(),
         })
         .select()
         .single();
@@ -159,7 +161,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
 
       // Wait a moment for retention policy to potentially trigger
       // Note: In real tests, this might need manual trigger or longer wait
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Verify log was deleted by retention policy
       const { data: deletedLog } = await supabaseAdmin
@@ -190,10 +192,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
   describe('RLS Policy Verification', () => {
     it('should prevent anonymous users from reading all logs @P0', async () => {
       // Try to read logs with anon key
-      const { data, error } = await supabaseAnon
-        .from('parsing_logs')
-        .select('*')
-        .limit(10);
+      const { data, error } = await supabaseAnon.from('parsing_logs').select('*').limit(10);
 
       // Should either fail or return no data (depending on RLS config)
       if (data) {
@@ -212,10 +211,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
     });
 
     it('should allow service role to read all logs @P0', async () => {
-      const { data, error } = await supabaseAdmin
-        .from('parsing_logs')
-        .select('*')
-        .limit(5);
+      const { data, error } = await supabaseAdmin.from('parsing_logs').select('*').limit(5);
 
       // Service role should have full access
       expect(error).toBeNull();
@@ -232,7 +228,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
           request_id: crypto.randomUUID(),
           user_id: testUserId,
           input: 'RLS test log',
-          reasoning: 'Testing RLS'
+          reasoning: 'Testing RLS',
         })
         .select()
         .single();
@@ -249,10 +245,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
 
       // Cleanup
       if (newLog) {
-        await supabaseAdmin
-          .from('parsing_logs')
-          .delete()
-          .eq('request_id', newLog.request_id);
+        await supabaseAdmin.from('parsing_logs').delete().eq('request_id', newLog.request_id);
       }
     });
   });
@@ -265,15 +258,15 @@ describe('10N-174: Data Retention and Secret Detection', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'test-user'
+          'X-User-Id': 'test-user',
         },
-        body: JSON.stringify({ input: longInput })
+        body: JSON.stringify({ input: longInput }),
       });
 
       const result = await response.json();
 
       if (result.metadata?.requestId) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         const { data: log } = await supabaseAdmin
           .from('parsing_logs')
@@ -289,8 +282,9 @@ describe('10N-174: Data Retention and Secret Detection', () => {
     });
 
     it('should track total storage usage for logs @P1', async () => {
-      const { data: storageInfo } = await supabaseAdmin
-        .rpc('pg_table_size', { table_name: 'parsing_logs' });
+      const { data: storageInfo } = await supabaseAdmin.rpc('pg_table_size', {
+        table_name: 'parsing_logs',
+      });
 
       expect(storageInfo).toBeDefined();
       // Just verify we can query storage, actual size depends on usage

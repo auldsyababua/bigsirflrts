@@ -18,7 +18,8 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'http://localhost:54321';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const TELEGRAM_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/telegram-webhook`;
-const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook-test/telegram';
+const N8N_WEBHOOK_URL =
+  process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook-test/telegram';
 const N8N_WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET || 'test-secret-key';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -26,9 +27,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // Helper: Generate HMAC signature
 function generateHmacSignature(payload: string, secret: string, timestamp: number): string {
   const message = `${timestamp}.${payload}`;
-  return createHmac('sha256', secret)
-    .update(message)
-    .digest('hex');
+  return createHmac('sha256', secret).update(message).digest('hex');
 }
 
 // Helper: Simulate Telegram webhook payload
@@ -41,23 +40,22 @@ function createTelegramPayload(chatId: number = 123456, text: string = 'test mes
         id: chatId,
         is_bot: false,
         first_name: 'Test',
-        username: 'testuser'
+        username: 'testuser',
       },
       chat: {
         id: chatId,
-        type: 'private'
+        type: 'private',
       },
       date: Math.floor(Date.now() / 1000),
-      text
-    }
+      text,
+    },
   };
 }
 
 // Helper: Sleep function
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('10N-177: N8N Webhook Authentication', () => {
-
   test('Should accept valid HMAC signature', async () => {
     const payload = JSON.stringify(createTelegramPayload());
     const timestamp = Math.floor(Date.now() / 1000);
@@ -68,9 +66,9 @@ describe('10N-177: N8N Webhook Authentication', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': signature,
-        'X-N8N-Timestamp': timestamp.toString()
+        'X-N8N-Timestamp': timestamp.toString(),
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.status).toBe(200);
@@ -82,9 +80,9 @@ describe('10N-177: N8N Webhook Authentication', () => {
     const response = await fetch(TELEGRAM_WEBHOOK_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.status).toBe(401);
@@ -102,9 +100,9 @@ describe('10N-177: N8N Webhook Authentication', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': invalidSignature,
-        'X-N8N-Timestamp': timestamp.toString()
+        'X-N8N-Timestamp': timestamp.toString(),
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.status).toBe(401);
@@ -122,9 +120,9 @@ describe('10N-177: N8N Webhook Authentication', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': signature,
-        'X-N8N-Timestamp': oldTimestamp.toString()
+        'X-N8N-Timestamp': oldTimestamp.toString(),
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.status).toBe(401);
@@ -135,19 +133,26 @@ describe('10N-177: N8N Webhook Authentication', () => {
   test('Should reject modified payload (signature mismatch)', async () => {
     const originalPayload = createTelegramPayload();
     const timestamp = Math.floor(Date.now() / 1000);
-    const signature = generateHmacSignature(JSON.stringify(originalPayload), N8N_WEBHOOK_SECRET, timestamp);
+    const signature = generateHmacSignature(
+      JSON.stringify(originalPayload),
+      N8N_WEBHOOK_SECRET,
+      timestamp
+    );
 
     // Modify payload after signature generation
-    const modifiedPayload = { ...originalPayload, message: { ...originalPayload.message, text: 'modified' } };
+    const modifiedPayload = {
+      ...originalPayload,
+      message: { ...originalPayload.message, text: 'modified' },
+    };
 
     const response = await fetch(TELEGRAM_WEBHOOK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': signature,
-        'X-N8N-Timestamp': timestamp.toString()
+        'X-N8N-Timestamp': timestamp.toString(),
       },
-      body: JSON.stringify(modifiedPayload)
+      body: JSON.stringify(modifiedPayload),
     });
 
     expect(response.status).toBe(401);
@@ -155,7 +160,6 @@ describe('10N-177: N8N Webhook Authentication', () => {
 });
 
 describe('10N-178: Application-Level Rate Limiting', () => {
-
   const TEST_CHAT_ID = 999999;
   const RATE_LIMIT = 10; // requests per minute
 
@@ -174,9 +178,9 @@ describe('10N-178: Application-Level Rate Limiting', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': signature,
-        'X-N8N-Timestamp': timestamp.toString()
+        'X-N8N-Timestamp': timestamp.toString(),
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.status).toBe(200);
@@ -197,15 +201,15 @@ describe('10N-178: Application-Level Rate Limiting', () => {
           headers: {
             'Content-Type': 'application/json',
             'X-N8N-Signature': signature,
-            'X-N8N-Timestamp': timestamp.toString()
+            'X-N8N-Timestamp': timestamp.toString(),
           },
-          body: payload
+          body: payload,
         })
       );
     }
 
     const responses = await Promise.all(requests);
-    const rateLimitedResponses = responses.filter(r => r.status === 429);
+    const rateLimitedResponses = responses.filter((r) => r.status === 429);
 
     expect(rateLimitedResponses.length).toBeGreaterThan(0);
   });
@@ -220,9 +224,9 @@ describe('10N-178: Application-Level Rate Limiting', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': signature,
-        'X-N8N-Timestamp': timestamp.toString()
+        'X-N8N-Timestamp': timestamp.toString(),
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.headers.get('X-RateLimit-Limit')).toBeDefined();
@@ -247,9 +251,9 @@ describe('10N-178: Application-Level Rate Limiting', () => {
           headers: {
             'Content-Type': 'application/json',
             'X-N8N-Signature': signature,
-            'X-N8N-Timestamp': timestamp.toString()
+            'X-N8N-Timestamp': timestamp.toString(),
           },
-          body: payload
+          body: payload,
         })
       );
     }
@@ -265,9 +269,9 @@ describe('10N-178: Application-Level Rate Limiting', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': signature2,
-        'X-N8N-Timestamp': timestamp2.toString()
+        'X-N8N-Timestamp': timestamp2.toString(),
       },
-      body: payload2
+      body: payload2,
     });
 
     expect(response2.status).toBe(200);
@@ -275,7 +279,6 @@ describe('10N-178: Application-Level Rate Limiting', () => {
 });
 
 describe('10N-179: User Metadata Retention Policy', () => {
-
   test('Should have RLS policies enabled on telegram_logs table', async () => {
     const { data, error } = await supabase
       .from('pg_policies')
@@ -288,13 +291,12 @@ describe('10N-179: User Metadata Retention Policy', () => {
   });
 
   test('Should have pg_cron job for retention cleanup', async () => {
-    const { data, error } = await supabase
-      .rpc('cron.job', {});
+    const { data, error } = await supabase.rpc('cron.job', {});
 
     if (!error) {
-      const retentionJob = data?.find((job: any) =>
-        job.command?.includes('DELETE FROM telegram_logs') &&
-        job.command?.includes('60 days')
+      const retentionJob = data?.find(
+        (job: any) =>
+          job.command?.includes('DELETE FROM telegram_logs') && job.command?.includes('60 days')
       );
       expect(retentionJob).toBeDefined();
     }
@@ -311,7 +313,7 @@ describe('10N-179: User Metadata Retention Policy', () => {
         chat_id: 123456,
         username: 'testuser',
         message: 'test message',
-        created_at: oldDate.toISOString()
+        created_at: oldDate.toISOString(),
       })
       .select()
       .single();
@@ -338,7 +340,7 @@ describe('10N-179: User Metadata Retention Policy', () => {
       .insert({
         chat_id: 123456,
         username: 'recentuser',
-        message: 'recent message'
+        message: 'recent message',
       })
       .select()
       .single();
@@ -360,23 +362,19 @@ describe('10N-179: User Metadata Retention Policy', () => {
 
   test('Should auto-delete logs older than 60 days', async () => {
     // This test requires waiting or mocking time, so we verify the SQL exists
-    const { data, error } = await supabase
-      .rpc('pg_get_functiondef', {
-        func_oid: 'cleanup_old_telegram_logs::regprocedure'
-      });
+    const { data, error } = await supabase.rpc('pg_get_functiondef', {
+      func_oid: 'cleanup_old_telegram_logs::regprocedure',
+    });
 
     // Check if cleanup function exists
     expect(error).toBeNull();
     expect(data).toBeDefined();
   });
 
-  test('Should enforce RLS - anon users cannot read others\' logs', async () => {
+  test("Should enforce RLS - anon users cannot read others' logs", async () => {
     const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const { data, error } = await anonClient
-      .from('telegram_logs')
-      .select('*')
-      .limit(10);
+    const { data, error } = await anonClient.from('telegram_logs').select('*').limit(10);
 
     // Anon should get empty result or error depending on policy
     expect(data?.length).toBe(0);
@@ -384,7 +382,6 @@ describe('10N-179: User Metadata Retention Policy', () => {
 });
 
 describe('Integration: All Security Features Working Together', () => {
-
   test('Should handle complete secure request flow', async () => {
     const chatId = 888888;
     const payload = JSON.stringify(createTelegramPayload(chatId, 'integration test'));
@@ -396,9 +393,9 @@ describe('Integration: All Security Features Working Together', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': signature,
-        'X-N8N-Timestamp': timestamp.toString()
+        'X-N8N-Timestamp': timestamp.toString(),
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.status).toBe(200);
@@ -427,9 +424,9 @@ describe('Integration: All Security Features Working Together', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-N8N-Signature': 'invalid',
-        'X-N8N-Timestamp': timestamp.toString()
+        'X-N8N-Timestamp': timestamp.toString(),
       },
-      body: payload
+      body: payload,
     });
 
     expect(response.status).toBe(401);
@@ -448,9 +445,9 @@ describe('Integration: All Security Features Working Together', () => {
         headers: {
           'Content-Type': 'application/json',
           'X-N8N-Signature': signature,
-          'X-N8N-Timestamp': timestamp.toString()
+          'X-N8N-Timestamp': timestamp.toString(),
         },
-        body: payload
+        body: payload,
       });
       times.push(Date.now() - start);
       await sleep(1000); // Avoid rate limit

@@ -28,14 +28,12 @@ const TEST_CONFIG = {
 };
 
 describe('OpenProject Sync Service - Bitcoin Operations Critical Tests', () => {
-
   // ==========================================================================
   // 🔥 CRITICAL: Retry & Idempotency
   // Why: Prevents failed/duplicate Bitcoin task syncs
   // ==========================================================================
 
   describe('Retry & Idempotency (10N-168)', () => {
-
     it('@P0 should calculate exponential backoff correctly', () => {
       // Test the core backoff formula: baseDelay * (2^attempt) + jitter
       const baseDelay = TEST_CONFIG.baseDelayMs;
@@ -115,7 +113,6 @@ describe('OpenProject Sync Service - Bitcoin Operations Critical Tests', () => {
   // ==========================================================================
 
   describe('Secret Logging Protection (10N-170)', () => {
-
     it('@P0 should not log secrets in production mode', async () => {
       // Mock console.log to capture output
       const logSpy = vi.spyOn(console, 'log');
@@ -174,7 +171,6 @@ describe('OpenProject Sync Service - Bitcoin Operations Critical Tests', () => {
   // ==========================================================================
 
   describe('Service Initialization (10N-167, 10N-169)', () => {
-
     it('@P0 should require OPENPROJECT_API_KEY at startup', () => {
       // Service must fail fast if API key missing
       expect(process.env.OPENPROJECT_API_KEY).toBeDefined();
@@ -240,7 +236,6 @@ describe('OpenProject Sync Service - Bitcoin Operations Critical Tests', () => {
   // ==========================================================================
 
   describe('API-Only Architecture (10N-171)', () => {
-
     it('@P0 should enforce API-only sync (no database triggers)', () => {
       // This is a design verification test
       // Actual verification happens via SQL query in manual testing
@@ -257,13 +252,14 @@ describe('OpenProject Sync Service - Bitcoin Operations Critical Tests', () => {
   // ==========================================================================
 
   describe('Core Endpoints', () => {
-
     it('@P0 should handle manual sync requests', async () => {
       // POST /sync/task/:id - verify endpoint exists
       // Expected: 404 for invalid ID (service running)
 
       try {
-        await axios.post(`${TEST_CONFIG.syncServiceUrl}/sync/task/00000000-0000-0000-0000-000000000000`);
+        await axios.post(
+          `${TEST_CONFIG.syncServiceUrl}/sync/task/00000000-0000-0000-0000-000000000000`
+        );
       } catch (error: any) {
         // Expect 404 (task not found) or 500 (error)
         // Both indicate service is responding
