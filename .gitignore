@@ -137,3 +137,5 @@ infrastructure/github-runner/_work/
 # Allow canonical docs/archive/ tree for historical documentation
 !docs/archive/
 !docs/archive/**
+
+/docs/prompts/
