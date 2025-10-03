@@ -66,7 +66,7 @@ export function getBackendConfig(): BackendConfig {
     }
 
     // Fall back to OpenProject if ERPNext vars incomplete
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production') {
       console.warn(
         '[Config] USE_ERPNEXT=true but ERPNEXT_API_URL, ERPNEXT_API_KEY, or ERPNEXT_API_SECRET missing. ' +
           'Falling back to OpenProject backend. ' +

@@ -55,13 +55,13 @@ export class ERPNextClient {
     this.apiUrl = config.apiUrl || '';
 
     if (!this.configured) {
-      if (process.env.NODE_ENV !== 'test') {
+      if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production') {
         console.warn(
           '[ERPNextClient] Created stub client. Credentials missing. ' +
             'Set ERPNEXT_API_URL, ERPNEXT_API_KEY, ERPNEXT_API_SECRET to enable live API calls.'
         );
       }
-    } else if (process.env.NODE_ENV !== 'test') {
+    } else if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'production') {
       console.log('[ERPNextClient] Initialized (stub mode, Phase 1):', this.apiUrl);
     }
   }
