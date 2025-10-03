@@ -1,11 +1,11 @@
 # FLRTS Infrastructure
 
-> ⚠️ **MIGRATION NOTICE**: OpenProject infrastructure has been replaced by
-> ERPNext on Frappe Cloud. See
+> ⚠️ **MIGRATION IN PROGRESS**: This infrastructure describes the target ERPNext
+> on Frappe Cloud architecture. Application migration is phased: **Phase 1
+> complete** (config layer, ERPNext stub client), **Phase 2 pending** (live API
+> calls). OpenProject remains the default and only functional backend. See
 > [ADR-006](../docs/architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md)
-> for rationale. Note: Application client migration is phased. The OpenProject
-> backend remains the default in Phase 1 while the ERPNext client is stubbed
-> (see 10N-243).
+> for migration roadmap and 10N-243 for Phase 1 details.
 
 ## Overview
 

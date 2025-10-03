@@ -1,5 +1,12 @@
 # FLRTS Technical Architecture Documentation
 
+> ⚠️ **MIGRATION STATUS**: This documentation describes legacy OpenProject
+> architecture. Migration to ERPNext is in progress: **Phase 1 complete**
+> (config layer, stub client), **Phase 2 pending** (live API integration).
+> OpenProject remains the default backend. See
+> [ADR-006](./adr/ADR-006-erpnext-frappe-cloud-migration.md) for migration
+> roadmap.
+
 ## Document Structure
 
 This architecture documentation provides comprehensive technical guidance for
