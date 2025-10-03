@@ -66,11 +66,13 @@ export function getBackendConfig(): BackendConfig {
     }
 
     // Fall back to OpenProject if ERPNext vars incomplete
-    console.warn(
-      '[Config] USE_ERPNEXT=true but ERPNEXT_API_URL, ERPNEXT_API_KEY, or ERPNEXT_API_SECRET missing. ' +
-        'Falling back to OpenProject backend. ' +
-        'Set all three ERPNEXT_* variables to use ERPNext.'
-    );
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn(
+        '[Config] USE_ERPNEXT=true but ERPNEXT_API_URL, ERPNEXT_API_KEY, or ERPNEXT_API_SECRET missing. ' +
+          'Falling back to OpenProject backend. ' +
+          'Set all three ERPNEXT_* variables to use ERPNext.'
+      );
+    }
   }
 
   // OpenProject fallback or default
