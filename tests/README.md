@@ -204,7 +204,7 @@ node tests/run-integration-tests.js --verbose
 
 ## 📋 **MVP P0 Test Suite** (Story 1.1)
 
-This is a pragmatic test suite for Story 1.1 (Deploy OpenProject to Cloudflare)
+This is a pragmatic test suite for Story 1.1 (Deploy ERPNext on Frappe Cloud)
 targeting 5–10 C‑suite users. It focuses on P0 paths only and runs in <5
 minutes.
 

@@ -13,6 +13,8 @@ pre-Frappe Cloud architecture.
 
 - `docker-compose.supabase.yml` - OpenProject connected to Supabase PostgreSQL
   with Cloudflare Tunnel
+- **qa-evidence-story-1.4/** - QA test evidence for Story 1.4 (Supabase
+  integration tests, webhook validation)
 
 ### What This Configuration Did
 

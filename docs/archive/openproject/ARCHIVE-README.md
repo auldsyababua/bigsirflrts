@@ -16,6 +16,8 @@ from January 2025 through September 2025.
   Cloudflare Tunnel deployment
 - **wrangler.toml** - Cloudflare Wrangler configuration for OpenProject Workers
   at ops.10nz.tools
+- **qa-evidence-story-1.1/** - QA test evidence for Story 1.1 (OpenProject
+  deployment validation)
 
 ## Why It Was Deprecated
 
