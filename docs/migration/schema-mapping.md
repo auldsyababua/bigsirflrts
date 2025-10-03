@@ -1,5 +1,11 @@
 # FLRTS → ERPNext Schema Mapping
 
+> ⚠️ **SUPERSEDED BY ADR-006** - This document describes migration from
+> OpenProject/Supabase to ERPNext. Following the
+> [Frappe Cloud migration decision](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md),
+> the OpenProject backend has been retired. This document is retained for
+> historical reference only.
+
 **Status:** Not Started **Phase:** 1.5 **Agent:** Internal Team **Date
 Created:** 2025-10-01 **Last Updated:** 2025-10-01 **Related Linear:** 10N-232
 
