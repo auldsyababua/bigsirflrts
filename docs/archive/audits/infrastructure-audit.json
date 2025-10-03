@@ -7,44 +7,88 @@
     "servicesDiscovered": 16,
     "networksDiscovered": 3,
     "exposedPorts": [
-      {"service":"openproject","port":"8080:80","scope":"root"},
-      {"service":"flrts-nlp","port":"3000:3000","scope":"root"},
-      {"service":"n8n","port":"5678:5678","scope":"root-optional"},
-      {"service":"prometheus","port":"9090:9090","scope":"local"},
-      {"service":"grafana","port":"3000:3000","scope":"local"},
-      {"service":"jaeger","port":"16686,14250,4317,4318","scope":"local"},
-      {"service":"node-exporter","port":"9100:9100","scope":"local"},
-      {"service":"cadvisor","port":"8080:8080","scope":"local"},
-      {"service":"openproject","port":"127.0.0.1:8080:80","scope":"prod"},
-      {"service":"uptime-kuma","port":"127.0.0.1:3001:3001","scope":"prod"},
-      {"service":"prometheus","port":"127.0.0.1:9090","scope":"prod-monitoring"},
-      {"service":"grafana","port":"127.0.0.1:3000","scope":"prod-monitoring"},
-      {"service":"jaeger","port":"127.0.0.1:16686,14250; 4317,4318","scope":"prod-monitoring"},
-      {"service":"n8n-monitor","port":"127.0.0.1:3002:3002","scope":"prod-monitoring"}
+      { "service": "openproject", "port": "8080:80", "scope": "root" },
+      { "service": "flrts-nlp", "port": "3000:3000", "scope": "root" },
+      { "service": "n8n", "port": "5678:5678", "scope": "root-optional" },
+      { "service": "prometheus", "port": "9090:9090", "scope": "local" },
+      { "service": "grafana", "port": "3000:3000", "scope": "local" },
+      { "service": "jaeger", "port": "16686,14250,4317,4318", "scope": "local" },
+      { "service": "node-exporter", "port": "9100:9100", "scope": "local" },
+      { "service": "cadvisor", "port": "8080:8080", "scope": "local" },
+      { "service": "openproject", "port": "127.0.0.1:8080:80", "scope": "prod" },
+      { "service": "uptime-kuma", "port": "127.0.0.1:3001:3001", "scope": "prod" },
+      { "service": "prometheus", "port": "127.0.0.1:9090", "scope": "prod-monitoring" },
+      { "service": "grafana", "port": "127.0.0.1:3000", "scope": "prod-monitoring" },
+      {
+        "service": "jaeger",
+        "port": "127.0.0.1:16686,14250; 4317,4318",
+        "scope": "prod-monitoring"
+      },
+      { "service": "n8n-monitor", "port": "127.0.0.1:3002:3002", "scope": "prod-monitoring" }
     ]
   },
   "connections": [
-    {"from":"openproject","to":"memcached","protocol":"TCP","authenticated":false},
-    {"from":"openproject","to":"Supabase/Postgres or openproject-db","protocol":"PostgreSQL","authenticated":true},
-    {"from":"openproject","to":"Cloudflare R2 (S3)","protocol":"HTTP","authenticated":true},
-    {"from":"flrts-nlp","to":"OpenProject API","protocol":"HTTP","authenticated":true},
-    {"from":"flrts-nlp","to":"OpenAI API","protocol":"HTTPS","authenticated":true},
-    {"from":"flrts-nlp","to":"Supabase/Postgres","protocol":"PostgreSQL","authenticated":true},
-    {"from":"n8n","to":"Supabase/Postgres","protocol":"PostgreSQL","authenticated":true},
-    {"from":"cloudflared","to":"openproject","protocol":"HTTPS","authenticated":true}
+    { "from": "openproject", "to": "memcached", "protocol": "TCP", "authenticated": false },
+    {
+      "from": "openproject",
+      "to": "Supabase/Postgres or openproject-db",
+      "protocol": "PostgreSQL",
+      "authenticated": true
+    },
+    {
+      "from": "openproject",
+      "to": "Cloudflare R2 (S3)",
+      "protocol": "HTTP",
+      "authenticated": true
+    },
+    { "from": "flrts-nlp", "to": "OpenProject API", "protocol": "HTTP", "authenticated": true },
+    { "from": "flrts-nlp", "to": "OpenAI API", "protocol": "HTTPS", "authenticated": true },
+    {
+      "from": "flrts-nlp",
+      "to": "Supabase/Postgres",
+      "protocol": "PostgreSQL",
+      "authenticated": true
+    },
+    { "from": "n8n", "to": "Supabase/Postgres", "protocol": "PostgreSQL", "authenticated": true },
+    { "from": "cloudflared", "to": "openproject", "protocol": "HTTPS", "authenticated": true }
   ],
   "ciCdFindings": {
     "workflows": [
-      {"name":"BMAD QA Gate (Fast)", "secrets": ["SUPABASE_PROJECT_ID","SUPABASE_URL","SUPABASE_ANON_KEY","SUPABASE_SERVICE_ROLE_KEY"], "notes":"Uses GitHub Encrypted Secrets; installs Playwright with deps"},
-      {"name":"BMAD QA Gate", "secrets": ["SUPABASE_PROJECT_ID","SUPABASE_URL","SUPABASE_ANON_KEY","SUPABASE_SERVICE_ROLE_KEY"], "notes":"Uses GitHub Encrypted Secrets"},
-      {"name":"Integration Tests", "secretsSource":"1Password load-secrets-action", "notes":"Secrets loaded at runtime via OP service account"},
-      {"name":"Linear PR Automation", "secrets": ["GITHUB_TOKEN","LINEAR_API_KEY"]},
-      {"name":"Linear Sync", "secrets": ["LINEAR_API_KEY","LINEAR_TEAM_ID","LINEAR_PROJECT_ID","GITHUB_TOKEN"]},
-      {"name":"MVP P0 Tests (Manual)", "secrets": ["SLACK_WEBHOOK_URL"]}
+      {
+        "name": "BMAD QA Gate (Fast)",
+        "secrets": [
+          "SUPABASE_PROJECT_ID",
+          "SUPABASE_URL",
+          "SUPABASE_ANON_KEY",
+          "SUPABASE_SERVICE_ROLE_KEY"
+        ],
+        "notes": "Uses GitHub Encrypted Secrets; installs Playwright with deps"
+      },
+      {
+        "name": "BMAD QA Gate",
+        "secrets": [
+          "SUPABASE_PROJECT_ID",
+          "SUPABASE_URL",
+          "SUPABASE_ANON_KEY",
+          "SUPABASE_SERVICE_ROLE_KEY"
+        ],
+        "notes": "Uses GitHub Encrypted Secrets"
+      },
+      {
+        "name": "Integration Tests",
+        "secretsSource": "1Password load-secrets-action",
+        "notes": "Secrets loaded at runtime via OP service account"
+      },
+      { "name": "Linear PR Automation", "secrets": ["GITHUB_TOKEN", "LINEAR_API_KEY"] },
+      {
+        "name": "Linear Sync",
+        "secrets": ["LINEAR_API_KEY", "LINEAR_TEAM_ID", "LINEAR_PROJECT_ID", "GITHUB_TOKEN"]
+      },
+      { "name": "MVP P0 Tests (Manual)", "secrets": ["SLACK_WEBHOOK_URL"] }
     ],
     "securityPosture": {
       "plaintextSecretsInRepo": false,
-      "secretsManagersUsed": ["GitHub Secrets","1Password"],
+      "secretsManagersUsed": ["GitHub Secrets", "1Password"],
       "notes": "No plaintext secrets in workflows; good practice using 1Password and GitHub secrets."
     }
   },
@@ -95,4 +139,3 @@
     ]
   }
 }
-

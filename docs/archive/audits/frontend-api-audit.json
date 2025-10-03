@@ -6,28 +6,15 @@
     "services": [
       {
         "name": "nlp-service (Express)",
-        "endpoints": [
-          "POST /parse",
-          "GET /examples",
-          "GET /history",
-          "GET /health"
-        ]
+        "endpoints": ["POST /parse", "GET /examples", "GET /history", "GET /health"]
       },
       {
         "name": "sync-service (Express)",
-        "endpoints": [
-          "POST /webhook/task",
-          "POST /sync/task/:id",
-          "POST /sync/bulk",
-          "GET /health"
-        ]
+        "endpoints": ["POST /webhook/task", "POST /sync/task/:id", "POST /sync/bulk", "GET /health"]
       },
       {
         "name": "Edge Functions",
-        "functions": [
-          "parse-request",
-          "telegram-webhook"
-        ]
+        "functions": ["parse-request", "telegram-webhook"]
       }
     ]
   },
@@ -66,9 +53,7 @@
       "id": "FE-4",
       "severity": "LOW",
       "title": "Security headers missing on Express services",
-      "evidence": [
-        "No Helmet.js setup in nlp-service or sync-service"
-      ],
+      "evidence": ["No Helmet.js setup in nlp-service or sync-service"],
       "remediation": "Add helmet with strict defaults; define content-type sniffing and frameguard policies."
     }
   ],

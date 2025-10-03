@@ -41,7 +41,15 @@
   },
   "schemaFindings": {
     "rlsEnabled": ["lists", "reminders", "list_shares", "notification_preferences"],
-    "rlsMissingOrUnspecified": ["tasks", "audit_logs", "notification_queue", "telegram_sessions", "parse_logs", "parse_queue", "telegram_webhook_logs"],
+    "rlsMissingOrUnspecified": [
+      "tasks",
+      "audit_logs",
+      "notification_queue",
+      "telegram_sessions",
+      "parse_logs",
+      "parse_queue",
+      "telegram_webhook_logs"
+    ],
     "migrationsReviewed": [
       "database/migrations/001_initial_schema.sql",
       "database/migrations/003_flrts_features.sql",
@@ -54,7 +62,13 @@
     ]
   },
   "monitoring": {
-    "views": ["monitoring.database_metrics", "monitoring.slow_queries", "monitoring.active_connections", "monitoring.table_stats", "monitoring.performance_summary"],
+    "views": [
+      "monitoring.database_metrics",
+      "monitoring.slow_queries",
+      "monitoring.active_connections",
+      "monitoring.table_stats",
+      "monitoring.performance_summary"
+    ],
     "grants": "SELECT granted to role 'authenticated'",
     "risk": "Authenticated users may read DB performance metadata; review exposure"
   },

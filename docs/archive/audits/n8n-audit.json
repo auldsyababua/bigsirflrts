@@ -10,10 +10,21 @@
       "webhookUrlEnv": "WEBHOOK_URL",
       "db": {
         "type": "postgresdb",
-        "env": ["DB_POSTGRESDB_HOST", "DB_POSTGRESDB_PORT", "DB_POSTGRESDB_DATABASE", "DB_POSTGRESDB_USER", "DB_POSTGRESDB_PASSWORD"]
+        "env": [
+          "DB_POSTGRESDB_HOST",
+          "DB_POSTGRESDB_PORT",
+          "DB_POSTGRESDB_DATABASE",
+          "DB_POSTGRESDB_USER",
+          "DB_POSTGRESDB_PASSWORD"
+        ]
       },
       "queue": {
-        "redis": ["QUEUE_BULL_REDIS_HOST", "QUEUE_BULL_REDIS_PORT", "QUEUE_BULL_REDIS_PASSWORD", "QUEUE_BULL_REDIS_DB"],
+        "redis": [
+          "QUEUE_BULL_REDIS_HOST",
+          "QUEUE_BULL_REDIS_PORT",
+          "QUEUE_BULL_REDIS_PASSWORD",
+          "QUEUE_BULL_REDIS_DB"
+        ],
         "timeoutThresholdMs": 10000
       },
       "security": {

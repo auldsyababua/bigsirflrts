@@ -13,7 +13,11 @@
         "secretEnv": "OPENPROJECT_API_KEY"
       },
       "endpoints": [
-        { "method": "POST", "path": "/projects/${OPENPROJECT_PROJECT_ID}/work_packages", "usage": "create work package" },
+        {
+          "method": "POST",
+          "path": "/projects/${OPENPROJECT_PROJECT_ID}/work_packages",
+          "usage": "create work package"
+        },
         { "method": "PATCH", "path": "/work_packages/{id}", "usage": "update work package" },
         { "method": "DELETE", "path": "/work_packages/{id}", "usage": "delete work package" }
       ]
@@ -23,7 +27,11 @@
       "file": "packages/flrts-extension/content.js",
       "context": "runs inside OpenProject domain",
       "endpoints": [
-        { "method": "POST", "path": "/api/v3/work_packages", "usage": "create work package via UI action" }
+        {
+          "method": "POST",
+          "path": "/api/v3/work_packages",
+          "usage": "create work package via UI action"
+        }
       ]
     }
   ],
@@ -31,9 +39,7 @@
     "restVersion": "v3",
     "headers": ["Content-Type: application/json"],
     "auth": "Basic apikey:API_KEY supported by OpenProject",
-    "notes": [
-      "Consider using /projects/:id/work_packages/form for pre-validation"
-    ]
+    "notes": ["Consider using /projects/:id/work_packages/form for pre-validation"]
   },
   "architecture": {
     "principle": "API-only integration per docs/architecture/api-contract.md",
@@ -84,4 +90,3 @@
     }
   ]
 }
-

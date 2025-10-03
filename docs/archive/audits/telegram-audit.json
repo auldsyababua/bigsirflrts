@@ -17,10 +17,7 @@
     },
     {
       "name": "Webhook Setup",
-      "paths": [
-        "supabase/deploy-telegram-webhook.sh",
-        "docs/setup/telegram-bot.md"
-      ],
+      "paths": ["supabase/deploy-telegram-webhook.sh", "docs/setup/telegram-bot.md"],
       "notes": [
         "setWebhook uses secret_token and drops pending updates",
         "docs outline best practices and debugging commands"
@@ -28,9 +25,7 @@
     },
     {
       "name": "Ingress Rate Limiting",
-      "paths": [
-        "infrastructure/docker/nginx/nginx-single.conf"
-      ],
+      "paths": ["infrastructure/docker/nginx/nginx-single.conf"],
       "notes": [
         "limit_req configured for /webhook/ paths to n8n; Supabase edge path protected by secret token"
       ]
@@ -69,4 +64,3 @@
     "Add monitoring/alarming for error paths that return 200"
   ]
 }
-
