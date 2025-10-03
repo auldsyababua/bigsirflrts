@@ -19,7 +19,7 @@ const NLP_API_URL = process.env.NLP_PARSER_API_URL || 'http://localhost:3001';
 describe('10N-176: Service Role Key for Logging', () => {
   let supabaseAdmin: SupabaseClient;
   let supabaseAnon: SupabaseClient;
-  let testRequestIds: string[] = [];
+  const testRequestIds: string[] = [];
 
   beforeAll(() => {
     supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -29,10 +29,7 @@ describe('10N-176: Service Role Key for Logging', () => {
   afterAll(async () => {
     // Cleanup test data
     if (testRequestIds.length > 0) {
-      await supabaseAdmin
-        .from('parsing_logs')
-        .delete()
-        .in('request_id', testRequestIds);
+      await supabaseAdmin.from('parsing_logs').delete().in('request_id', testRequestIds);
     }
   });
 
@@ -51,15 +48,12 @@ describe('10N-176: Service Role Key for Logging', () => {
       const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       });
 
       // Verify client works
-      const { data, error } = await adminClient
-        .from('parsing_logs')
-        .select('count')
-        .limit(1);
+      const { data, error } = await adminClient.from('parsing_logs').select('count').limit(1);
 
       expect(error).toBeNull();
     });
@@ -69,11 +63,11 @@ describe('10N-176: Service Role Key for Logging', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'test-user'
+          'X-User-Id': 'test-user',
         },
         body: JSON.stringify({
-          input: 'Create task for testing'
-        })
+          input: 'Create task for testing',
+        }),
       });
 
       const result = await response.json();
@@ -88,14 +82,12 @@ describe('10N-176: Service Role Key for Logging', () => {
   describe('Logging with Service Role', () => {
     it('should successfully log even with restrictive RLS @P0', async () => {
       // First, verify anon key cannot write directly
-      const anonWriteAttempt = await supabaseAnon
-        .from('parsing_logs')
-        .insert({
-          request_id: crypto.randomUUID(),
-          user_id: 'anon-test',
-          input: 'Should fail with anon key',
-          reasoning: 'Testing RLS'
-        });
+      const anonWriteAttempt = await supabaseAnon.from('parsing_logs').insert({
+        request_id: crypto.randomUUID(),
+        user_id: 'anon-test',
+        input: 'Should fail with anon key',
+        reasoning: 'Testing RLS',
+      });
 
       // Anon write should fail (or be restricted)
       const anonCanWrite = anonWriteAttempt.error === null;
@@ -105,11 +97,11 @@ describe('10N-176: Service Role Key for Logging', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'service-role-test'
+          'X-User-Id': 'service-role-test',
         },
         body: JSON.stringify({
-          input: 'Test logging with service role'
-        })
+          input: 'Test logging with service role',
+        }),
       });
 
       const result = await response.json();
@@ -120,7 +112,7 @@ describe('10N-176: Service Role Key for Logging', () => {
         testRequestIds.push(requestId);
 
         // Wait for logging
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Verify log was written (service role bypasses RLS)
         const { data: log, error } = await supabaseAdmin
@@ -149,11 +141,11 @@ describe('10N-176: Service Role Key for Logging', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-User-Id': userId
+            'X-User-Id': userId,
           },
           body: JSON.stringify({
-            input: `Task for ${userId}`
-          })
+            input: `Task for ${userId}`,
+          }),
         });
 
         const result = await response.json();
@@ -165,7 +157,7 @@ describe('10N-176: Service Role Key for Logging', () => {
       }
 
       // Wait for logging
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Verify all logs were written
       const { data: logs } = await supabaseAdmin
@@ -183,11 +175,11 @@ describe('10N-176: Service Role Key for Logging', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'private-user'
+          'X-User-Id': 'private-user',
         },
         body: JSON.stringify({
-          input: 'Private task'
-        })
+          input: 'Private task',
+        }),
       });
 
       const result = await response.json();
@@ -196,7 +188,7 @@ describe('10N-176: Service Role Key for Logging', () => {
       if (requestId) {
         testRequestIds.push(requestId);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Service role can read it
         const { data: adminLog, error: adminError } = await supabaseAdmin
@@ -232,11 +224,11 @@ describe('10N-176: Service Role Key for Logging', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'restricted-insert-test'
+          'X-User-Id': 'restricted-insert-test',
         },
         body: JSON.stringify({
-          input: 'Test INSERT bypass'
-        })
+          input: 'Test INSERT bypass',
+        }),
       });
 
       const result = await response.json();
@@ -245,7 +237,7 @@ describe('10N-176: Service Role Key for Logging', () => {
       if (result.metadata?.requestId) {
         testRequestIds.push(result.metadata.requestId);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         const { data: log, error } = await supabaseAdmin
           .from('parsing_logs')
@@ -270,9 +262,9 @@ describe('10N-176: Service Role Key for Logging', () => {
       const response = await fetch(`${NLP_API_URL}/parse`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: 'invalid json'
+        body: 'invalid json',
       });
 
       const result = await response.json();
@@ -299,11 +291,11 @@ describe('10N-176: Service Role Key for Logging', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'reliability-test'
+          'X-User-Id': 'reliability-test',
         },
         body: JSON.stringify({
-          input: 'Test logging reliability'
-        })
+          input: 'Test logging reliability',
+        }),
       });
 
       const result = await response.json();
@@ -318,11 +310,11 @@ describe('10N-176: Service Role Key for Logging', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'error-test'
+          'X-User-Id': 'error-test',
         },
         body: JSON.stringify({
-          input: '' // Empty input might cause error
-        })
+          input: '', // Empty input might cause error
+        }),
       });
 
       const result = await response.json();
@@ -330,7 +322,7 @@ describe('10N-176: Service Role Key for Logging', () => {
       if (!result.success && result.metadata?.requestId) {
         testRequestIds.push(result.metadata.requestId);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         const { data: errorLog } = await supabaseAdmin
           .from('parsing_logs')
@@ -359,11 +351,11 @@ describe('10N-176: Service Role Key for Logging', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': 'migration-test'
+          'X-User-Id': 'migration-test',
         },
         body: JSON.stringify({
-          input: 'Migration test'
-        })
+          input: 'Migration test',
+        }),
       });
 
       expect(response.ok).toBe(true);
@@ -376,28 +368,28 @@ describe('10N-176: Service Role Key for Logging', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-User-Id': `concurrent-${i}`
+            'X-User-Id': `concurrent-${i}`,
           },
           body: JSON.stringify({
-            input: `Concurrent request ${i}`
-          })
+            input: `Concurrent request ${i}`,
+          }),
         })
       );
 
       const responses = await Promise.all(promises);
-      const results = await Promise.all(responses.map(r => r.json()));
+      const results = await Promise.all(responses.map((r) => r.json()));
 
       // All should succeed
-      expect(results.every(r => r.success)).toBe(true);
+      expect(results.every((r) => r.success)).toBe(true);
 
-      results.forEach(r => {
+      results.forEach((r) => {
         if (r.metadata?.requestId) {
           testRequestIds.push(r.metadata.requestId);
         }
       });
 
       // Wait for all logging to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Verify all logs written
       const { data: logs } = await supabaseAdmin

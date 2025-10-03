@@ -19,7 +19,7 @@ const NLP_API_URL = process.env.NLP_PARSER_API_URL || 'http://localhost:3001';
 describe('10N-173: Token Usage and Cost Tracking', () => {
   let supabase: SupabaseClient;
   let testUserId: string;
-  let testRequestIds: string[] = [];
+  const testRequestIds: string[] = [];
 
   beforeAll(async () => {
     supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -29,10 +29,7 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
   afterAll(async () => {
     // Cleanup test data
     if (testRequestIds.length > 0) {
-      await supabase
-        .from('openai_usage_logs')
-        .delete()
-        .in('request_id', testRequestIds);
+      await supabase.from('openai_usage_logs').delete().in('request_id', testRequestIds);
     }
   });
 
@@ -42,11 +39,11 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': testUserId
+          'X-User-Id': testUserId,
         },
         body: JSON.stringify({
-          input: 'Create task for equipment inspection'
-        })
+          input: 'Create task for equipment inspection',
+        }),
       });
 
       expect(response.ok).toBe(true);
@@ -77,11 +74,11 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': testUserId
+          'X-User-Id': testUserId,
         },
         body: JSON.stringify({
-          input: 'List all urgent tasks'
-        })
+          input: 'List all urgent tasks',
+        }),
       });
 
       const result = await response.json();
@@ -89,7 +86,7 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
       testRequestIds.push(requestId);
 
       // Wait for async logging to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Query database for usage log
       const { data: logs, error } = await supabase
@@ -122,11 +119,11 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': testUserId
+          'X-User-Id': testUserId,
         },
         body: JSON.stringify({
-          input: 'Task for pump maintenance tomorrow'
-        })
+          input: 'Task for pump maintenance tomorrow',
+        }),
       });
 
       const result = await response.json();
@@ -136,8 +133,8 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
 
       // Verify cost calculation (gpt-4o-2024-08-06 pricing as of Jan 2025)
       // Input: $2.50 per 1M tokens, Output: $10.00 per 1M tokens
-      const expectedInputCost = (usage.promptTokens / 1_000_000) * 2.50;
-      const expectedOutputCost = (usage.completionTokens / 1_000_000) * 10.00;
+      const expectedInputCost = (usage.promptTokens / 1_000_000) * 2.5;
+      const expectedOutputCost = (usage.completionTokens / 1_000_000) * 10.0;
       const expectedTotalCost = expectedInputCost + expectedOutputCost;
 
       // Allow 1 cent tolerance for rounding
@@ -159,18 +156,18 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': uniqueUserId
+          'X-User-Id': uniqueUserId,
         },
         body: JSON.stringify({
-          input: 'Create urgent repair task'
-        })
+          input: 'Create urgent repair task',
+        }),
       });
 
       const result = await response.json();
       testRequestIds.push(result.metadata.requestId);
 
       // Wait for logging
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const { data: logs } = await supabase
         .from('openai_usage_logs')
@@ -185,12 +182,12 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
       const response = await fetch(`${NLP_API_URL}/parse`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
           // No X-User-Id header
         },
         body: JSON.stringify({
-          input: 'Test task'
-        })
+          input: 'Test task',
+        }),
       });
 
       const result = await response.json();
@@ -209,11 +206,11 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': testUserId
+          'X-User-Id': testUserId,
         },
         body: JSON.stringify({
-          input: 'Quick task'
-        })
+          input: 'Quick task',
+        }),
       });
 
       const responseTime = Date.now() - startTime;
@@ -232,30 +229,33 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-User-Id': `batch-user-${i}`
+            'X-User-Id': `batch-user-${i}`,
           },
           body: JSON.stringify({
-            input: `Task ${i}`
-          })
+            input: `Task ${i}`,
+          }),
         })
       );
 
       const responses = await Promise.all(promises);
-      const results = await Promise.all(responses.map(r => r.json()));
+      const results = await Promise.all(responses.map((r) => r.json()));
 
-      results.forEach(r => testRequestIds.push(r.metadata.requestId));
+      results.forEach((r) => testRequestIds.push(r.metadata.requestId));
 
       // All requests should succeed
-      expect(results.every(r => r.success)).toBe(true);
+      expect(results.every((r) => r.success)).toBe(true);
 
       // Wait for batch logging
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // All logs should be in database
       const { data: logs } = await supabase
         .from('openai_usage_logs')
         .select('request_id')
-        .in('request_id', results.map(r => r.metadata.requestId));
+        .in(
+          'request_id',
+          results.map((r) => r.metadata.requestId)
+        );
 
       expect(logs?.length).toBe(5);
     });
@@ -268,11 +268,11 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-User-Id': testUserId
+          'X-User-Id': testUserId,
         },
         body: JSON.stringify({
-          input: '' // Empty input should fail
-        })
+          input: '', // Empty input should fail
+        }),
       });
 
       const result = await response.json();
@@ -281,7 +281,7 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
         testRequestIds.push(result.metadata.requestId);
 
         // Wait for logging
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         const { data: logs } = await supabase
           .from('openai_usage_logs')
