@@ -539,9 +539,9 @@ we have reliable API integration.
 
 **Acceptance Criteria:**
 
-1. CREATE work package workflow via POST /api/v3/work_packages
-2. READ work packages workflow with filtering
-3. UPDATE work package workflow via PATCH
+1. CREATE Maintenance Visit workflow via POST /api/resource/Maintenance Visit
+2. READ Maintenance Visit workflow with appropriate filters
+3. UPDATE workflow via PATCH /api/resource/Maintenance Visit/\<name\>
 4. ARCHIVE workflow via status change (never DELETE)
 5. Error handling with retries
 6. Response transformation to standard format
