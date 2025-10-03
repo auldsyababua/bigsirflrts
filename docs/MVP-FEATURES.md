@@ -1,19 +1,27 @@
 # MVP Features (Critical for Launch)
 
-This document tracks features that MUST be implemented for the MVP launch. These are non-negotiable requirements for a functional minimum viable product.
+This document tracks features that MUST be implemented for the MVP launch. These
+are non-negotiable requirements for a functional minimum viable product.
 
 ## OpenAI Parser Audit Log
-**Priority:** CRITICAL (MVP Required)
-**Status:** Not Yet Implemented
 
-**Description:** Comprehensive logging of all OpenAI API calls for NLP parsing, including inputs, outputs, model rationale, and correction attempts. Essential for debugging, prompt engineering, and understanding model behavior.
+**Priority:** CRITICAL (MVP Required) **Status:** Not Yet Implemented
+
+**Description:** Comprehensive logging of all OpenAI API calls for NLP parsing,
+including inputs, outputs, model rationale, and correction attempts. Essential
+for debugging, prompt engineering, and understanding model behavior.
 
 **Why This Is MVP-Critical:**
-1. **Debugging:** When users report parsing errors, you can see exactly what the model saw and why it made its decision
-2. **Prompt Engineering:** Rationale field tells you what to fix in your prompts to improve accuracy
-3. **Model Comparison:** Track performance across GPT-4o versions and prompt iterations
+
+1. **Debugging:** When users report parsing errors, you can see exactly what the
+   model saw and why it made its decision
+2. **Prompt Engineering:** Rationale field tells you what to fix in your prompts
+   to improve accuracy
+3. **Model Comparison:** Track performance across GPT-4o versions and prompt
+   iterations
 4. **Cost Tracking:** Monitor token usage and API costs for budget planning
-5. **Compliance:** Audit trail of all AI-generated content for regulatory requirements
+5. **Compliance:** Audit trail of all AI-generated content for regulatory
+   requirements
 
 ---
 
@@ -109,10 +117,10 @@ Your OpenAI prompt **MUST** include a `rationale` field in the response schema:
 
 ```typescript
 const openAIRequest = {
-  model: "gpt-4o-2024-08-06",
+  model: 'gpt-4o-2024-08-06',
   messages: [
     {
-      role: "system",
+      role: 'system',
       content: `You are a task parser for FLRTS (Field Reports, Lists, Reminders, Tasks, and Sub-Tasks).
 
 Parse natural language messages into structured task data.
@@ -126,60 +134,68 @@ IMPORTANT: You MUST explain your reasoning in the 'rationale' field. Describe:
 Known Sites: Big Sky, Viper, Crystal Peak, Thunder Ridge
 Known Personnel: Colin, Mike, Sarah, Alex
 Default Times: morning=8am, afternoon=2pm, evening=6pm
-Default Priority: normal (unless urgent/critical/ASAP mentioned)`
+Default Priority: normal (unless urgent/critical/ASAP mentioned)`,
     },
     {
-      role: "user",
-      content: userMessage
-    }
+      role: 'user',
+      content: userMessage,
+    },
   ],
   response_format: {
-    type: "json_schema",
+    type: 'json_schema',
     json_schema: {
-      name: "task_parse_result",
+      name: 'task_parse_result',
       strict: true,
       schema: {
-        type: "object",
+        type: 'object',
         properties: {
           task_title: {
-            type: "string",
-            description: "Concise task title"
+            type: 'string',
+            description: 'Concise task title',
           },
           assignee: {
-            type: "string",
-            description: "Person assigned (must match known personnel or 'unassigned')"
+            type: 'string',
+            description:
+              "Person assigned (must match known personnel or 'unassigned')",
           },
           due_date: {
-            type: "string",
-            description: "ISO date YYYY-MM-DD or null"
+            type: 'string',
+            description: 'ISO date YYYY-MM-DD or null',
           },
           due_time: {
-            type: "string",
-            description: "24hr time HH:MM or null"
+            type: 'string',
+            description: '24hr time HH:MM or null',
           },
           site: {
-            type: "string",
-            description: "Site name (must match known sites) or null"
+            type: 'string',
+            description: 'Site name (must match known sites) or null',
           },
           priority: {
-            type: "string",
-            enum: ["low", "normal", "high", "urgent"],
-            description: "Task priority level"
+            type: 'string',
+            enum: ['low', 'normal', 'high', 'urgent'],
+            description: 'Task priority level',
           },
           confidence: {
-            type: "number",
-            description: "Confidence score 0.0-1.0 for this parse"
+            type: 'number',
+            description: 'Confidence score 0.0-1.0 for this parse',
           },
           rationale: {
-            type: "string",
-            description: "REQUIRED: Explain WHY you structured the output this way. What clues in the message led to each decision? What assumptions did you make? Be specific about how you interpreted dates, times, sites, and assignments."
-          }
+            type: 'string',
+            description:
+              'REQUIRED: Explain WHY you structured the output this way. What clues in the message led to each decision? What assumptions did you make? Be specific about how you interpreted dates, times, sites, and assignments.',
+          },
         },
-        required: ["task_title", "assignee", "priority", "confidence", "rationale"],
-        additionalProperties: false
-      }
-    }
-  }
+        required: [
+          'task_title',
+          'assignee',
+          'priority',
+          'confidence',
+          'rationale',
+        ],
+        additionalProperties: false,
+      },
+    },
+  },
 };
 ```
 
@@ -190,9 +206,11 @@ Default Priority: normal (unless urgent/critical/ASAP mentioned)`
 #### Original Parse Attempt
 
 **User Message:**
+
 > "Colin needs to check the compressor at Big Sky tomorrow afternoon"
 
 **OpenAI Request Logged:**
+
 ```json
 {
   "telegram_message_id": 12345,
@@ -207,6 +225,7 @@ Default Priority: normal (unless urgent/critical/ASAP mentioned)`
 ```
 
 **OpenAI Response:**
+
 ```json
 {
   "task_title": "Check compressor at Big Sky",
@@ -221,18 +240,21 @@ Default Priority: normal (unless urgent/critical/ASAP mentioned)`
 ```
 
 **Logged Fields:**
+
 ```json
 {
-  "parsed_output": { /* JSON above */ },
+  "parsed_output": {
+    /* JSON above */
+  },
   "model_rationale": "Detected 'Colin needs to' as direct assignment...",
   "confidence_score": 0.85,
   "prompt_tokens": 245,
   "completion_tokens": 89,
   "total_tokens": 334,
-  "estimated_cost_usd": 0.001670,
+  "estimated_cost_usd": 0.00167,
   "finish_reason": "stop",
   "response_duration_ms": 1243,
-  "user_accepted": null  // Waiting for user confirmation
+  "user_accepted": null // Waiting for user confirmation
 }
 ```
 
@@ -241,9 +263,11 @@ Default Priority: normal (unless urgent/critical/ASAP mentioned)`
 #### User Rejects and Provides Correction
 
 **User Response:**
+
 > "No, I meant tomorrow MORNING, and it's URGENT"
 
 **System Updates Original Log:**
+
 ```sql
 UPDATE openai_parser_logs
 SET
@@ -256,6 +280,7 @@ WHERE id = '<original_log_id>';
 **New Correction Request to OpenAI:**
 
 System constructs correction prompt:
+
 ```json
 {
   "role": "user",
@@ -264,6 +289,7 @@ System constructs correction prompt:
 ```
 
 **Corrected OpenAI Response:**
+
 ```json
 {
   "task_title": "Check compressor at Big Sky",
@@ -278,6 +304,7 @@ System constructs correction prompt:
 ```
 
 **Logged as Correction:**
+
 ```json
 {
   "is_correction": true,
@@ -285,16 +312,20 @@ System constructs correction prompt:
   "correction_user_feedback": "No, I meant tomorrow MORNING, and it's URGENT",
   "correction_rationale": "User explicitly corrected 'afternoon' to 'morning'...",
   "correction_attempt_number": 2,
-  "parsed_output": { /* Corrected JSON */ },
+  "parsed_output": {
+    /* Corrected JSON */
+  },
   "confidence_score": 0.95,
-  "user_accepted": null  // Waiting for confirmation
+  "user_accepted": null // Waiting for confirmation
 }
 ```
 
 **User Accepts:**
+
 > "Perfect!"
 
 **Final Update:**
+
 ```sql
 UPDATE openai_parser_logs
 SET
@@ -310,6 +341,7 @@ WHERE id = '<correction_log_id>';
 ### Analytics Queries
 
 #### 1. Parser Success Rate Dashboard
+
 ```sql
 SELECT
   DATE(created_at) as date,
@@ -328,6 +360,7 @@ ORDER BY date DESC;
 ```
 
 #### 2. Common Failure Patterns
+
 ```sql
 -- Find the most common user corrections
 SELECT
@@ -344,6 +377,7 @@ LIMIT 20;
 ```
 
 #### 3. Model Rationale Analysis for Failed Parses
+
 ```sql
 -- Export all rationales for rejected parses to identify patterns
 SELECT
@@ -362,6 +396,7 @@ ORDER BY created_at DESC;
 ```
 
 #### 4. Prompt Version A/B Testing
+
 ```sql
 -- Compare performance across different prompt versions
 SELECT
@@ -382,6 +417,7 @@ ORDER BY acceptance_rate DESC, avg_confidence DESC;
 ```
 
 #### 5. Cost Tracking and Budget Alerts
+
 ```sql
 -- Monthly cost projection
 SELECT
@@ -396,6 +432,7 @@ GROUP BY DATE_TRUNC('month', created_at);
 ```
 
 #### 6. Correction Chain Analysis
+
 ```sql
 -- Find messages that required multiple correction attempts
 WITH RECURSIVE correction_chain AS (
@@ -438,9 +475,11 @@ ORDER BY total_attempts DESC;
 
 ### ERPNext Implementation Strategy
 
-Once ERPNext migration is complete, create a Custom DocType: **"FLRTS Parser Audit Log"**
+Once ERPNext migration is complete, create a Custom DocType: **"FLRTS Parser
+Audit Log"**
 
 **Fields:**
+
 - Link to User (telegram_user_id mapped to ERPNext User)
 - Link to Maintenance Visit (created_task_id → Maintenance Visit name)
 - Text fields for: original_message, system_prompt, user_message
@@ -452,12 +491,14 @@ Once ERPNext migration is complete, create a Custom DocType: **"FLRTS Parser Aud
 - Link to self for: original_log_id (correction chain)
 
 **Custom Reports:**
+
 1. "Parser Performance Dashboard" - Success rates, costs, latencies
 2. "Failed Parse Analysis" - Rejection reasons and patterns
 3. "Model Comparison Report" - A/B test different prompts/models
 4. "Cost Tracking Report" - Daily/monthly OpenAI spend
 
 **Server Scripts:**
+
 - Auto-calculate `estimated_cost_usd` based on model pricing
 - Alert if acceptance rate drops below 80%
 - Alert if daily cost exceeds budget threshold
@@ -476,7 +517,8 @@ MVP Launch Requirements:
 - [ ] **Telegram Bot:** Handle correction flow (link to original attempt)
 - [ ] **Telegram Bot:** Update log when task is created (set created_task_id)
 - [ ] **Cost Calculation:** Add pricing lookup for model (gpt-4o pricing)
-- [ ] **Analytics Dashboard:** Create Grafana/Supabase dashboard for success rate
+- [ ] **Analytics Dashboard:** Create Grafana/Supabase dashboard for success
+      rate
 - [ ] **Alerts:** Set up alert for parser success rate drop below 80%
 - [ ] **Alerts:** Set up alert for daily cost exceeding $10 USD
 - [ ] **Documentation:** Document prompt versioning strategy (git commit hash)
@@ -493,6 +535,7 @@ Post-MVP Enhancements:
 ### Estimated Effort
 
 **MVP Implementation:** 3-5 days
+
 - Database schema creation: 4 hours
 - Parser service logging integration: 1 day
 - Telegram bot updates (capture user responses): 1 day
@@ -500,12 +543,12 @@ Post-MVP Enhancements:
 - Testing and validation: 1 day
 
 **ERPNext Migration:** 2-3 days (Post-MVP Phase 2)
+
 - Custom DocType creation
 - Reports and dashboards
 - Server scripts for alerts
 
 ---
 
-*Last Updated: 2025-10-01*
-*Status: MVP Critical - Not Yet Implemented*
-*Owner: Development Team*
+_Last Updated: 2025-10-01_ _Status: MVP Critical - Not Yet Implemented_ _Owner:
+Development Team_

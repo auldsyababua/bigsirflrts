@@ -1,5 +1,13 @@
 # Frappe Cloud Site Setup Guide
 
+> **⚠️ MIGRATION STATUS**: This setup guide describes the **target
+> infrastructure** for ERPNext on Frappe Cloud. **Application migration: Phase 1
+> complete** (config layer, stub client), **Phase 2 pending** (live API
+> integration). Infrastructure is provisioned but **OpenProject remains the
+> default backend**. See
+> [ADR-006](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
+> migration roadmap.
+
 **Status**: Active **Supersedes**: OpenProject deployment documentation (see
 `docs/archive/openproject/`) **Related**:
 [ADR-006 ERPNext Frappe Cloud Migration](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md)
