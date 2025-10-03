@@ -41,10 +41,14 @@ Conversational task creation with automatic timezone handling **Target Users**:
 Distributed bitcoin mining operations team **Timeline**: 12-week MVP across 4
 epics **Tech Stack**: TypeScript, OpenAI GPT-4o, ERPNext REST API, Frappe Cloud
 
-## Key Decision: ERPNext on Frappe Cloud
+## Key Decision: ERPNext on Frappe Cloud (Target Architecture)
 
-This PRD reflects the strategic decision to build on **ERPNext Field Service
-Management** (hosted on Frappe Cloud) rather than OpenProject, providing:
+This PRD describes the **target architecture** using **ERPNext Field Service
+Management** (hosted on Frappe Cloud). **Migration status: Phase 1 complete**
+(config layer, stub client), **Phase 2 pending** (live API integration).
+OpenProject remains the default and functional backend.
+
+Target ERPNext benefits:
 
 - Industry-standard FSM workflows (service calls, maintenance, installations)
 - Custom DocTypes for mining-specific metadata
@@ -53,7 +57,7 @@ Management** (hosted on Frappe Cloud) rather than OpenProject, providing:
 - Git-based deployment for custom apps (flrts_extensions)
 
 See [ADR-006](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
-migration rationale.
+migration roadmap and 10N-243 for Phase 1 completion details.
 
 ## Reading Order for Stakeholders
 
