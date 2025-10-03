@@ -1,5 +1,12 @@
 # Frappe Cloud Environment Architecture
 
+> **⚠️ MIGRATION STATUS**: This document describes the **target infrastructure**
+> for ERPNext on Frappe Cloud. **Application migration: Phase 1 complete**
+> (config layer, stub client), **Phase 2 pending** (live API integration).
+> Infrastructure is provisioned but **OpenProject remains the default backend**.
+> See [ADR-006](./adr/ADR-006-erpnext-frappe-cloud-migration.md) for migration
+> roadmap.
+
 **Status**: Active **Supersedes**: OpenProject/Supabase/Cloudflare Tunnel
 architecture (see `docs/archive/`) **Related**:
 [ADR-006 ERPNext Frappe Cloud Migration](./adr/ADR-006-erpnext-frappe-cloud-migration.md)
