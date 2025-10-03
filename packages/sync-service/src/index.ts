@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
+import { getBackendConfig, isERPNextActive } from './config';
+import { ERPNextClient } from './clients/erpnext';
 
 dotenv.config();
 dotenv.config({ path: '.env.local', override: true });
@@ -22,23 +24,24 @@ if (process.env.NODE_ENV === 'development') {
   console.log('Service key present:', !!process.env.SUPABASE_SERVICE_KEY);
 }
 
-// OpenProject API config
-const OPENPROJECT_URL = process.env.OPENPROJECT_URL || 'http://localhost:8080';
-const OPENPROJECT_API_KEY = process.env.OPENPROJECT_API_KEY;
+// Backend configuration and client factory (Phase 1: 10N-243)
+const backendConfig = getBackendConfig();
 
-// Fail fast if API key is missing
-if (!OPENPROJECT_API_KEY || OPENPROJECT_API_KEY.trim().length === 0) {
-  throw new Error('OPENPROJECT_API_KEY is required');
+// Phase 1: ERPNext mode blocks sync operations (Phase 2 will implement full client)
+if (backendConfig.backend === 'erpnext') {
+  console.warn(
+    '[sync-service] ERPNext backend mode enabled but Phase 2 implementation pending. ' +
+      'Sync operations will fail until Phase 2 complete. ' +
+      'Set USE_ERPNEXT=false to use OpenProject backend.'
+  );
 }
 
-// Parameterize project ID via env and fail fast if missing/invalid
-const OPENPROJECT_PROJECT_ID = Number.parseInt(
-  String(process.env.OPENPROJECT_PROJECT_ID || ''),
-  10
-);
-if (!Number.isFinite(OPENPROJECT_PROJECT_ID) || OPENPROJECT_PROJECT_ID <= 0) {
-  throw new Error('OPENPROJECT_PROJECT_ID is required and must be a positive integer');
-}
+// Legacy OpenProject config (only used when backend=openproject)
+// Phase 2 TODO: Remove these constants, use backendConfig everywhere
+const OPENPROJECT_URL = backendConfig.backend === 'openproject' ? backendConfig.apiUrl : '';
+const OPENPROJECT_API_KEY = backendConfig.backend === 'openproject' ? backendConfig.apiKey : '';
+const OPENPROJECT_PROJECT_ID =
+  backendConfig.backend === 'openproject' ? backendConfig.projectId! : 0;
 
 // Create axios instance for OpenProject
 const openprojectAPI = axios.create({
@@ -433,6 +436,15 @@ function mapStatus(supabaseStatus: string): number {
 // Sync a single task to OpenProject
 async function syncTaskToOpenProject(task: any) {
   try {
+    // Phase 1 guard: Block ERPNext mode operations (10N-243)
+    if (backendConfig.backend === 'erpnext') {
+      throw new Error(
+        'ERPNext backend mode enabled but sync operations not yet implemented (Phase 1). ' +
+          'Phase 2 will implement full ERPNext client integration. ' +
+          'To use OpenProject backend, set USE_ERPNEXT=false or remove the flag.'
+      );
+    }
+
     console.log(`Syncing task: ${task.task_title}`);
 
     // Get type ID from cache (default to 'task')

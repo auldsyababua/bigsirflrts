@@ -451,7 +451,7 @@ Please try again with more details.
 ```
 ❌ Connection Error
 
-I couldn't reach OpenProject. The task wasn't created.
+I couldn't reach ERPNext. The task wasn't created.
 
 Your input was saved:
 "Taylor needs to review logs by 2pm"
@@ -602,7 +602,7 @@ The task has been archived and removed from active lists.
 ## Implementation Notes
 
 1. **All deletes are soft deletes** - Archive to maintain audit trail
-2. **No OpenProject redirects** - Keep users in bot to capture interaction data
+2. **No ERPNext redirects** - Keep users in bot to capture interaction data
 3. **Mobile-first design** - Optimized for phone screens
 4. **Text-only interface** - Work within Telegram's constraints
 5. **Confirmation before execution** - Prevent accidental operations

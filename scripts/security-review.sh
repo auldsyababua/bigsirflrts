@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+
+# Re-exec with a newer Bash if the current interpreter is too old (macOS ships 3.2)
+if [[ -z "${BASH_VERSINFO:-}" || ${BASH_VERSINFO[0]} -lt 4 ]]; then
+  for alt_bash in /opt/homebrew/bin/bash /usr/local/bin/bash /usr/bin/bash; do
+    if [[ -x "$alt_bash" ]]; then
+      exec "$alt_bash" "$0" "$@"
+    fi
+  done
+  echo "Security review requires Bash 4+; install via 'brew install bash' or update PATH" >&2
+  exit 1
+fi
+
 set -euo pipefail
 # Enable extended globs; tolerate older Bash (e.g., macOS bash 3.2) where some options are unavailable
 shopt -s extglob 2>/dev/null || true
@@ -8,7 +20,9 @@ shopt -s globstar 2>/dev/null || true  # globstar requires Bash 4+
 # Debug logging (set DEBUG=1 to enable)
 : "${DEBUG:=0}"
 log() {
-  [[ $DEBUG == 1 ]] && printf '[DEBUG] %s\n' "$*" >&2
+  if [[ "${DEBUG:-0}" == 1 ]]; then
+    printf '[DEBUG] %s\n' "$*" >&2
+  fi
 }
 
 # Security Review Script for FLRTS

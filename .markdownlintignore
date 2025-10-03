@@ -27,4 +27,5 @@ infrastructure/digitalocean/monitoring/
 infrastructure/github-runner/work/
 infrastructure/github-runner/_work/
 docs/.scratch
-docs/prompts/
+
+/docs/prompts/

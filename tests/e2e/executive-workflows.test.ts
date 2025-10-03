@@ -18,7 +18,7 @@ const homepageHtml = `
   </style>
 </head>
 <body>
-  <h1>OpenProject on Cloudflare</h1>
+  <h1>FLRTS on Frappe Cloud</h1>
   <div id="login">
     <input id="username" placeholder="username" />
     <input id="password" placeholder="password" type="password" />
@@ -64,7 +64,7 @@ test('1.1-E2E-001 @P0 Given a user When opening the homepage Then it loads under
 }) => {
   const start = Date.now();
   await page.goto(`data:text/html,${encodeURIComponent(homepageHtml)}`);
-  await expect(page.locator('h1')).toHaveText('OpenProject on Cloudflare');
+  await expect(page.locator('h1')).toHaveText('FLRTS on Frappe Cloud');
   const elapsed = Date.now() - start;
   expect(elapsed).toBeLessThan(3000);
 });
