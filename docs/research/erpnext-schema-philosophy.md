@@ -1,14 +1,30 @@
 # ERPNext Schema Philosophy Research Summary
 
-**Status:** ✅ Complete (Phase 1.1)
-**Phase:** Phase 1.1
-**Related Linear:** [10N-227](https://linear.app/10netzero/issue/10N-227)
-**Source:** Deep Research Report (ERPNext Schema & DocType Research.rtf)
-**Date Created:** 2025-10-01
+> 📘 **CONTEXT UPDATED - FRAPPE CLOUD PLATFORM** - This research was originally
+> conducted for self-hosted ERPNext deployment. Following
+> [ADR-006 Frappe Cloud migration](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md),
+> the platform assumptions have changed:
+>
+> - Database: Managed MariaDB (not self-managed PostgreSQL)
+> - Deployment: Git push-to-deploy custom apps (not Docker/manual bench
+>   commands)
+> - Infrastructure: Frappe Cloud handles Redis, workers, SSL automatically
+>
+> The DocType concepts and schema philosophy remain valid, but deployment
+> mechanics differ. See
+> [Frappe Cloud Deployment Guide](../deployment/FRAPPE_CLOUD_DEPLOYMENT.md) for
+> current procedures.
+
+**Status:** ✅ Complete (Phase 1.1) **Phase:** Phase 1.1 **Related Linear:**
+[10N-227](https://linear.app/10netzero/issue/10N-227) **Source:** Deep Research
+Report (ERPNext Schema & DocType Research.rtf) **Date Created:** 2025-10-01
 
 ## Executive Summary
 
-This document synthesizes the Phase 1.1 deep research findings on ERPNext's schema philosophy. The core insight: **ERPNext's DocType is not a database table wrapper—it's a full-stack application component** that encompasses Model, View, and Controller in a unified, metadata-driven construct.
+This document synthesizes the Phase 1.1 deep research findings on ERPNext's
+schema philosophy. The core insight: **ERPNext's DocType is not a database table
+wrapper—it's a full-stack application component** that encompasses Model, View,
+and Controller in a unified, metadata-driven construct.
 
 ---
 
@@ -16,7 +32,8 @@ This document synthesizes the Phase 1.1 deep research findings on ERPNext's sche
 
 ### 1.1 What is a DocType?
 
-A **DocType** is the fundamental building block of Frappe/ERPNext. It is a **JSON metadata object** that defines:
+A **DocType** is the fundamental building block of Frappe/ERPNext. It is a
+**JSON metadata object** that defines:
 
 1. **Model**: Database schema (fields, types, constraints)
 2. **View**: User interface (forms, lists, reports, calendars)
@@ -24,14 +41,14 @@ A **DocType** is the fundamental building block of Frappe/ERPNext. It is a **JSO
 
 **Critical Distinction from SQL Table:**
 
-| Frappe Concept | SQL Equivalent | Key Difference |
-|----------------|----------------|----------------|
-| **DocType** | TABLE + View + Triggers + API | Unified metadata-driven object |
-| **Document** | ROW/Record | Single instance of a DocType |
-| **Field (fieldname)** | COLUMN | Maps to database column |
-| **Link Field** | FOREIGN KEY (logical only) | No DB constraint, app-level validation |
-| **Table Field** | One-to-Many Relationship | Child table with parent/parentfield/parenttype |
-| **name Field** | PRIMARY KEY (VARCHAR) | User-configurable naming strategy |
+| Frappe Concept        | SQL Equivalent                | Key Difference                                 |
+| --------------------- | ----------------------------- | ---------------------------------------------- |
+| **DocType**           | TABLE + View + Triggers + API | Unified metadata-driven object                 |
+| **Document**          | ROW/Record                    | Single instance of a DocType                   |
+| **Field (fieldname)** | COLUMN                        | Maps to database column                        |
+| **Link Field**        | FOREIGN KEY (logical only)    | No DB constraint, app-level validation         |
+| **Table Field**       | One-to-Many Relationship      | Child table with parent/parentfield/parenttype |
+| **name Field**        | PRIMARY KEY (VARCHAR)         | User-configurable naming strategy              |
 
 ### 1.2 Auto-Generated Features
 
@@ -48,6 +65,7 @@ When you create a DocType, Frappe **automatically generates**:
 - ✅ Role-based permissions
 
 **Example: Work Order DocType**
+
 - Creates `tabWorkOrder` database table
 - Generates `/api/resource/Work Order` REST endpoints
 - Provides Work Order form, list, and report views
@@ -57,7 +75,9 @@ When you create a DocType, Frappe **automatically generates**:
 
 **Profound Insight:** A DocType is itself a DocType.
 
-The definition of every DocType (including its fields, properties, permissions) is stored as a **document in the "DocType" master DocType**. This self-referential architecture means:
+The definition of every DocType (including its fields, properties, permissions)
+is stored as a **document in the "DocType" master DocType**. This
+self-referential architecture means:
 
 - You can modify DocType definitions using the standard Form view
 - The system's own tools evolve the system
@@ -71,37 +91,43 @@ The definition of every DocType (including its fields, properties, permissions) 
 ### 2.1 Framework-Enforced Naming Rules
 
 **DocType Naming:**
+
 - **Singular** form (Work Order, not Work Orders)
 - **Title Case** (Work Order, not work_order)
 
 **Database Table Naming:**
+
 - Automatic `tab` prefix: `tabWorkOrder`
 - Isolates Frappe tables from other DB tables
 
 **Field Naming:**
+
 - `lowercase_snake_case` (planned_start_date, item_to_manufacture)
 
 **Custom Field Naming:**
+
 - Automatic `custom_` prefix for user-added fields
 - Example: Adding "Service Priority" → `custom_service_priority`
-- **Critical for upgrade safety**: Prevents collision with future standard fields
+- **Critical for upgrade safety**: Prevents collision with future standard
+  fields
 
 ### 2.2 Reserved Field Names
 
-Every DocType automatically includes these standard fields (NEVER use these names for custom fields):
+Every DocType automatically includes these standard fields (NEVER use these
+names for custom fields):
 
-| Field | Type | Purpose |
-|-------|------|---------|
-| `name` | VARCHAR (Primary Key) | Unique document identifier |
-| `owner` | Link to User | Creator of document |
-| `creation` | Timestamp | When document was created |
-| `modified` | Timestamp | Last modification time |
-| `modified_by` | Link to User | Last modifier |
-| `docstatus` | Integer | Workflow state (0=Draft, 1=Submitted, 2=Cancelled) |
-| `idx` | Integer | Row number in child tables |
-| `parent` | VARCHAR | Parent document name (child tables only) |
-| `parentfield` | VARCHAR | Parent table field name (child tables only) |
-| `parenttype` | VARCHAR | Parent DocType name (child tables only) |
+| Field         | Type                  | Purpose                                            |
+| ------------- | --------------------- | -------------------------------------------------- |
+| `name`        | VARCHAR (Primary Key) | Unique document identifier                         |
+| `owner`       | Link to User          | Creator of document                                |
+| `creation`    | Timestamp             | When document was created                          |
+| `modified`    | Timestamp             | Last modification time                             |
+| `modified_by` | Link to User          | Last modifier                                      |
+| `docstatus`   | Integer               | Workflow state (0=Draft, 1=Submitted, 2=Cancelled) |
+| `idx`         | Integer               | Row number in child tables                         |
+| `parent`      | VARCHAR               | Parent document name (child tables only)           |
+| `parentfield` | VARCHAR               | Parent table field name (child tables only)        |
+| `parenttype`  | VARCHAR               | Parent DocType name (child tables only)            |
 
 ### 2.3 Document Naming Strategies
 
@@ -134,27 +160,27 @@ The `autoname` property defines how the `name` (primary key) is generated:
 
 **Data Types:**
 
-| Frappe Type | DB Type | Use Case |
-|-------------|---------|----------|
-| Data | VARCHAR(140) | Short text (validated by options: Email, Phone, URL) |
-| Small Text | TEXT | Medium text (descriptions) |
-| Text | TEXT | Long text |
-| Long Text | LONGTEXT | Very long content |
-| Int | INTEGER | Whole numbers |
-| Float | FLOAT | Decimal numbers |
-| Currency | DECIMAL | Money (precision from System Settings) |
-| Date | DATE | Date only |
-| Datetime | DATETIME | Date + Time |
-| Check | TINYINT | Boolean (0/1) |
-| Select | VARCHAR | Dropdown (options in `options` property) |
+| Frappe Type | DB Type      | Use Case                                             |
+| ----------- | ------------ | ---------------------------------------------------- |
+| Data        | VARCHAR(140) | Short text (validated by options: Email, Phone, URL) |
+| Small Text  | TEXT         | Medium text (descriptions)                           |
+| Text        | TEXT         | Long text                                            |
+| Long Text   | LONGTEXT     | Very long content                                    |
+| Int         | INTEGER      | Whole numbers                                        |
+| Float       | FLOAT        | Decimal numbers                                      |
+| Currency    | DECIMAL      | Money (precision from System Settings)               |
+| Date        | DATE         | Date only                                            |
+| Datetime    | DATETIME     | Date + Time                                          |
+| Check       | TINYINT      | Boolean (0/1)                                        |
+| Select      | VARCHAR      | Dropdown (options in `options` property)             |
 
 **Relational Types:**
 
-| Frappe Type | Purpose | Example |
-|-------------|---------|---------|
-| **Link** | Reference to another DocType | `item_to_manufacture` → Item DocType |
-| **Table** | One-to-many child table | `required_items` → Work Order Item child table |
-| **Attach** | File upload (links to File DocType) | Service photos, PDFs |
+| Frappe Type | Purpose                             | Example                                        |
+| ----------- | ----------------------------------- | ---------------------------------------------- |
+| **Link**    | Reference to another DocType        | `item_to_manufacture` → Item DocType           |
+| **Table**   | One-to-many child table             | `required_items` → Work Order Item child table |
+| **Attach**  | File upload (links to File DocType) | Service photos, PDFs                           |
 
 ### 3.2 The Link Field (Logical Foreign Key)
 
@@ -166,13 +192,16 @@ The `autoname` property defines how the `name` (primary key) is generated:
 4. **Filters:** Can restrict choices using `frm.set_query()` in Client Script
 
 **Why No DB Foreign Keys?**
+
 - **Performance:** Avoids automatic indexing overhead on every linked field
 - **Flexibility:** Allows soft deletes and dynamic relationships
 - **Trade-off:** Must ALWAYS use Frappe ORM to maintain referential integrity
 
-**Critical Rule:** ANY process that writes directly to the database (bypassing Frappe ORM) is **unsafe** and will corrupt data.
+**Critical Rule:** ANY process that writes directly to the database (bypassing
+Frappe ORM) is **unsafe** and will corrupt data.
 
 **FSM Example:**
+
 ```python
 # Work Order DocType definition
 {
@@ -227,34 +256,45 @@ tabWork Order Item (Child)
 ERPNext uses a **three-layer permission model**:
 
 #### Layer 1: Role Permissions (DocType-Level)
-**What it controls:** Which roles can perform actions (Read, Write, Create, Delete, Submit, Cancel) on a DocType
+
+**What it controls:** Which roles can perform actions (Read, Write, Create,
+Delete, Submit, Cancel) on a DocType
 
 **Configuration:** Role Permissions Manager
 
 **Example:**
+
 - "Field Technician" role: Read-only on Work Order
 - "Service Manager" role: Full CRUD on Work Order
 
 #### Layer 2: User Permissions (Row-Level Security)
-**What it controls:** Which specific documents (rows) a user can access based on field values
+
+**What it controls:** Which specific documents (rows) a user can access based on
+field values
 
 **Analogous to:** PostgreSQL Row-Level Security (RLS)
 
 **Example:**
+
 - User "Taylor" can only see Work Orders where `assigned_technician = Taylor`
 - User "Colin" can only see Work Orders where `territory = 'West Region'`
 
-**Implementation:** User Permissions Manager creates filter rules applied to all queries
+**Implementation:** User Permissions Manager creates filter rules applied to all
+queries
 
 #### Layer 3: Permission Levels (Field-Level Security)
-**What it controls:** Which fields (columns) are visible/editable based on permission level
+
+**What it controls:** Which fields (columns) are visible/editable based on
+permission level
 
 **How it works:**
+
 - Fields assigned a Permission Level (0-9)
 - Default: All fields at Level 0
 - Role permissions granted per level
 
 **Example:**
+
 - Field Technician: Permission Level 0 only
   - Sees: Task description, location, assigned tech
   - Hidden: Cost fields, billing info (Level 1)
@@ -264,6 +304,7 @@ ERPNext uses a **three-layer permission model**:
 ### 4.2 FSM Permission Scenarios
 
 **Scenario 1: Field Technician**
+
 ```
 Role: Field Technician
 DocType: Work Order
@@ -282,6 +323,7 @@ Permission Levels:
 ```
 
 **Scenario 2: Service Manager**
+
 ```
 Role: Service Manager
 DocType: Work Order
@@ -311,6 +353,7 @@ Permission Levels:
 **Key Rule:** NEVER edit files in `apps/frappe/` or `apps/erpnext/`
 
 **Why?**
+
 - `bench update` replaces core code
 - Custom changes in core directories = **lost on upgrade**
 
@@ -319,6 +362,7 @@ Permission Levels:
 **Correct Approach:**
 
 1. **Create Custom App** (isolated from core)
+
    ```bash
    bench new-app fsm_extensions
    bench --site [site.name] install-app fsm_extensions
@@ -332,6 +376,7 @@ Permission Levels:
    - Hooks to extend standard DocTypes
 
 3. **Use hooks.py** to inject custom logic into core DocTypes
+
    ```python
    # apps/fsm_extensions/fsm_extensions/hooks.py
    doc_events = {
@@ -345,11 +390,13 @@ Permission Levels:
 ### 5.3 Custom Field vs. Custom DocType Decision Matrix
 
 **Use Custom Field when:**
+
 - Adding 1-5 simple attributes to existing DocType
 - Data has no independent lifecycle
 - Example: Add `custom_service_priority` to Work Order
 
 **Use Custom DocType when:**
+
 - Modeling a NEW business entity
 - Entity has own fields, permissions, workflow
 - Example: Create `FLRTS Service Contract` DocType
@@ -359,13 +406,16 @@ Permission Levels:
 - ✅ **Always work in custom app** (never edit core)
 - ✅ **Use hooks.py** for server-side logic on standard DocTypes
 - ✅ **Export custom fields as fixtures** (makes them version-controlled)
+
   ```python
   # hooks.py
   fixtures = ["Custom Field", "Property Setter"]
   ```
+
   ```bash
   bench --site [site] export-fixtures
   ```
+
 - ✅ **Use Client/Server Script DocTypes** for low-code extensions
 - ✅ **Version control custom app with Git**
 - ✅ **Test on staging before production**
@@ -377,16 +427,19 @@ Permission Levels:
 ### 6.1 Application-Layer Validation (No DB Constraints)
 
 **Key Architectural Decision:**
+
 - Frappe does NOT use database foreign keys, check constraints, or triggers
 - ALL validation happens in application layer (Python ORM)
 
 **Implications for FLRTS:**
+
 - ✅ **Must use Frappe APIs** for all writes (never direct SQL)
 - ✅ **Sync Service must call ERPNext REST API** (not write to MariaDB directly)
 - ✅ **n8n workflows must use ERPNext webhooks/API** (not DB access)
 - ❌ **Direct SQL inserts WILL corrupt data** (no integrity enforcement)
 
 **Why This Matters:**
+
 ```python
 # ✅ CORRECT: Uses Frappe ORM (validates, enforces business rules)
 doc = frappe.get_doc({
@@ -406,10 +459,12 @@ frappe.db.sql("""
 ### 6.2 Namespace Management for FLRTS
 
 **Custom Field Prefix Strategy:**
+
 - ALL custom fields auto-prefixed with `custom_`
 - Example: `custom_telegram_user_id`, `custom_flrts_site_code`
 
 **Custom DocType Naming Convention:**
+
 - Use `FLRTS {Entity}` pattern (Title Case, Singular)
 - Examples:
   - `FLRTS List` (not "List" - too generic)
@@ -417,6 +472,7 @@ frappe.db.sql("""
   - `FLRTS Personnel` (if using custom DocType vs User)
 
 **Why This Matters:**
+
 - Future ERPNext updates won't collide with our custom fields
 - Clear namespace separation between standard and FLRTS-specific entities
 
@@ -424,13 +480,13 @@ frappe.db.sql("""
 
 **Recommended Naming Series:**
 
-| Entity | Pattern | Example |
-|--------|---------|---------|
-| Work Order | `FSM-WO-.YYYY.-.#####` | `FSM-WO-2024-00001` |
-| FLRTS List | `LIST-.####` | `LIST-0001` |
-| FLRTS Reminder | `REM-.YYYY.-.#####` | `REM-2024-00001` |
-| Location (Site) | `prompt` or `field:location_code` | `BIGsir-MAIN` (user enters) |
-| Supplier (Contractor) | `field:supplier_name` | `Acme Contractors` |
+| Entity                | Pattern                           | Example                     |
+| --------------------- | --------------------------------- | --------------------------- |
+| Work Order            | `FSM-WO-.YYYY.-.#####`            | `FSM-WO-2024-00001`         |
+| FLRTS List            | `LIST-.####`                      | `LIST-0001`                 |
+| FLRTS Reminder        | `REM-.YYYY.-.#####`               | `REM-2024-00001`            |
+| Location (Site)       | `prompt` or `field:location_code` | `BIGsir-MAIN` (user enters) |
+| Supplier (Contractor) | `field:supplier_name`             | `Acme Contractors`          |
 
 ### 6.4 Child Table Pattern for FLRTS
 
@@ -464,6 +520,7 @@ frappe.db.sql("""
 - Custom Edge Functions → **ERPNext REST API**
 
 **API Capabilities:**
+
 - Full CRUD on all DocTypes
 - Filtering, pagination, sorting
 - Field selection (reduce payload)
@@ -495,10 +552,12 @@ PUT https://erp.10nz.tools/api/resource/Work Order/FSM-WO-2024-00001
 ### 7.2 Authentication via OAuth2/OIDC (Supabase Integration)
 
 **ERPNext Native Support:**
+
 - OAuth 2.0 and OpenID Connect (OIDC) via "Social Login Key"
 - Standards-compliant (works with Supabase Auth, Auth0, Keycloak, etc.)
 
 **Integration Pattern:**
+
 1. Create OAuth App in Supabase → get Client ID/Secret
 2. In ERPNext: Setup > Integrations > Social Login Key
 3. Select Provider: "Custom"
@@ -511,6 +570,7 @@ PUT https://erp.10nz.tools/api/resource/Work Order/FSM-WO-2024-00001
 **Result:** Users can log into ERPNext using Supabase credentials
 
 **Alternative (API Key for Service Accounts):**
+
 - Generate ERPNext API Key for service accounts (sync-service, n8n)
 - Use API Key + Secret for machine-to-machine auth
 
@@ -583,17 +643,20 @@ These have NO standard ERPNext equivalent:
 ### 9.1 Question 1: Work Order vs Task DocType?
 
 **Option A: Use standard Task DocType**
+
 - ✅ Simpler, part of Projects module
 - ✅ Lighter weight
 - ❌ Less FSM-specific features
 
 **Option B: Use standard Work Order DocType**
+
 - ✅ FSM-native (built for field service)
 - ✅ Has manufacturing/item context built-in
 - ✅ More extensible for future FSM features
 - ❌ Heavier weight (more fields)
 
 **Recommendation:** **Use Work Order DocType**
+
 - FLRTS is field service (not generic project management)
 - Work Order has location, supplier, item concepts built-in
 - Aligns with "ERPNext way" for FSM
@@ -601,18 +664,22 @@ These have NO standard ERPNext equivalent:
 ### 9.2 Question 2: Lists/Reminders Storage Location?
 
 **Option A: Store in ERPNext (Custom DocTypes)**
+
 - ✅ Single source of truth
 - ✅ Unified permissions model
 - ✅ Searchable via ERPNext UI/API
 - ❌ Adds load to ERPNext instance
 
 **Option B: Store in Supabase (FLRTS tables)**
+
 - ✅ Keeps ERPNext lean (focused on work orders)
 - ✅ Faster queries for high-frequency Telegram operations
 - ❌ Split data model (complexity)
 - ❌ Dual permission systems
 
-**Recommendation:** **Start with Option A (ERPNext), migrate to B if performance issues**
+**Recommendation:** **Start with Option A (ERPNext), migrate to B if performance
+issues**
+
 - Principle: Single source of truth > premature optimization
 - ERPNext can handle 10-user scale easily
 - Can add Redis cache layer if needed
@@ -620,19 +687,23 @@ These have NO standard ERPNext equivalent:
 ### 9.3 Question 3: Notification Delivery?
 
 **Option A: n8n Workflows (Current Pattern)**
+
 - ✅ Already working
 - ✅ Flexible for multi-channel (Telegram, Email, SMS)
 - ✅ Easy to debug/modify
 
 **Option B: ERPNext Custom Server Scripts**
+
 - ✅ Tighter coupling with ERPNext events
 - ❌ Less flexible for complex workflows
 
 **Option C: Hybrid (ERPNext triggers n8n)**
+
 - ✅ Best of both worlds
 - ERPNext Webhook DocType → n8n webhook → Telegram/Email
 
 **Recommendation:** **Option C (Hybrid)**
+
 - ERPNext's built-in Webhook DocType triggers n8n on events
 - n8n handles delivery logic (retries, multi-channel)
 
@@ -647,17 +718,20 @@ These have NO standard ERPNext equivalent:
 - [ ] **Wait for Phase 1.3 deep research** (DocType Design Patterns)
 
 ### 10.2 Phase 1.4: Codebase Audit
+
 - Identify all OpenProject API calls in current codebase
 - Map to ERPNext equivalents
 - Document breaking changes
 
 ### 10.3 Phase 1.5: Deploy ERPNext Dev Instance
+
 - Deploy ERPNext v15+ on separate server/container
 - Install FSM module
 - Create `flrts_extensions` custom app
 - Test Work Order, Location, Supplier DocTypes
 
 ### 10.4 Phase 1.6: Create Detailed Schema Mapping
+
 - Document: `docs/erpnext/research/erpnext-schema-mapping.md`
 - Map every Supabase table → ERPNext DocType
 - Define all custom fields needed
@@ -668,15 +742,18 @@ These have NO standard ERPNext equivalent:
 ## Appendix: Key Resources
 
 **Official Documentation:**
-- Frappe Framework: https://docs.frappe.io/framework
-- ERPNext User Manual: https://docs.frappe.io/erpnext
-- Frappe Forum: https://discuss.frappe.io
+
+- Frappe Framework: <https://docs.frappe.io/framework>
+- ERPNext User Manual: <https://docs.frappe.io/erpnext>
+- Frappe Forum: <https://discuss.frappe.io>
 
 **GitHub:**
-- Frappe Framework: https://github.com/frappe/frappe
-- ERPNext: https://github.com/frappe/erpnext
+
+- Frappe Framework: <https://github.com/frappe/frappe>
+- ERPNext: <https://github.com/frappe/erpnext>
 
 **Community:**
+
 - Frappe/ERPNext Discuss Forum (active Q&A)
 - Awesome Frappe List (curated resources)
 

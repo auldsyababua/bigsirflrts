@@ -1,5 +1,16 @@
 # ERPNext Migration Workflow
 
+> ⚠️ **SUPERSEDED BY ADR-006 FRAPPE CLOUD MIGRATION** - This document describes
+> migration to self-hosted ERPNext on DigitalOcean. Following the
+> [Frappe Cloud migration decision](../../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md),
+> we are using Frappe Cloud's managed platform instead. For current deployment
+> procedures, see:
+>
+> - [Frappe Cloud Deployment Guide](../../deployment/FRAPPE_CLOUD_DEPLOYMENT.md)
+> - [Frappe Cloud Operations](../../infrastructure/frappe-cloud-operations.md)
+>
+> This document is retained for historical reference only.
+
 **Status:** Planning **Date:** 2025-09-30
 
 **📌 Source of Truth:**
