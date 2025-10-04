@@ -62,6 +62,14 @@ building and maintaining the FLRTS system integrated with OpenProject.
 - Performance guidelines
 - Documentation standards
 
+### 📋 [Logging Policy](./logging-policy.md)
+
+- Environment-aware logging strategy
+- NODE_ENV guards for production/test/dev
+- Examples of guarded vs unguarded logs
+- Testing guidance for log suppression
+- Future enhancement roadmap
+
 ## Quick Reference
 
 ### Key Architectural Decisions
