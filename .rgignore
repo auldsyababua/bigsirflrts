@@ -1,0 +1,27 @@
+# Ripgrep ignore patterns
+# Exclude development/tooling directories from searches
+
+# Archive directories
+**/ARCHIVE*
+**/archive/
+docs/archive/
+
+# Build outputs and dependencies
+node_modules/
+dist/
+build/
+coverage/
+
+# Agent prompts - local development only
+docs/prompts/
+docs/.prompts-local/
+
+# Scratch directories
+docs/.scratch/
+scratch/
+
+# Hidden directories
+.git/
+.github/
+.husky/
+.reviews/

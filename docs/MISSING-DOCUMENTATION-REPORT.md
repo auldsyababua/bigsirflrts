@@ -80,20 +80,16 @@ dev URL]
 
 ---
 
-### 2. docs/prompts/module-migration-prompt.md
+### 2. ~~docs/prompts/module-migration-prompt.md~~ _(UNTRACKED)_
 
-**Related Linear:** 10N-231 (Phase 1.4: Validate ERPNext API integration)
-**Status:** Referenced in codebase-audit-report.md, not yet created **Purpose:**
-Template prompt for migrating individual modules from OpenProject to ERPNext
+**Status:** ⚠️ **No longer tracked in Git** - Agent prompts are local
+development tools only
 
-**Expected Content:**
+**Location:** Maintained locally in `docs/.prompts-local/` for reference
 
-- Standardized prompt structure for module migration
-- Questions to ask about each module
-- Checklist for migration completeness
-- Example migrations
-
-**Creation Trigger:** When codebase audit (10N-231) is completed
+**Note:** This file and all other agent prompts (`action-agent.md`,
+`planning-agent.md`, `qa-agent.md`) are excluded from version control as they
+are personal development tools, not production documentation
 
 **Template Suggestion:**
 
@@ -441,7 +437,7 @@ needed
 ```bash
 # Create empty placeholder files with headers
 touch docs/research/erpnext-fsm-module-analysis.md
-touch docs/prompts/module-migration-prompt.md
+# Note: docs/prompts/ is local-only (not tracked in Git)
 touch docs/migration/schema-mapping.md
 touch docs/migration/data-migration-strategy.md
 ```

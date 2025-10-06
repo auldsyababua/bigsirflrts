@@ -116,6 +116,11 @@ vitest.config.*.ts
 .ai/
 .ai/debug-log.md
 
+# Agent prompts - local development only, not tracked in Git
+# Backup copy maintained in docs/.prompts-local/ for reference
+docs/prompts/
+docs/.prompts-local/
+
 # === INFRASTRUCTURE TEMPORARY FILES ===
 # Migration fix scripts and temporary configs
 infrastructure/digitalocean/*.sh
@@ -137,5 +142,3 @@ infrastructure/github-runner/_work/
 # Allow canonical docs/archive/ tree for historical documentation
 !docs/archive/
 !docs/archive/**
-
-/docs/prompts/

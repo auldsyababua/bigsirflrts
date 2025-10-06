@@ -122,8 +122,8 @@ ownership.
    - Deliverable for testing ERPNext FSM module
    - Expected during Phase 1.3 execution
 
-2. **docs/prompts/module-migration-prompt.md** (10N-231)
-   - Template for migrating individual modules
+2. ~~**docs/prompts/module-migration-prompt.md**~~ _(local dev tool only)_
+   - Template maintained in `docs/.prompts-local/` (not tracked in Git)
    - Expected during Phase 1.4 codebase audit
 
 3. **docs/migration/schema-mapping.md** (10N-232)
@@ -323,7 +323,7 @@ created
 
    ```bash
    touch docs/research/erpnext-fsm-module-analysis.md
-   touch docs/prompts/module-migration-prompt.md
+   # Note: docs/prompts/ is local-only (not tracked in Git)
    touch docs/migration/schema-mapping.md
    touch docs/migration/data-migration-strategy.md
    ```

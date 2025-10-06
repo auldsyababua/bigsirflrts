@@ -33,4 +33,7 @@ docs/.scratch
 .cursor/
 .gemini/
 .reviews/
-/docs/prompts/
+
+# Agent prompts - local development only
+docs/prompts/
+docs/.prompts-local/

@@ -335,8 +335,8 @@ docs/migration/
   test-migration-report.md
   rollback-procedure.md
 
-docs/prompts/
-  module-migration-prompt.md
+# Note: docs/prompts/ is no longer tracked in Git (local dev tools only)
+# Agent prompts maintained in docs/.prompts-local/ for reference
 ```
 
 **Rules:**
