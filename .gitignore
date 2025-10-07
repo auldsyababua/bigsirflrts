@@ -59,6 +59,13 @@ AGENTS.md
 *.so
 *.dylib
 
+# SSH/Certificate files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
 # Large generated files
 *.min.js
 *.bundle.js
