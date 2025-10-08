@@ -146,6 +146,6 @@ infrastructure/github-runner/work/
 infrastructure/github-runner/_work/
 
 # === ARCHIVE ALLOWLIST ===
-# Allow canonical docs/archive/ tree for historical documentation
+# Keep archived docs tracked for reference (intentional override)
 !docs/archive/
 !docs/archive/**

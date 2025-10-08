@@ -73,6 +73,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -109,6 +110,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -128,6 +130,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -160,6 +163,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -182,6 +186,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -207,6 +212,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -224,6 +230,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -242,6 +249,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -265,6 +273,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200, // ERPNext returns 200 even for errors!
+        ok: true,
         json: async () => mockErrorResponse,
       });
 
@@ -283,6 +292,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockErrorResponse,
       });
 
@@ -306,6 +316,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockErrorResponse,
       });
 
@@ -326,6 +337,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockErrorResponse,
       });
 
@@ -344,12 +356,44 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockErrorResponse,
       });
 
       await expect(client.getMaintenanceVisit('MNTC-00001')).rejects.toMatchObject({
         name: 'ERPNextError',
         excType: 'UnknownError',
+      });
+    });
+
+    it('should handle non-ERPNext HTTP 500 errors', async () => {
+      // Mock 4 failed responses to exhaust retries (initial + 3 retries)
+      (global.fetch as ReturnType<typeof vi.fn>)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'upstream down' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'upstream down' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'upstream down' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ error: 'upstream down' }),
+        });
+
+      await expect(client.getMaintenanceVisit('MNTC-00001')).rejects.toMatchObject({
+        name: 'ERPNextError',
+        excType: 'HTTPError',
+        statusCode: 500,
       });
     });
   });
@@ -378,6 +422,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -395,6 +440,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -412,6 +458,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -427,6 +474,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -442,6 +490,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -457,6 +506,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -472,6 +522,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -487,6 +538,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -502,6 +554,7 @@ describe('ERPNextClient', () => {
         .mockRejectedValueOnce(mockError)
         .mockResolvedValueOnce({
           status: 200,
+          ok: true,
           json: async () => ({ data: { name: 'MNTC-00001' } }),
         });
 
@@ -517,6 +570,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockErrorResponse,
       });
 
@@ -562,6 +616,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -579,6 +634,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -596,6 +652,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockErrorResponse,
       });
 
@@ -644,6 +701,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => mockResponse,
       });
 
@@ -760,6 +818,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => createResponse,
       });
 
@@ -777,6 +836,7 @@ describe('ERPNextClient', () => {
       // 2. Read
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => createResponse,
       });
 
@@ -794,6 +854,7 @@ describe('ERPNextClient', () => {
 
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => updateResponse,
       });
 
@@ -807,6 +868,7 @@ describe('ERPNextClient', () => {
       // 4. List
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => ({ data: [updateResponse.data] }),
       });
 
@@ -816,6 +878,7 @@ describe('ERPNextClient', () => {
       // 5. Delete
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         status: 200,
+        ok: true,
         json: async () => ({ data: { message: 'Deleted' } }),
       });
 

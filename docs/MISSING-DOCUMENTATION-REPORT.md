@@ -437,7 +437,7 @@ needed
 ```bash
 # Create empty placeholder files with headers
 touch docs/research/erpnext-fsm-module-analysis.md
-# Note: docs/prompts/ is local-only (not tracked in Git)
+# Note: Agent prompt files are local-only (not tracked in Git) and should live outside this repository.
 touch docs/migration/schema-mapping.md
 touch docs/migration/data-migration-strategy.md
 ```

@@ -312,7 +312,34 @@ export class ERPNextClient {
 
         clearTimeout(timeoutId);
 
-        // Parse response body
+        // Check HTTP status first
+        if (!response.ok) {
+          let payload: unknown;
+          try {
+            payload = await response.json();
+          } catch {
+            /* ignore parse errors */
+          }
+
+          // Check if it's an ERPNext error envelope
+          if (payload && typeof payload === 'object' && 'exception' in payload) {
+            throw this.createErrorFromResponse(
+              payload as ERPNextErrorResponse,
+              response.status,
+              reqId
+            );
+          }
+
+          // Non-ERPNext error response
+          throw new ERPNextError(
+            `ERPNext request failed with status ${response.status}`,
+            'HTTPError',
+            response.status,
+            reqId
+          );
+        }
+
+        // Parse response body (only if response.ok)
         const data: unknown = await response.json();
 
         // Check for ERPNext error envelope (even on HTTP 200!)
