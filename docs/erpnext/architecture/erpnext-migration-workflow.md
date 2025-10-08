@@ -267,7 +267,8 @@ before mapping our needs to it.
   - Complete inventory of code changes needed
   - Organized by module and priority
   - Estimated effort for each change
-- **Prompt Template:** `docs/prompts/module-migration-prompt.md`
+- **Prompt Template:** ~~`docs/prompts/module-migration-prompt.md`~~ _(local dev
+  tool only, see `docs/.prompts-local/`)_
   - Reusable prompt for migrating each module
   - Leverages audit report for context
   - Includes validation checklist

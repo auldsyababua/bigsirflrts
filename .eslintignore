@@ -1,13 +1,12 @@
 node_modules/
-docs/archive/
-ARCHIVE(DEPRECATED)/
-archive/
-*.min.js
-coverage/
-.git/
-package-lock.json
 dist/
 build/
+coverage/
+.git/
+*.min.js
+package-lock.json
+ARCHIVE(DEPRECATED)/
+archive/
 
 # Hidden config/tool directories
 .augment/
@@ -21,9 +20,12 @@ build/
 .reviews/
 
 # Other ignores
-audit-results/
-tools/
 infrastructure/digitalocean/monitoring/
+docs/archive/
+*.config.js
+*.config.ts
+vitest.config.ts
+playwright.config.ts
 infrastructure/github-runner/work/
 infrastructure/github-runner/_work/
 docs/.scratch

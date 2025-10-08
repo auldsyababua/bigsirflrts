@@ -24,13 +24,6 @@ audit-results/
 docs/architecture/audit-*.md
 docs/.scratch
 
-
-# AI agent and development tool directories (non-production)
-.augment/
-.bmad-core/
-.bmad-infrastructure-devops/
-.claude/
-.cursor/
-.gemini/
-.reviews/
-/docs/prompts/
+# Agent prompts - local development only
+docs/prompts/
+docs/.prompts-local/
