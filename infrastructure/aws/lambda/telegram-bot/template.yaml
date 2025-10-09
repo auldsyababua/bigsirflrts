@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: Telegram Bot Lambda Functions with DynamoDB for confirmation workflows
 
@@ -16,6 +16,11 @@ Parameters:
     Type: String
     NoEcho: true
     Description: Telegram Bot API token (obtained from @BotFather)
+
+  TelegramWebhookSecret:
+    Type: String
+    NoEcho: true
+    Description: Telegram webhook secret token used to validate incoming requests
 
   OpenAIApiKey:
     Type: String
@@ -37,6 +42,11 @@ Parameters:
     Default: https://ops.10nz.tools
     Description: ERPNext instance base URL
 
+  ADOTLayerArn:
+    Type: String
+    Default: arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-nodejs-x86_64-ver-1-18-1:5
+    Description: ARN for AWS Distro for OpenTelemetry (Node.js) Lambda layer
+
 Globals:
   Function:
     Runtime: nodejs22.x
@@ -50,6 +60,8 @@ Globals:
         TELEGRAM_BOT_TOKEN: !Ref TelegramBotToken
         OPENAI_API_KEY: !Ref OpenAIApiKey
         DYNAMODB_TABLE_NAME: !Ref TelegramConfirmationsTable
+        TELEGRAM_WEBHOOK_SECRET: !Ref TelegramWebhookSecret
+
     Tags:
       Project: BigSirFLRTS
       Component: TelegramBot
@@ -90,7 +102,7 @@ Resources:
     Properties:
       RoleName: !Sub telegram-bot-lambda-role-${Environment}
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -102,7 +114,7 @@ Resources:
       Policies:
         - PolicyName: DynamoDBAccess
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -132,6 +144,15 @@ Resources:
       AutoPublishAlias: live
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
+      Layers:
+        - !Ref ADOTLayerArn
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-handler
+          OTEL_SERVICE_NAME: telegram-webhook-handler
+          OTEL_RESOURCE_ATTRIBUTES: !Sub service.namespace=BigSirFLRTS,deployment.environment=${Environment}
+          OTEL_TRACES_SAMPLER: parentbased_always_on
+          OTEL_PROPAGATORS: xray
       Tags:
         Name: !Sub telegram-webhook-handler-${Environment}
 
@@ -149,7 +170,7 @@ Resources:
     Properties:
       FunctionName: !Sub telegram-webhook-handler-${Environment}:live
       Action: lambda:InvokeFunctionUrl
-      Principal: '*'
+      Principal: "*"
       FunctionUrlAuthType: NONE
 
   # Approval Handler Lambda Function (Stage 2)
