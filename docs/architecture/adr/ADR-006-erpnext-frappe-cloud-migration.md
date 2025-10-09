@@ -6,6 +6,13 @@ PROPOSED
 
 ## Context
 
+## See Also
+
+- ADR-007: Lambda Stack — OpenTelemetry, Chat Completions, PC=1
+  (docs/architecture/adr/ADR-007-lambda-stack-opentelemetry.md)
+- SSOT: BigSirFLRTS Lambda Stack — Final Synthesis
+  (docs/.scratch/10n-273/lambda-stack-final-synthesis.md)
+
 Our current ERPNext stack runs on a self-managed DigitalOcean droplet using
 `frappe_docker`, Supabase (PostgreSQL) as the database, and a Cloudflare Tunnel
 for ingress. While workable, this architecture has created several critical
