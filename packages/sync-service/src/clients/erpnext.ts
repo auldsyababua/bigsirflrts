@@ -177,10 +177,15 @@ export function maskSecret(secret: string): string {
 }
 
 /**
- * Check if error code is retriable with exponential backoff
+ * Check if error is retriable with exponential backoff
  * @internal
  */
 function isRetriableError(error: any): boolean {
+  // Explicitly treat browser/undici aborts as retriable
+  if (error && (error.name === 'AbortError' || error.code === 'ABORT_ERR')) {
+    return true;
+  }
+
   // Network errors
   const retriableCodes: RetriableErrorCode[] = [
     'ECONNREFUSED',
@@ -188,19 +193,18 @@ function isRetriableError(error: any): boolean {
     'ECONNRESET',
     'ENOTFOUND',
     'ERR_NETWORK',
-    'ABORT_ERR',
   ];
-  if (error.code && retriableCodes.includes(error.code)) {
+  if (error && error.code && retriableCodes.includes(error.code)) {
     return true;
   }
 
   // HTTP 5xx errors (server-side transient failures)
-  if (error.statusCode >= 500 && error.statusCode < 600) {
+  if (error && error.statusCode >= 500 && error.statusCode < 600) {
     return true;
   }
 
   // HTTP 429 (rate limit)
-  if (error.statusCode === 429) {
+  if (error && error.statusCode === 429) {
     return true;
   }
 

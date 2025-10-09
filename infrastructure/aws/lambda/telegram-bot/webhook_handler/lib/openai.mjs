@@ -4,8 +4,10 @@
  */
 
 import OpenAI from 'openai';
-import AWSXRay from 'aws-xray-sdk-core';
+import { trace, SpanStatusCode } from '@opentelemetry/api';
 import { logError, logInfo } from './logging.mjs';
+
+const tracer = trace.getTracer('telegram-webhook');
 
 const taskParametersSchema = {
   type: 'json_schema',
@@ -86,7 +88,7 @@ Examples:
   let lastError;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const subsegment = AWSXRay.getSegment()?.addNewSubsegment('openai-parse');
+    const span = tracer.startSpan('openai-parse');
 
     try {
       if (attempt > 0) {
@@ -127,10 +129,10 @@ Examples:
         usage: response.usage,
       });
 
-      subsegment?.addMetadata('duration', duration);
-      subsegment?.addMetadata('model', response.model);
-      subsegment?.addMetadata('usage', response.usage);
-      subsegment?.close();
+      span.setAttribute('duration_ms', duration);
+      span.setAttribute('model', response.model);
+      try { span.setAttribute('usage_total_tokens', response.usage?.total_tokens || 0); } catch {}
+      span.setStatus({ code: SpanStatusCode.OK });
 
       return taskData;
     } catch (error) {
@@ -143,12 +145,14 @@ Examples:
         type: error.type,
       });
 
-      subsegment?.addError(error);
-      subsegment?.close();
+      span.recordException(error);
+      span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
 
       if (attempt >= maxRetries) {
         throw new Error(`OpenAI request failed after ${maxRetries + 1} attempts: ${error.message}`);
       }
+    } finally {
+      span.end();
     }
   }
 

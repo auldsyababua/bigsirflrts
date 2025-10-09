@@ -27,7 +27,7 @@ export function maskSecret(secret) {
 }
 
 /**
- * Create a structured log entry
+ * Create a structured log entry with metadata redaction
  *
  * @param {string} level - Log level (info, warn, error)
  * @param {string} event - Event name
@@ -35,11 +35,25 @@ export function maskSecret(secret) {
  * @returns {void}
  */
 export function log(level, event, metadata = {}) {
+  // Shallow-redact sensitive keys in metadata
+  const redactMeta = (meta) => {
+    if (!meta || typeof meta !== 'object') return meta;
+    const out = Array.isArray(meta) ? [...meta] : {};
+    for (const [k, v] of Object.entries(meta)) {
+      if (typeof v === 'string' && /(token|secret|key|password|authorization|auth)/i.test(k)) {
+        out[k] = maskSecret(v);
+      } else {
+        out[k] = v;
+      }
+    }
+    return out;
+  };
+
   const logEntry = {
     timestamp: new Date().toISOString(),
     level,
     event,
-    ...metadata,
+    ...redactMeta(metadata),
   };
 
   const output = JSON.stringify(logEntry);

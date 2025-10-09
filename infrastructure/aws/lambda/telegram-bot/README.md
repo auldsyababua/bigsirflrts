@@ -1,15 +1,20 @@
 # Telegram Bot AWS Lambda Infrastructure
 
-This directory contains the AWS SAM template and Lambda function code for the BigSirFLRTS Telegram bot, implementing a two-stage approval workflow with OpenAI Chat Completions and ERPNext integration.
+This directory contains the AWS SAM template and Lambda function code for the
+BigSirFLRTS Telegram bot, implementing a two-stage approval workflow with OpenAI
+Chat Completions and ERPNext integration.
 
 ## Architecture Overview
 
 ### Components
 
-1. **webhook_handler** (Stage 1): Receives Telegram webhooks, parses with OpenAI, writes to DynamoDB
-2. **approval_handler** (Stage 2): Handles approval callbacks, calls ERPNext API with retry logic
+1. **webhook_handler** (Stage 1): Receives Telegram webhooks, parses with
+   OpenAI, writes to DynamoDB
+2. **approval_handler** (Stage 2): Handles approval callbacks, calls ERPNext API
+   with retry logic
 3. **DynamoDB Table**: Stores confirmation state with 24-hour TTL
-4. **Lambda Function URLs**: Direct HTTP endpoints for webhook and callback handling
+4. **Lambda Function URLs**: Direct HTTP endpoints for webhook and callback
+   handling
 
 ### Key Features
 
@@ -21,8 +26,10 @@ This directory contains the AWS SAM template and Lambda function code for the Bi
 
 ## Prerequisites
 
-- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) configured with credentials
-- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) v1.120.0+
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+  configured with credentials
+- [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html)
+  v1.120.0+
 - Node.js 22.x (for local testing)
 - AWS account with permissions for:
   - Lambda function creation/updates
@@ -35,20 +42,25 @@ This directory contains the AWS SAM template and Lambda function code for the Bi
 
 The SAM template requires the following parameters during deployment:
 
-| Parameter | Description | Example | Secret? |
-|-----------|-------------|---------|---------|
-| `Environment` | Deployment environment | `production`, `staging`, `development` | No |
-| `TelegramBotToken` | Telegram Bot API token (from @BotFather) | `7891234567:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw` | **Yes** |
-| `OpenAIApiKey` | OpenAI API key for Chat Completions | `sk-proj-...` | **Yes** |
-| `ERPNextApiKey` | ERPNext API key | `1234567890abcdef` | **Yes** |
-| `ERPNextApiSecret` | ERPNext API secret | `abcdef1234567890` | **Yes** |
-| `ERPNextBaseUrl` | ERPNext instance base URL | `https://ops.10nz.tools` | No |
+| Parameter               | Description                                                       | Example                                         | Secret? |
+| ----------------------- | ----------------------------------------------------------------- | ----------------------------------------------- | ------- |
+| `Environment`           | Deployment environment                                            | `production`, `staging`, `development`          | No      |
+| `TelegramBotToken`      | Telegram Bot API token (from @BotFather)                          | `7891234567:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw` | **Yes** |
+| `OpenAIApiKey`          | OpenAI API key for Chat Completions                               | `sk-proj-...`                                   | **Yes** |
+| `TelegramWebhookSecret` | Telegram webhook secret (header: x-telegram-bot-api-secret-token) | `<random-string>`                               | **Yes** |
+
+| `ERPNextApiKey` | ERPNext API key | `1234567890abcdef` | **Yes** | |
+`ERPNextApiSecret` | ERPNext API secret | `abcdef1234567890` | **Yes** | |
+`ERPNextBaseUrl` | ERPNext instance base URL | `https://ops.10nz.tools` | No |
 
 ### Obtaining Secrets
 
-- **TelegramBotToken**: Create bot via [@BotFather](https://t.me/botfather) on Telegram
-- **OpenAIApiKey**: Generate at [OpenAI Platform](https://platform.openai.com/api-keys)
-- **ERPNextApiKey/Secret**: Generate in ERPNext at `User > API Access > Generate Keys`
+- **TelegramBotToken**: Create bot via [@BotFather](https://t.me/botfather) on
+  Telegram
+- **OpenAIApiKey**: Generate at
+  [OpenAI Platform](https://platform.openai.com/api-keys)
+- **ERPNextApiKey/Secret**: Generate in ERPNext at
+  `User > API Access > Generate Keys`
 
 ## Environment Variables
 
@@ -60,6 +72,8 @@ Lambda functions receive the following environment variables:
 - `TELEGRAM_BOT_TOKEN`: Telegram Bot API token
 - `OPENAI_API_KEY`: OpenAI API key
 - `DYNAMODB_TABLE_NAME`: Name of confirmations table (auto-populated)
+
+- `TELEGRAM_WEBHOOK_SECRET`: Secret token used to validate Telegram webhooks
 
 ### approval_handler Only
 
@@ -92,6 +106,7 @@ sam deploy --guided
 ```
 
 You'll be prompted for:
+
 - Stack name (e.g., `telegram-bot-production`)
 - AWS region (e.g., `us-east-1`)
 - All parameters listed above
@@ -107,6 +122,22 @@ sam deploy
 
 Uses saved configuration from `samconfig.toml`.
 
+### Parameter Overrides Example
+
+```bash
+sam deploy \
+  --stack-name telegram-bot-production \
+  --capabilities CAPABILITY_IAM \
+  --parameter-overrides \
+    Environment=production \
+    TelegramBotToken="$TELEGRAM_BOT_TOKEN" \
+    TelegramWebhookSecret="$TELEGRAM_WEBHOOK_SECRET" \
+    OpenAIApiKey="$OPENAI_API_KEY" \
+    ERPNextApiKey="$ERPNEXT_API_KEY" \
+    ERPNextApiSecret="$ERPNEXT_API_SECRET" \
+    ERPNextBaseUrl="https://ops.10nz.tools"
+```
+
 ### 5. Retrieve Function URLs
 
 After deployment, get the Function URLs from stack outputs:
@@ -118,7 +149,8 @@ aws cloudformation describe-stacks \
   --output table
 ```
 
-Note the `WebhookHandlerFunctionUrl` value - you'll need it for Telegram webhook configuration.
+Note the `WebhookHandlerFunctionUrl` value - you'll need it for Telegram webhook
+configuration.
 
 ## Post-Deployment Configuration
 
@@ -135,7 +167,11 @@ curl -X POST https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook \
   }'
 ```
 
-**Security**: Generate a random secret token and store it in Lambda environment variable `TELEGRAM_WEBHOOK_SECRET` (requires manual update after deployment).
+**Security**: Generate a random secret token and store it in Lambda environment
+variable `TELEGRAM_WEBHOOK_SECRET` (requires manual update after deployment).
+**Security**: Generate a random secret token and pass it to the SAM template
+parameter `TelegramWebhookSecret` during deploy (NoEcho). The handler reads it
+from `TELEGRAM_WEBHOOK_SECRET`.
 
 ### 2. Verify Provisioned Concurrency
 
@@ -153,7 +189,9 @@ Expected: `Status: READY`, `AllocatedProvisionedConcurrentExecutions: 1`
 
 ### 3. Monitor X-Ray Traces
 
-Send a test message to your bot, then check [X-Ray Console](https://console.aws.amazon.com/xray) for traces (appears within 30 seconds).
+Send a test message to your bot, then check
+[X-Ray Console](https://console.aws.amazon.com/xray) for traces (appears within
+30 seconds).
 
 ## Local Testing
 
@@ -178,9 +216,11 @@ Then send requests to `http://127.0.0.1:3000`.
 The template creates two alarms:
 
 1. **telegram-webhook-handler-errors**: Alerts when >3 errors occur in 5 minutes
-2. **telegram-webhook-pc-spillover**: Alerts when PC is exhausted (spillover to on-demand)
+2. **telegram-webhook-pc-spillover**: Alerts when PC is exhausted (spillover to
+   on-demand)
 
-Configure SNS topics to receive notifications (requires manual setup after deployment).
+Configure SNS topics to receive notifications (requires manual setup after
+deployment).
 
 ### Key Metrics to Monitor
 
@@ -200,13 +240,13 @@ Logs are retained for 30 days:
 
 At 2 workflows/hour (1440 invocations/month):
 
-| Resource | Monthly Cost |
-|----------|-------------|
-| Provisioned Concurrency (1 GB-hour, 1024 MB) | $10-12 |
-| On-demand Lambda (approval_handler) | $0.50 |
-| DynamoDB on-demand (<1000 RCU/WCU) | $0.25 |
-| CloudWatch Logs (~50 MB) | $0.05 |
-| **Total** | **$10-15** |
+| Resource                                     | Monthly Cost |
+| -------------------------------------------- | ------------ |
+| Provisioned Concurrency (1 GB-hour, 1024 MB) | $10-12       |
+| On-demand Lambda (approval_handler)          | $0.50        |
+| DynamoDB on-demand (<1000 RCU/WCU)           | $0.25        |
+| CloudWatch Logs (~50 MB)                     | $0.05        |
+| **Total**                                    | **$10-15**   |
 
 70% savings vs n8n ($50/month).
 
@@ -214,37 +254,41 @@ At 2 workflows/hour (1440 invocations/month):
 
 ### Deployment Fails with "Role not found"
 
-**Cause**: IAM role propagation delay
-**Solution**: Wait 30 seconds and retry `sam deploy`
+**Cause**: IAM role propagation delay **Solution**: Wait 30 seconds and retry
+`sam deploy`
 
 ### Function Times Out
 
-**Cause**: Incorrect timeout configuration or slow external API
-**Solution**:
+**Cause**: Incorrect timeout configuration or slow external API **Solution**:
+
 - Check CloudWatch Logs for the bottleneck
 - Increase timeout if ERPNext retries exceed 90s
 - Verify ERPNext API is reachable
 
 ### Provisioned Concurrency Shows "Status: FAILED"
 
-**Cause**: Insufficient Lambda quotas or configuration error
-**Solution**:
-- Check [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html)
+**Cause**: Insufficient Lambda quotas or configuration error **Solution**:
+
+- Check
+  [Lambda quotas](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html)
 - Request quota increase if needed
 - Verify Node.js 22.x runtime is available in your region
 
 ### DynamoDB Consistency Issues
 
-**Symptom**: approval_handler reads stale data immediately after webhook_handler writes
-**Solution**: Verify `ConsistentRead: true` in approval_handler's `GetItem` call (implementation task)
+**Symptom**: approval_handler reads stale data immediately after webhook_handler
+writes **Solution**: Verify `ConsistentRead: true` in approval_handler's
+`GetItem` call (implementation task)
 
 ## Security Considerations
 
 1. **Function URLs**: Use `NONE` auth type (Telegram validates via secret token)
-2. **Secret Rotation**: Store secrets in AWS Secrets Manager for production (future enhancement)
+2. **Secret Rotation**: Store secrets in AWS Secrets Manager for production
+   (future enhancement)
 3. **IAM Policies**: Least-privilege access to DynamoDB table only
 4. **Encryption**: DynamoDB uses AWS-managed KMS keys by default
-5. **Webhook Validation**: Implement `X-Telegram-Bot-Api-Secret-Token` header check (implementation task)
+5. **Webhook Validation**: Implement `X-Telegram-Bot-Api-Secret-Token` header
+   check (implementation task)
 
 ## Implementation Status
 
@@ -252,7 +296,8 @@ At 2 workflows/hour (1440 invocations/month):
 
 **Status**: Fully implemented with 97.34% test coverage
 
-The webhook_handler Lambda function is production-ready with the following features:
+The webhook_handler Lambda function is production-ready with the following
+features:
 
 - ✅ Telegram webhook validation (X-Telegram-Bot-Api-Secret-Token)
 - ✅ OpenAI Chat Completions integration (GPT-4o-mini with structured outputs)
@@ -260,7 +305,8 @@ The webhook_handler Lambda function is production-ready with the following featu
 - ✅ Telegram sendMessage with inline keyboard (✅ Yes / ❌ Cancel)
 - ✅ Error handling for OpenAI timeouts, DynamoDB failures, Telegram API errors
 - ✅ Structured logging with secret masking (two-character reveal policy)
-- ✅ X-Ray tracing with custom subsegments (openai-parse, dynamodb-write, telegram-send)
+- ✅ X-Ray tracing with custom subsegments (openai-parse, dynamodb-write,
+  telegram-send)
 - ✅ Unit tests with 97.34% coverage (34 tests, all passing)
 
 **Directory Structure**:
