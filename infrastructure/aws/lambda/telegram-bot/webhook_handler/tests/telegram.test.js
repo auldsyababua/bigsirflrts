@@ -109,17 +109,15 @@ describe('sendMessage', () => {
     };
     global.fetch.mockResolvedValue(mockResponse);
 
-    await expect(
-      sendMessage('123456', 'Test', null, 'bot-token')
-    ).rejects.toThrow('Telegram API error: 400');
+    await expect(sendMessage('123456', 'Test', null, 'bot-token')).rejects.toThrow(
+      'Telegram API error: 400'
+    );
   });
 
   it('should throw error on network failure', async () => {
     global.fetch.mockRejectedValue(new Error('Network error'));
 
-    await expect(
-      sendMessage('123456', 'Test', null, 'bot-token')
-    ).rejects.toThrow('Network error');
+    await expect(sendMessage('123456', 'Test', null, 'bot-token')).rejects.toThrow('Network error');
   });
 });
 

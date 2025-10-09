@@ -1,37 +1,31 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { maskSecret, log, logInfo, logWarn, logError } from '../lib/logging.mjs';
+import { maskSecret, logInfo, logWarn, logError } from '../lib/logging.mjs';
 
 describe('maskSecret', () => {
   it('should mask secrets with length >= 6 showing first/last 2 chars', () => {
-    expect(maskSecret('abcdef')).toBe('ab••ef');
+    expect(maskSecret('abcdef')).toBe('ab**ef');
     const masked = maskSecret('sk-proj-abcdefghijklmnop');
     expect(masked.startsWith('sk')).toBe(true);
     expect(masked.endsWith('op')).toBe(true);
+    expect(masked).toBe('sk********************op');
   });
 
-  it('should return *** for secrets < 6 chars', () => {
-    expect(maskSecret('12345')).toBe('***');
-    expect(maskSecret('abc')).toBe('***');
-    expect(maskSecret('a')).toBe('***');
+  it('should return **** for secrets < 6 chars', () => {
+    expect(maskSecret('12345')).toBe('****');
+    expect(maskSecret('abc')).toBe('****');
+    expect(maskSecret('a')).toBe('****');
   });
 
-  it('should return *** for null/undefined/empty', () => {
-    expect(maskSecret(null)).toBe('***');
-    expect(maskSecret(undefined)).toBe('***');
-    expect(maskSecret('')).toBe('***');
+  it('should return **** for null/undefined/empty', () => {
+    expect(maskSecret(null)).toBe('****');
+    expect(maskSecret(undefined)).toBe('****');
+    expect(maskSecret('')).toBe('****');
   });
 
-  it('should return *** for non-string values', () => {
-    expect(maskSecret(123)).toBe('***');
-    expect(maskSecret({})).toBe('***');
-    expect(maskSecret([])).toBe('***');
-  });
-
-  it('should limit middle dots to 20 characters', () => {
-    const longSecret = 'a'.repeat(50) + 'bc';
-    const masked = maskSecret(longSecret);
-    expect(masked.length).toBeLessThanOrEqual(24);
-    expect(masked).toMatch(/^aa•+bc$/);
+  it('should return **** for non-string values', () => {
+    expect(maskSecret(123)).toBe('****');
+    expect(maskSecret({})).toBe('****');
+    expect(maskSecret([])).toBe('****');
   });
 });
 

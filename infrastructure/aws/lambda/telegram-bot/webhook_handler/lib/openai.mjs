@@ -85,8 +85,6 @@ Examples:
 "Assign John to review the PR by Friday" -> {description: "Review the PR", assignee: "John", dueDate: "2024-01-19", priority: null}
 "URGENT: Deploy hotfix to production ASAP" -> {description: "Deploy hotfix to production", assignee: null, dueDate: null, priority: "Urgent"}`;
 
-  let lastError;
-
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const span = tracer.startSpan('openai-parse');
 
@@ -136,8 +134,6 @@ Examples:
 
       return taskData;
     } catch (error) {
-      lastError = error;
-
       logError('openai_request_failed', {
         attempt,
         error: error.message,
@@ -155,6 +151,4 @@ Examples:
       span.end();
     }
   }
-
-  throw lastError;
 }

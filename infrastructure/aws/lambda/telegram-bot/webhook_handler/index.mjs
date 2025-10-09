@@ -108,8 +108,8 @@ export const handler = async (event) => {
     let taskData;
     try {
       taskData = await classifyIntent(parsed.text, {
-        timeoutMs: 5000,
-        maxRetries: 1,
+        timeoutMs: parseInt(process.env.OPENAI_TIMEOUT_MS || '5000', 10),
+        maxRetries: parseInt(process.env.OPENAI_MAX_RETRIES || '1', 10),
       });
     } catch (error) {
       logError('intent_classification_failed', {

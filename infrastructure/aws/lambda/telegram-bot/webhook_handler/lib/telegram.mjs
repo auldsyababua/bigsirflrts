@@ -13,7 +13,15 @@ import { logError, logInfo, maskSecret } from './logging.mjs';
  * @returns {boolean} True if valid, false otherwise
  */
 export function validateWebhook(event, expectedToken) {
+  const isProduction = process.env.NODE_ENV === 'production';
+
   if (!expectedToken) {
+    if (isProduction) {
+      logError('webhook_validation_failed', {
+        reason: 'secret_token_not_configured',
+      });
+      return false;
+    }
     return true;
   }
 

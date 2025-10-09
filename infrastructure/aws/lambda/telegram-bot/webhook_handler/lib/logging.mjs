@@ -12,16 +12,16 @@
  */
 export function maskSecret(secret) {
   if (!secret || typeof secret !== 'string') {
-    return '***';
+    return '****';
   }
 
   if (secret.length < 6) {
-    return '***';
+    return '****';
   }
 
   const first = secret.slice(0, 2);
   const last = secret.slice(-2);
-  const middle = '•'.repeat(Math.min(secret.length - 4, 20));
+  const middle = '*'.repeat(secret.length - 4);
 
   return `${first}${middle}${last}`;
 }
@@ -39,7 +39,14 @@ export function log(level, event, metadata = {}) {
   const redactMeta = (meta) => {
     if (!meta || typeof meta !== 'object') return meta;
     const out = Array.isArray(meta) ? [...meta] : {};
+    const reservedKeys = new Set(['timestamp', 'level', 'event']);
+
     for (const [k, v] of Object.entries(meta)) {
+      // Skip reserved keys that would overwrite log structure
+      if (reservedKeys.has(k)) {
+        continue;
+      }
+
       if (typeof v === 'string' && /(token|secret|key|password|authorization|auth)/i.test(k)) {
         out[k] = maskSecret(v);
       } else {

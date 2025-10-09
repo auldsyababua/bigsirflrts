@@ -106,4 +106,44 @@ describe('putConfirmation', () => {
 
     await expect(putConfirmation(item)).rejects.toThrow('DynamoDB error');
   });
+
+  it('should create Item with correct DynamoDB attribute structure', async () => {
+    const { DynamoDBClient, PutItemCommand } = await import('@aws-sdk/client-dynamodb');
+    const mockSend = vi.fn().mockResolvedValue({});
+    DynamoDBClient.mockImplementation(() => ({ send: mockSend }));
+
+    const item = {
+      userId: '123456',
+      chatId: '789012',
+      taskData: {
+        description: 'Test task',
+        assignee: 'John Doe',
+        priority: 'High',
+      },
+    };
+
+    await putConfirmation(item);
+
+    // Verify PutItemCommand was called with correct structure
+    expect(PutItemCommand).toHaveBeenCalledOnce();
+
+    const putItemCall = PutItemCommand.mock.calls[0][0];
+
+    // Verify all required DynamoDB attributes exist with correct types
+    expect(putItemCall.TableName).toBe('test-table');
+    expect(putItemCall.Item.confirmationId).toHaveProperty('S');
+    expect(putItemCall.Item.userId).toEqual({ S: '123456' });
+    expect(putItemCall.Item.chatId).toEqual({ S: '789012' });
+    expect(putItemCall.Item.taskData).toHaveProperty('S');
+    expect(putItemCall.Item.expiresAt).toHaveProperty('N');
+    expect(putItemCall.Item.createdAt).toHaveProperty('N');
+
+    // Verify taskData is JSON-serialized
+    const taskDataJson = JSON.parse(putItemCall.Item.taskData.S);
+    expect(taskDataJson).toEqual({
+      description: 'Test task',
+      assignee: 'John Doe',
+      priority: 'High',
+    });
+  });
 });
