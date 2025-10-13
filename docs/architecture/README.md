@@ -1,5 +1,12 @@
 # FLRTS Technical Architecture Documentation
 
+> ⚠️ **MIGRATION STATUS**: This documentation describes legacy OpenProject
+> architecture. Migration to ERPNext is in progress: **Phase 1 complete**
+> (config layer, stub client), **Phase 2 pending** (live API integration).
+> OpenProject remains the default backend. See
+> [ADR-006](./adr/ADR-006-erpnext-frappe-cloud-migration.md) for migration
+> roadmap.
+
 ## Document Structure
 
 This architecture documentation provides comprehensive technical guidance for
@@ -55,6 +62,14 @@ building and maintaining the FLRTS system integrated with OpenProject.
 - Performance guidelines
 - Documentation standards
 
+### 📋 [Logging Policy](./logging-policy.md)
+
+- Environment-aware logging strategy
+- NODE_ENV guards for production/test/dev
+- Examples of guarded vs unguarded logs
+- Testing guidance for log suppression
+- Future enhancement roadmap
+
 ## Quick Reference
 
 ### Key Architectural Decisions
@@ -102,6 +117,8 @@ docker-compose -f docker-compose.supabase.yml build
 - ADRs
   - [ADR-001: n8n Deployment Mode](./adr/ADR-001-n8n-deployment-mode.md)
   - [ADR-002: OpenProject Migration Pattern](./adr/ADR-002-openproject-migration-pattern.md)
+  - [ADR-003: Supabase Connection Pooling](./adr/ADR-003-supabase-connection-pooling.md)
+  - [ADR-005: MVP Scope Reduction](./adr/ADR-005-mvp-scope-reduction.md)
 - [System Connections & Health](./system-connections.md)
 
 # Deploy to production

@@ -60,6 +60,20 @@ persona:
     - Integrity of Information - Ensure accurate sourcing and representation
     - Numbered Options Protocol - Always use numbered lists for selections
 
+
+PROJECT_CONTEXT:
+  scope: Internal tool for 10-20 users maximum
+  philosophy: Ship functional code, iterate based on real usage
+  testing_approach:
+    - Validate core functionality with tests
+    - Skip exhaustive edge case testing initially
+    - Skip load testing and stress testing
+    - Address complex scenarios post-launch as discovered
+  development_priorities:
+    - Functional correctness over premature optimization
+    - Pragmatic testing over comprehensive coverage
+    - Rapid iteration over enterprise-grade robustness
+  note: This is NOT enterprise software serving hundreds/thousands of users
 MANDATORY_RESEARCH_PROTOCOL:
   - "CRITICAL: NEVER perform analysis without researching current market data"
   - "BEFORE any competitive analysis: Use mcp__exasearch__company_research_exa to verify:"

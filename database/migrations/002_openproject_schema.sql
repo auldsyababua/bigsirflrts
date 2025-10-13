@@ -67,108 +67,28 @@ CREATE INDEX idx_op_wp_status ON openproject.work_packages(status_id);
 CREATE INDEX idx_op_wp_parent ON openproject.work_packages(parent_id);
 CREATE INDEX idx_op_wp_due_date ON openproject.work_packages(due_date);
 
--- Sync function to update OpenProject users when personnel changes
-CREATE OR REPLACE FUNCTION sync_personnel_to_openproject()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        INSERT INTO openproject.users (
-            flrts_user_id,
-            login,
-            firstname,
-            lastname,
-            mail,
-            admin,
-            status
-        ) VALUES (
-            NEW.id,
-            LOWER(REPLACE(NEW.full_name, ' ', '.')),
-            SPLIT_PART(NEW.full_name, ' ', 1),
-            SPLIT_PART(NEW.full_name, ' ', 2),
-            NEW.email,
-            CASE WHEN NEW.role = 'admin' THEN true ELSE false END,
-            CASE WHEN NEW.is_active THEN 1 ELSE 3 END
-        ) ON CONFLICT (flrts_user_id) DO UPDATE SET
-            firstname = EXCLUDED.firstname,
-            lastname = EXCLUDED.lastname,
-            mail = EXCLUDED.mail,
-            admin = EXCLUDED.admin,
-            status = EXCLUDED.status,
-            updated_on = NOW();
-    ELSIF TG_OP = 'UPDATE' THEN
-        UPDATE openproject.users SET
-            firstname = SPLIT_PART(NEW.full_name, ' ', 1),
-            lastname = SPLIT_PART(NEW.full_name, ' ', 2),
-            mail = NEW.email,
-            admin = CASE WHEN NEW.role = 'admin' THEN true ELSE false END,
-            status = CASE WHEN NEW.is_active THEN 1 ELSE 3 END,
-            updated_on = NOW()
-        WHERE flrts_user_id = NEW.id;
-    ELSIF TG_OP = 'DELETE' THEN
-        -- Deletion handled by ON DELETE CASCADE
-        RETURN OLD;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create sync trigger
-CREATE TRIGGER sync_personnel_to_openproject_trigger
-AFTER INSERT OR UPDATE OR DELETE ON public.personnel
-FOR EACH ROW EXECUTE FUNCTION sync_personnel_to_openproject();
-
--- Sync function to cache OpenProject tasks in FLRTS
-CREATE OR REPLACE FUNCTION sync_openproject_tasks_to_flrts()
-RETURNS TRIGGER AS $$
-DECLARE
-    v_owner_id UUID;
-    v_assignee_id UUID;
-BEGIN
-    -- Get FLRTS user IDs
-    SELECT flrts_user_id INTO v_owner_id
-    FROM openproject.users WHERE id = NEW.author_id;
-
-    SELECT flrts_user_id INTO v_assignee_id
-    FROM openproject.users WHERE id = NEW.assigned_to_id;
-
-    IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-        INSERT INTO public.tasks (
-            openproject_id,
-            owner_id,
-            assignee_id,
-            title,
-            description,
-            status,
-            priority,
-            due_date,
-            synced_at
-        ) VALUES (
-            NEW.id,
-            v_owner_id,
-            v_assignee_id,
-            NEW.subject,
-            NEW.description,
-            NEW.status_id::TEXT,
-            NEW.priority_id,
-            NEW.due_date,
-            NOW()
-        ) ON CONFLICT (openproject_id) DO UPDATE SET
-            assignee_id = EXCLUDED.assignee_id,
-            title = EXCLUDED.title,
-            description = EXCLUDED.description,
-            status = EXCLUDED.status,
-            priority = EXCLUDED.priority,
-            due_date = EXCLUDED.due_date,
-            synced_at = NOW();
-    ELSIF TG_OP = 'DELETE' THEN
-        DELETE FROM public.tasks WHERE openproject_id = OLD.id;
-        RETURN OLD;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create task sync trigger
-CREATE TRIGGER sync_openproject_tasks_trigger
-AFTER INSERT OR UPDATE OR DELETE ON openproject.work_packages
-FOR EACH ROW EXECUTE FUNCTION sync_openproject_tasks_to_flrts();
+-- ============================================================================
+-- REMOVED: Database triggers for bidirectional sync
+-- ============================================================================
+--
+-- Reason: Enforcing API-only architecture to prevent infinite loops and
+-- maintain single source of truth (OpenProject).
+--
+-- Previous triggers removed (10N-171):
+-- 1. sync_personnel_to_openproject_trigger
+-- 2. sync_openproject_tasks_trigger
+--
+-- Architecture Decision:
+-- - All writes to OpenProject go through sync-service API calls
+-- - sync-service is the single source of truth for sync operations
+-- - No database triggers to prevent dual-write consistency issues
+-- - public.tasks table remains as optional read cache (write-only from sync-service)
+--
+-- Benefits:
+-- - No infinite loop risk when OpenProject UI is manually edited
+-- - Single source of truth (OpenProject via API)
+-- - Explicit control over all sync operations
+-- - Simpler debugging and maintenance
+--
+-- See: Linear issue 10N-171 for full architectural discussion
+-- ============================================================================

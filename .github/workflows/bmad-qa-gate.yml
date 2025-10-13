@@ -1,11 +1,68 @@
 name: BMAD QA Gate
 
 on:
-  pull_request:
-    branches: [main]
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
 
 jobs:
-  qa-gate:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Install tools (ripgrep, shellcheck)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep shellcheck
+
+      - name: Lint
+        run: npm run lint
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Upload format check results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: format-check-results-${{ github.run_id }}
+          path: |
+            .prettierrc
+            .prettierignore
+          if-no-files-found: ignore
+          retention-days: 7
+
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -16,6 +73,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: 'npm'
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}-${{ hashFiles('package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-playwright-
 
       - name: Install dependencies
         run: npm ci || npm i
@@ -28,8 +95,8 @@ jobs:
       - name: Install Playwright (Chromium)
         run: npx playwright install --with-deps chromium
 
-      - name: Run BMAD QA Gate
-        run: npm run qa:gate
+      - name: Unit tests
+        run: npm run test:unit
         env:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -37,3 +104,39 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NODE_ENV: "test"
           CI: "true"
+
+      - name: Integration tests
+        run: npm run test:integration
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NODE_ENV: "test"
+          CI: "true"
+
+      - name: E2E tests
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message || '', '[e2e]')
+        run: npm run test:e2e
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NODE_ENV: "test"
+          CI: "true"
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}
+          path: |
+            test-results/**/*.xml
+            test-results/**/*.json
+            playwright-report/**/*.html
+            playwright-report/**/*.png
+            coverage/**/*.html
+            coverage/**/*.json
+          if-no-files-found: ignore
+          retention-days: 7

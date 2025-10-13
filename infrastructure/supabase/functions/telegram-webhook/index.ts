@@ -2,7 +2,7 @@
 // Provides sub-200ms response times for immediate acknowledgment
 // Queues messages to n8n for complex processing
 
-import { serve } from 'https://deno.land/std@0.208.0/http/server.ts';
+// serve import removed - using Deno.serve directly
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 
 // Environment variables
@@ -47,9 +47,8 @@ Deno.serve(async (req: Request) => {
     const update = await req.json();
     const chatId = update.message?.chat?.id;
     const messageText = update.message?.text;
-    const userId = update.message?.from?.id;
+
     const messageId = update.message?.message_id;
-    const username = update.message?.from?.username;
 
     timer.checkpoint('Payload parsed');
 
@@ -58,16 +57,22 @@ Deno.serve(async (req: Request) => {
       return new Response('OK', { status: 200 });
     }
 
-    // 4. Send immediate acknowledgment via Telegram API (fire and forget)
-    const acknowledgmentPromise = sendQuickReply(chatId, messageId, messageText);
+    // 4. Send immediate acknowledgment via Telegram API (fire-and-forget)
+    // Note: Intentionally not awaited to minimize response latency (<200ms requirement)
+    // Error handling: sendQuickReply has internal try-catch that logs failures
+    sendQuickReply(chatId, messageId, messageText);
 
-    // 5. Queue for n8n processing (non-blocking)
-    const queuePromise = queueForProcessing(update, timer);
+    // 5. Queue for n8n processing (fire-and-forget)
+    // Note: Intentionally not awaited to minimize response latency
+    // Error handling: queueForProcessing has internal try-catch (line 129)
+    queueForProcessing(update, timer);
 
-    // 6. Log to Supabase (non-blocking)
-    const logPromise = logToSupabase(update, timer.elapsed());
+    // 6. Log to Supabase (fire-and-forget)
+    // Note: Intentionally not awaited to minimize response latency
+    // Error handling: logToSupabase has internal try-catch (line 153)
+    logToSupabase(update, timer.elapsed());
 
-    // Don't wait for async operations - respond immediately
+    // Don't wait for async operations - respond immediately to meet <200ms SLA
     console.log(`[COMPLETE] Total sync time: ${timer.elapsed()}ms`);
 
     return new Response(

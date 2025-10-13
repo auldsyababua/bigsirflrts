@@ -56,7 +56,9 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_API_KEY = 'test-api-key';
 
       // Act - Simulate SDK initialization
-      const mockSDK = new NodeSDK({
+      // Note: Instance not stored because we're testing constructor behavior via mocks
+      // The mock verification below confirms the SDK was instantiated with correct config
+      new NodeSDK({
         traceExporter: new OTLPTraceExporter({
           url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT + '/v1/traces',
           headers: {
@@ -66,9 +68,9 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
         instrumentations: [],
       });
 
-      // Assert
+      // Assert - Verify constructor was called with correct configuration
       expect(NodeSDK).toHaveBeenCalledTimes(1);
-      const sdkConfig = vi.mocked(NodeSDK).mock.calls[0][0];
+      const sdkConfig = vi.mocked(NodeSDK).mock.calls[0]?.[0];
 
       // Verify SDK configuration structure
       expect(sdkConfig).toHaveProperty('traceExporter');
@@ -111,14 +113,16 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_EXPORTER_OTLP_ENDPOINT = testEndpoint;
 
       // Act - Create exporter directly
-      const exporter = new OTLPTraceExporter({
+      // Note: Instance not stored because we're testing constructor behavior via mocks
+      // The mock verification below confirms the exporter was instantiated with correct config
+      new OTLPTraceExporter({
         url: `${testEndpoint}/v1/traces`,
         headers: {
           authorization: 'Bearer test-key',
         },
       });
 
-      // Assert
+      // Assert - Verify constructor was called with correct configuration
       expect(OTLPTraceExporter).toHaveBeenCalled();
       const exporterConfig =
         vi.mocked(OTLPTraceExporter).mock.calls[
@@ -136,11 +140,12 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_API_KEY = testApiKey;
 
       // Act
-      await import('../../packages/nlp-service/instrumentation.ts');
+      await import('../../packages/nlp-service/instrumentation');
 
       // Assert
-      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0][0];
-      expect(exporterConfig.headers).toHaveProperty('authorization', `Bearer ${testApiKey}`);
+      expect(vi.mocked(OTLPTraceExporter)).toHaveBeenCalledTimes(1);
+      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0]?.[0];
+      expect(exporterConfig?.headers).toHaveProperty('authorization', `Bearer ${testApiKey}`);
     });
 
     it('should configure metric exporter with correct endpoint', async () => {
@@ -149,7 +154,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       process.env.OTEL_EXPORTER_OTLP_ENDPOINT = testEndpoint;
 
       // Act
-      await import('../../packages/nlp-service/instrumentation.ts');
+      await import('../../packages/nlp-service/instrumentation');
 
       // Assert
       expect(OTLPMetricExporter).toHaveBeenCalledTimes(1);
@@ -164,11 +169,12 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
       // OTEL_API_KEY not set, should default to empty string
 
       // Act
-      await import('../../packages/nlp-service/instrumentation.ts');
+      await import('../../packages/nlp-service/instrumentation');
 
       // Assert
-      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0][0];
-      expect(exporterConfig.headers).toHaveProperty('authorization', 'Bearer ');
+      expect(vi.mocked(OTLPTraceExporter)).toHaveBeenCalled();
+      const exporterConfig = vi.mocked(OTLPTraceExporter).mock.calls[0]?.[0];
+      expect(exporterConfig?.headers).toHaveProperty('authorization', 'Bearer ');
     });
   });
 
@@ -181,7 +187,7 @@ describe('@P0 OpenTelemetry SDK Tests', () => {
 
       // Act & Assert - Import should not crash even if SDK start fails
       expect(async () => {
-        await import('../../packages/nlp-service/instrumentation.ts');
+        await import('../../packages/nlp-service/instrumentation');
       }).not.toThrow();
     });
   });

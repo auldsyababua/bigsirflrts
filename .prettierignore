@@ -5,6 +5,25 @@ coverage/
 .git/
 *.min.js
 package-lock.json
-.github/workflows/*.yml
 ARCHIVE(DEPRECATED)/
+
+# Hidden config/tool directories
+.augment/
+.bmad-core/
+.bmad-infrastructure-devops/
+.claude/
+.cursor/
+.gemini/
+.github/
+.husky/
+.reviews/
+
+# Other ignores
 infrastructure/digitalocean/monitoring/
+audit-results/
+docs/architecture/audit-*.md
+docs/.scratch
+
+# Agent prompts - local development only
+docs/prompts/
+docs/.prompts-local/

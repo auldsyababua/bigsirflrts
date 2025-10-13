@@ -8,7 +8,7 @@ services:
     image: prom/prometheus:v2.45.0
     container_name: flrts-prometheus
     volumes:
-      - ./monitoring/prometheus.prod.yml:/etc/prometheus/prometheus.yml
+      - ../monitoring/production/prometheus.prod.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -50,7 +50,7 @@ services:
       - GF_INSTALL_PLUGINS=grafana-piechart-panel
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana:/etc/grafana/provisioning
+      - ../monitoring/production/grafana:/etc/grafana/provisioning
     restart: unless-stopped
     depends_on:
       prometheus:
@@ -87,8 +87,9 @@ services:
     ports:
       - "127.0.0.1:16686:16686" # UI - localhost only
       - "127.0.0.1:14250:14250" # gRPC
-      - "4317:4317" # OTLP gRPC - allow container access
-      - "4318:4318" # OTLP HTTP - allow container access
+    expose:
+      - "4317" # OTLP gRPC - container-to-container only (not exposed to host)
+      - "4318" # OTLP HTTP - container-to-container only (not exposed to host)
     deploy:
       resources:
         limits:
@@ -154,7 +155,7 @@ services:
   # n8n Monitor (simplified for existing n8n instance)
   n8n-monitor:
     build:
-      context: ./monitoring
+      context: ../monitoring/production
       dockerfile: Dockerfile.n8n-monitor
     container_name: flrts-n8n-monitor
     environment:

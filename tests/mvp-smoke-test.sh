@@ -35,13 +35,13 @@ echo "[SMOKE] UI quick check via Playwright (Chromium)"
 node - <<'NODE'
 const { chromium } = require('playwright')
 ;(async () => {
-  const homepageHtml = `<!doctype html><html><head><meta charset=\"utf-8\" /><title>OpenProject MVP</title></head><body><h1>OpenProject on Cloudflare</h1></body></html>`
+  const homepageHtml = `<!doctype html><html><head><meta charset=\"utf-8\" /><title>FLRTS MVP</title></head><body><h1>FLRTS on Frappe Cloud</h1></body></html>`
   const browser = await chromium.launch()
   const page = await browser.newPage()
   await page.goto(`data:text/html,${encodeURIComponent(homepageHtml)}`)
   const title = await page.textContent('h1')
   await browser.close()
-  if (title !== 'OpenProject on Cloudflare') {
+  if (title !== 'FLRTS on Frappe Cloud') {
     console.error('UI failed to render expected heading')
     process.exit(1)
   }

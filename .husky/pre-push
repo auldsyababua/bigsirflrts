@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Allow skipping the hook entirely (emergencies/refactors)
+if [ "$SKIP_PREPUSH" = "1" ]; then
+  echo "⏭️  SKIP_PREPUSH=1 set — skipping pre-push checks."
+  exit 0
+fi
+
+echo "🚀 Running pre-push (fast) — P0 unit tests by default"
+
+# Run unit tests (fast, deterministic)
+echo "📦 Running unit tests (@P0)..."
+if ! npm run test:unit; then
+  echo "\n❌ Unit tests failed!"
+  echo "Please fix before pushing. Run 'npm run test:unit' to debug."
+  exit 1
+fi
+
+echo "✅ Unit tests passed!"
+
+# Run security review (can be skipped with SKIP_SECURITY=1)
+echo "🔒 Running security review..."
+if ! bash scripts/security-review.sh; then
+  echo "\n❌ Security review failed!"
+  echo "Please address security issues before pushing."
+  echo "To skip (not recommended): SKIP_SECURITY=1 git push"
+  exit 1
+fi
+
+# Optional: include integration tests when requested
+if [ "$RUN_INTEGRATION" = "true" ]; then
+  echo "🔗 RUN_INTEGRATION=true — running integration tests..."
+  if ! npm run test:integration; then
+    echo "\n❌ Integration tests failed!"
+    echo "Please fix before pushing. Run 'npm run test:integration' to debug."
+    exit 1
+  fi
+  echo "✅ Integration tests passed!"
+else
+  echo "🔍 Skipping integration tests (set RUN_INTEGRATION=true to include)"
+fi
+
+echo "🎉 Pre-push checks complete"
+
+exit 0

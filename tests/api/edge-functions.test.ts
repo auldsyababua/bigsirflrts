@@ -7,7 +7,7 @@
  * Run with: op run --env-file=tests/.env.test -- node --test tests/api/edge-functions.test.ts
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
 
@@ -27,7 +27,7 @@ describe('Supabase Edge Functions', () => {
         body: JSON.stringify({ input: 'test input' }),
       });
 
-      expect(response.status).toBe(401, 'Should return 401 for unauthorized request');
+      expect(response.status, 'Should return 401 for unauthorized request').toBe(401);
     });
 
     it('should accept valid parse request with anon key', async () => {
@@ -69,13 +69,10 @@ describe('Supabase Edge Functions', () => {
       });
 
       // Should return 400 for invalid input
-      expect(response.status).toBe(400, 'Should return 400 for empty input');
+      expect(response.status, 'Should return 400 for empty input').toBe(400);
 
       const data = await response.json();
-      expect(
-        'error' in data || 'message' in data,
-        'Error response should contain error information'
-      ).toBeTruthy();
+      expect('error' in data || 'message' in data).toBe(true);
     });
 
     it('should parse various task creation inputs', async () => {
@@ -133,7 +130,7 @@ describe('Supabase Edge Functions', () => {
         body: JSON.stringify({ message: { text: 'test' } }),
       });
 
-      expect(response.status).toBe(401, 'Should return 401 for unauthorized request');
+      expect(response.status, 'Should return 401 for unauthorized request').toBe(401);
     });
 
     it('should handle webhook structure validation', async () => {
@@ -145,10 +142,9 @@ describe('Supabase Edge Functions', () => {
 
       // Should return error - currently returns 401 (auth check happens first)
       // In the future this might return 400/422 for invalid structure
-      expect(
-        response.status === 401 || response.status === 400 || response.status === 422,
-        `Expected 401, 400 or 422 for invalid webhook, got ${response.status}`
-      ).toBeTruthy();
+      expect(response.status === 401 || response.status === 400 || response.status === 422).toBe(
+        true
+      );
     });
   });
 });
@@ -161,9 +157,9 @@ describe('Configuration Validation', () => {
   });
 
   it('should construct valid endpoint URLs', () => {
-    expect(testConfig.endpoints.parseRequest.includes('functions/v1/parse-request').toBeTruthy());
-    expect(
-      testConfig.endpoints.telegramWebhook.includes('functions/v1/telegram-webhook').toBeTruthy()
+    expect(testConfig.endpoints.parseRequest.includes('functions/v1/parse-request')).toBe(true);
+    expect(testConfig.endpoints.telegramWebhook.includes('functions/v1/telegram-webhook')).toBe(
+      true
     );
   });
 

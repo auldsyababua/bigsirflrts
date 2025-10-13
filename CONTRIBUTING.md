@@ -33,21 +33,19 @@ style, and commands used across this repo.
 
 ## Architecture Invariants (Read ADRs)
 
-- Single database: all services use one Supabase Postgres. Do not add separate
-  DB containers. See:
+- ERPNext backend: hosted on Frappe Cloud with managed MariaDB. See:
+  - `docs/architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md`
   - `docs/architecture/adr/ADR-001-n8n-deployment-mode.md`
-  - `docs/architecture/adr/ADR-002-openproject-migration-pattern.md`
 - n8n runs single‑instance (not queue/Redis) for current scale. Only propose
   queue mode if >50 concurrent executions or >500 webhooks/hour.
-- Validate connections point to Supabase before merging infra changes.
+- Custom apps (flrts_extensions) deploy via Git push-to-deploy workflow.
 
 ## Local Stack (Optional)
 
-- OpenProject → Supabase:
-  `infrastructure/digitalocean/docker-compose.supabase.yml` (no local Postgres
-  container).
-- Root `docker-compose.yml` offers a broader stack; ensure env points to
-  Supabase when enabling services.
+- ERPNext development: Use Frappe Cloud development branch or local
+  frappe_docker setup (requires MariaDB).
+- Root `docker-compose.yml` offers broader stack for complementary services
+  (n8n, monitoring, etc.).
 
 ## Code & Files
 
@@ -59,10 +57,8 @@ style, and commands used across this repo.
 ## Environment & Secrets Discovery
 
 - Check root env files before prompting for creds: `.env`, `.env.*` (e.g.,
-  `.env.digitalocean`, `.env.supabase`, `.env.n8n`, `.env.telegram`,
-  `.env.openai`).
-- Use ripgrep to locate values:
-  `rg -n "OPENPROJECT_ADMIN_|SUPABASE_|N8N_API_KEY" .env*`
+  `.env.digitalocean`, `.env.n8n`, `.env.telegram`, `.env.openai`).
+- Use ripgrep to locate values: `rg -n "FRAPPE_|N8N_API_KEY|TELEGRAM_" .env*`
 - Never print secrets in PRs/logs; reference the file/variable names instead.
 
 ## Commits & PRs
@@ -78,7 +74,7 @@ style, and commands used across this repo.
 
 ## Pre‑Merge Sanity
 
-- Supabase-only DB connections, n8n single-instance, no Redis/queue added
-  unintentionally.
+- ERPNext backend connections point to Frappe Cloud, n8n single-instance, no
+  Redis/queue added unintentionally.
 - Performance notes: include rationale if touching execution throughput or
   webhook volume.

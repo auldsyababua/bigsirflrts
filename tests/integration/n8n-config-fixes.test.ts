@@ -3,7 +3,7 @@
  * Validates QA findings CONFIG-001, CONFIG-002, and ARCH-001
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -31,7 +31,7 @@ describe('n8n Configuration Fixes', () => {
       const dockerCompose = fs.readFileSync(path.join(DOCKER_DIR, 'docker-compose.yml'), 'utf8');
 
       // Count health check occurrences
-      const healthChecks = dockerCompose.match(/healthcheck:/g);
+
       const curlChecks = dockerCompose.match(/curl -f/g);
 
       // All n8n services should use curl

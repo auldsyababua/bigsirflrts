@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+
+# 1. Run environment sanity check
+bash scripts/pre-commit-ci-check.sh
+
+# 2. Run lint-staged and related unit tests on staged files
+npx lint-staged --config package.json
