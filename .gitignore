@@ -148,4 +148,7 @@ infrastructure/github-runner/_work/
 # === ARCHIVE ALLOWLIST ===
 # Keep archived docs tracked for reference (intentional override)
 !docs/archive/
-!docs/archive/**
+!docs/archive/**__pycache__/
+*.pyc
+*.pyo
+*.pyd
