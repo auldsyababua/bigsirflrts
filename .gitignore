@@ -123,9 +123,9 @@ vitest.config.*.ts
 .ai/
 .ai/debug-log.md
 
-# Agent prompts - local development only, not tracked in Git
-# Backup copy maintained in docs/.prompts-local/ for reference
-docs/prompts/
+# Agent prompts - tracked in Git for version control and team sharing
+# Excluded from markdownlint (see .markdownlintignore) to avoid blocking PRs
+# These are development tools, not production code
 docs/.prompts-local/
 
 # === INFRASTRUCTURE TEMPORARY FILES ===
