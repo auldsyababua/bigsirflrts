@@ -50,11 +50,16 @@ Links to specs, ADRs, Linear issues, or docs.
 Use consistent heading structure:
 
 ```markdown
-## Work Block [N]: [Brief Title]
+## Work Block [N]: [Brief Title] ([10N-XXX](link))
 
 **Agent**: [target-agent]
-**Issue**: 10N-XXX
+**Status**: Not Started | In Progress | Blocked | Complete
+**Parent Issue**: [10N-XXX](link)
 **Estimated Time**: [X minutes/hours]
+
+**Child Issues** (if applicable):
+- [ ] 10N-YYY: [child task description]
+- [ ] 10N-ZZZ: [child task description]
 
 ### Preconditions
 [content]
@@ -97,10 +102,11 @@ Use consistent heading structure:
 ### Example 1: Simple Fix
 
 ```markdown
-## Work Block 2.4: Fix Planning Agent YAML Control Character
+## Work Block 2.4: Fix Planning Agent YAML Control Character ([10N-275](link))
 
-**Agent**: action
-**Issue**: 10N-275
+**Agent**: action-agent
+**Status**: Not Started
+**Parent Issue**: [10N-275](link)
 **Estimated Time**: 5 minutes
 
 ### Preconditions
@@ -129,11 +135,17 @@ Remove invisible control character from `prompts/planning-agent.prompt.yml` line
 ### Example 2: Multi-Step Update
 
 ```markdown
-## Work Block 3.5-3.7: Add Handoff Architecture to Agents
+## Work Block 3.5-3.7: Add Handoff Architecture to Agents ([10N-275](link))
 
-**Agent**: action
-**Issue**: 10N-275
+**Agent**: action-agent
+**Status**: In Progress
+**Parent Issue**: [10N-275](link)
 **Estimated Time**: 30-45 minutes
+
+**Child Issues**:
+- [ ] 10N-276: Update Action Agent prompt
+- [ ] 10N-277: Update QA Agent prompt
+- [ ] 10N-278: Update Planning Agent prompt
 
 ### Preconditions
 - Phase 2 complete (all P0 fixes committed)
@@ -173,10 +185,11 @@ Update Action, QA, and Planning agents to reference new handoff architecture wit
 ### Example 3: Research Task
 
 ```markdown
-## Work Block R.1: Research Frappe Cloud Bench Guardrails
+## Work Block R.1: Research Frappe Cloud Bench Guardrails ([10N-228](link))
 
-**Agent**: researcher
-**Issue**: 10N-228
+**Agent**: researcher-agent
+**Status**: Not Started
+**Parent Issue**: [10N-228](link)
 **Estimated Time**: 1-2 hours
 
 ### Preconditions
