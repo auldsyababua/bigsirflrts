@@ -22,7 +22,7 @@ Link the orphaned documentation to appropriate Linear issues by:
 **Key Context:**
 - All ERPNext docs are now consolidated in `docs/erpnext/`
 - Linear epic: [10N-227 ERPNext Backend Adoption](https://linear.app/10netzero/issue/10N-227/erpnext-backend-adoption)
-- GitHub repo: `auldsyababua/bigsirflrts` on branch `feature/erpnext-adoption`
+- GitHub repo: `auldsyababua/bigsirflrts` on branch `main`
 
 ## Orphaned Documents to Link
 
@@ -32,25 +32,25 @@ Link the orphaned documentation to appropriate Linear issues by:
 - **File:** `docs/erpnext/architecture/erpnext-migration-workflow.md`
 - **Should link to:** Linear issue 10N-227 (main epic)
 - **Action:** Add GitHub link to 10N-227 description section "📋 Migration Workflow:"
-- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/feature/erpnext-adoption/docs/erpnext/architecture/erpnext-migration-workflow.md`
+- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/architecture/erpnext-migration-workflow.md`
 
 #### 2. ERPNext Migration Naming Standards
 - **File:** `docs/erpnext/ERPNext-Migration-Naming-Standards.md`
 - **Should link to:** Linear issue 10N-227 (main epic)
 - **Action:** Add GitHub link to 10N-227 description section "🎯 Naming Standards:"
-- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/feature/erpnext-adoption/docs/erpnext/ERPNext-Migration-Naming-Standards.md`
+- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/ERPNext-Migration-Naming-Standards.md`
 
 #### 3. Codebase Audit Report
 - **File:** `docs/erpnext/codebase-audit-report.md`
 - **Should link to:** Linear issue 10N-231 (Phase 1.4)
 - **Action:** Add as deliverable in 10N-231 description
-- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/feature/erpnext-adoption/docs/erpnext/codebase-audit-report.md`
+- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/codebase-audit-report.md`
 
 #### 4. Linear Audit Report
 - **File:** `docs/architecture/linear-audit-erpnext-migration.md`
 - **Should link to:** Linear issue 10N-227 (main epic)
 - **Action:** Add to 10N-227 description under "## Documentation" section
-- **GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/feature/erpnext-adoption/docs/architecture/linear-audit-erpnext-migration.md`
+- **GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/architecture/linear-audit-erpnext-migration.md`
 
 ## Linear Issue Updates Required
 
@@ -95,8 +95,8 @@ NEW: docs/erpnext/codebase-audit-report.md
 
 ```markdown
 **📊 Project Audits:**
-- [Linear Issues Audit](https://github.com/auldsyababua/bigsirflrts/blob/feature/erpnext-adoption/docs/architecture/linear-audit-erpnext-migration.md)
-- [Documentation Audit Summary](https://github.com/auldsyababua/bigsirflrts/blob/feature/erpnext-adoption/docs/DOCUMENTATION-AUDIT-SUMMARY.md)
+- [Linear Issues Audit](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/architecture/linear-audit-erpnext-migration.md)
+- [Documentation Audit Summary](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/DOCUMENTATION-AUDIT-SUMMARY.md)
 ```
 
 ### 10N-231: Comprehensive Codebase Audit
@@ -108,7 +108,7 @@ Add deliverables section:
 ```markdown
 ## Deliverables
 
-**📄 Output:** [docs/erpnext/codebase-audit-report.md](https://github.com/auldsyababua/bigsirflrts/blob/feature/erpnext-adoption/docs/erpnext/codebase-audit-report.md)
+**📄 Output:** [docs/erpnext/codebase-audit-report.md](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/codebase-audit-report.md)
 
 This document provides:
 - Complete inventory of code changes needed for ERPNext migration
@@ -126,14 +126,14 @@ This document provides:
 **Verification:**
 - Read the issue first to see current content
 - Make surgical edits (find-replace for path updates)
-- Verify all GitHub URLs use correct branch (`feature/erpnext-adoption`)
+- Verify all GitHub URLs use correct branch (`main`)
 
 ## Success Criteria
 
 - [ ] All 9 GitHub URLs in Linear issue 10N-227 updated to new `docs/erpnext/` paths
 - [ ] Linear issue 10N-231 contains link to codebase-audit-report.md
 - [ ] Audit reports linked in 10N-227 for visibility
-- [ ] All GitHub URLs point to correct branch: `feature/erpnext-adoption`
+- [ ] All GitHub URLs point to correct branch: `main`
 - [ ] Updated `docs/LINEAR-DOCUMENTATION-MAP.md` to mark orphaned docs as "✅ Linked"
 
 ## Validation Steps
@@ -158,7 +158,7 @@ After completing the updates:
 ## Notes
 
 - **All file paths have changed** - don't use cached/old paths
-- **GitHub URLs must include branch** - use `feature/erpnext-adoption`
+- **GitHub URLs must include branch** - use `main`
 - **Test links before finalizing** - click them to verify they work
 - **Document structure is now cleaner** - everything ERPNext is under `docs/erpnext/`
 

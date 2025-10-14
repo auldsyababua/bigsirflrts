@@ -4,7 +4,7 @@
 
 **Related Documents**:
 - [agent-addressing-system.md](agent-addressing-system.md) - Standard format for addressing
-- [scratch-and-archoff-conventions.md](scratch-and-archiving-conventions.md) - Scratch directory usage
+- [scratch-and-archiving-conventions.md](scratch-and-archiving-conventions.md) - Scratch directory usage
 
 ---
 
@@ -415,7 +415,7 @@ After execution, run:
 \`\`\`bash
 git status
 git log -1 --oneline
-gh issue view 10N-XXX  # if using gh CLI
+mcp__linear-server__get_issue({ id: "10N-XXX" })  # verify Linear issue updated
 \`\`\`
 
 ## Blockers / Questions
