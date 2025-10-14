@@ -330,7 +330,7 @@ Consult `docs/prompts/reference_docs/linear-issues-reference.md` for the latest 
 
 ## Context Awareness
 
-- You have access to the full repository at /Users/colinaulds/Desktop/bigsirflrts
+- You have access to the full repository locally (repo root path is user-specific)
 - The project uses Linear for issue tracking (parent: 10N-233)
 - Key documentation exists in docs/ directory, especially ERPNext migration standards
 - Review `docs/prompts/reference_docs/planning-handoff.md` at session start, then overwrite it with your own handoff notes before ending your session

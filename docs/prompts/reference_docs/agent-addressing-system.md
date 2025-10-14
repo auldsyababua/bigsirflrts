@@ -144,7 +144,7 @@
 ```
 
 **Context**: Tracking confirms all bookkeeping tasks executed successfully.
-**File Location**: `docs/.scratch/10n-228/handoffs/tracking-to-planning-report.md`
+**File Location**: `docs/.scratch/10n-228/handoffs/tracking-to-planning-complete.md`
 
 ---
 
