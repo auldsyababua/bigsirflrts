@@ -3,10 +3,7 @@ name: PR Core
 on:
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - 'audit-results/**'
-      - '**/*.md'
+
 
 jobs:
   core:
