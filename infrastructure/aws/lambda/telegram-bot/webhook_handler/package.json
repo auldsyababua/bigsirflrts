@@ -1,0 +1,29 @@
+{
+  "name": "telegram-webhook-handler",
+  "version": "1.0.0",
+  "description": "Telegram webhook handler for BigSirFLRTS bot",
+  "type": "module",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "telegram",
+    "webhook",
+    "lambda"
+  ],
+  "author": "10netzero",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "openai": "^4.73.0",
+    "@aws-sdk/client-dynamodb": "^3.709.0",
+    "@aws-sdk/util-dynamodb": "^3.709.0",
+    "aws-xray-sdk-core": "^3.10.1"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8",
+    "@vitest/coverage-v8": "^2.1.8"
+  }
+}
