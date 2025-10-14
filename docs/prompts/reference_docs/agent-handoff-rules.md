@@ -697,6 +697,113 @@ Priority order for next Planning Agent:
 
 ---
 
+## Handoff Validation & Schema Evolution
+
+### Envelope Types
+
+Handoffs use structured formats for machine-readability and future automation. Three primary envelope types exist:
+
+#### 1. Code Delivery Envelope (Action→QA)
+
+**Purpose**: Package implementation deliverables with validation evidence.
+
+**Required Fields**:
+- `deliverables`: Files changed, commits, tests added/updated
+- `validation_performed`: Test results, type checks, security scan, linter output
+- `external_apis`: Validation method (curl/spec), auth format confirmation
+- `scratch_artifacts`: Research notes, prototype location, lessons draft
+- `acceptance_criteria_status`: Which criteria met, which deferred
+- `known_issues`: Any limitations or related work
+
+**Example YAML Frontmatter**:
+```yaml
+---
+envelope_type: code_delivery
+envelope_version: 1.0
+source_agent: action
+target_agent: qa
+issue: 10N-228
+branch: feature/10n-228-erpnext-deployment
+date: 2025-10-13
+---
+```
+
+#### 2. Research Findings Envelope (Researcher→Planning)
+
+**Purpose**: Package evidence, analysis, and recommendations with citations.
+
+**Required Fields**:
+- `findings`: Key findings with sources and citations
+- `options_analysis`: 2-3 alternatives with pros/cons/risks (if applicable)
+- `recommendation`: Suggested next action with confidence level
+- `blockers`: Any blockers encountered
+- `scratch_artifacts`: Research findings, evidence files
+
+**Example YAML Frontmatter**:
+```yaml
+---
+envelope_type: research_findings
+envelope_version: 1.0
+source_agent: researcher
+target_agent: planning
+issue: 10N-228
+research_id: RES-001
+date: 2025-10-13
+timebox: 2 hours
+---
+```
+
+#### 3. Operations Completion Envelope (Tracking→Planning)
+
+**Purpose**: Confirm bookkeeping operations with verification evidence.
+
+**Required Fields**:
+- `operations_executed`: Git operations, Linear updates, timeline updates, archive operations
+- `verification_results`: Command outputs proving completion
+- `time_taken`: Estimated vs actual
+- `blockers`: Any issues encountered
+- `next_steps`: Follow-up actions for Planning
+
+**Example YAML Frontmatter**:
+```yaml
+---
+envelope_type: operations_completion
+envelope_version: 1.0
+source_agent: tracking
+target_agent: planning
+issue: 10N-228
+date: 2025-10-13
+status: complete
+---
+```
+
+### Validation Strategy
+
+**Current State**: Manual validation by receiving agent
+- Agents check handoff content against expected template
+- Missing fields or malformed content triggers error handling (see Error Handling section)
+- Receiving agent reports discrepancies to Planning Agent
+
+**Future State**: Automated JSON schema validation
+- Handoff files will include JSON or YAML frontmatter with envelope metadata
+- Schema version field (`envelope_version`) supports evolution
+- Validation tools can verify structure before agent reads content
+- Enables CI/CD integration and automated handoff auditing
+
+**Schema Version Evolution**:
+- Version 1.0: Current manual validation
+- Version 2.0: JSON Schema validation with backward compatibility
+- Version 3.0+: Enhanced validation with cross-agent consistency checks
+
+### References
+
+For multi-agent handoff patterns and structured outputs:
+- OpenAI Cookbook: "Structured Outputs for Multi-Agent Systems"
+- JSON Schema specification: https://json-schema.org/
+- YAML frontmatter conventions: https://jekyllrb.com/docs/front-matter/
+
+---
+
 **Last Updated**: 2025-10-13
 **Version**: 1.0
 **Status**: Active

@@ -177,6 +177,75 @@
 
 ---
 
+## Quick Reference: Canonical Examples
+
+Use these examples as templates for common agent-to-agent handoffs:
+
+### 1. Planning → Action (Work Assignment)
+```
+planning -> action | 10N-228: Execute ERPNext dev deployment
+```
+**When**: Planning Agent assigns implementation work to Action Agent
+
+### 2. Action → QA (Review Request)
+```
+action -> qa | 10N-228: Review ERPNext deployment implementation
+```
+**When**: Action Agent completes production code and requests verification
+
+### 3. QA → Planning (Validation Complete)
+```
+qa -> planning | 10N-228: QA PASS - deployment verified
+```
+**When**: QA Agent validates all requirements met, ready to merge
+
+### 4. QA → Action (Issues Found)
+```
+qa -> action | 10N-228: QA FAIL - retry logic missing
+```
+**When**: QA Agent finds issues requiring Action Agent fixes
+
+### 5. Planning → Tracking (Bookkeeping)
+```
+planning -> tracking | 10N-275: Update Work Block 1 status
+```
+**When**: Planning Agent delegates git/Linear operations to preserve context
+
+### 6. Planning → Researcher (Evidence Gathering)
+```
+planning -> researcher | 10N-228: Research Frappe Cloud bench guardrails
+```
+**When**: Planning Agent needs analysis, options comparison, or API validation
+
+---
+
+## Copy-Paste Template
+
+```markdown
+[source-agent] -> [target-agent] | 10N-XXX: [brief context]
+```
+
+**Fill in**:
+- `[source-agent]`: Your agent role (action, qa, planning, tracking, researcher)
+- `[target-agent]`: Receiving agent role
+- `10N-XXX`: Linear issue number
+- `[brief context]`: 3-10 word description (< 80 chars)
+
+---
+
+## Validation Checklist
+
+Before finalizing addressing format, verify:
+
+- [ ] Both agent names are lowercase (e.g., `action` not `Action Agent`)
+- [ ] Issue number follows format `10N-XXX` (e.g., `10N-228`)
+- [ ] Brief context is concise (< 80 characters)
+- [ ] Arrow format uses spaces: ` -> ` (not `->` or `→`)
+- [ ] Colon follows issue number: `10N-XXX:` (not `10N-XXX -`)
+- [ ] Context starts with capital letter or verb (e.g., "Review deployment" or "QA PASS")
+
+---
+
 ## Integration with File-Based Handoff System
 
 **Relationship**: Agent addressing is the "envelope" format; file-based handoff system defines "delivery locations".
@@ -187,7 +256,7 @@
 **Example Flow**:
 1. Action Agent completes work
 2. Action Agent writes handoff file to `docs/.scratch/10n-228/handoffs/action-to-qa-review-request.md`
-3. Top of file includes addressing: `[action-agent] -> [qa-agent] | Linear Issue 10N-228: review request`
+3. Top of file includes addressing: `action -> qa | 10N-228: review request`
 4. User triggers QA Agent invocation
 5. QA Agent reads intake from predetermined location
 6. QA Agent validates addressing matches expected source/target/issue
