@@ -1,0 +1,70 @@
+{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type PreToolUse --summarize"
+        }
+      ]
+    }],
+    "PostToolUse": [{
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type PostToolUse --summarize"
+        }
+      ]
+    }],
+    "UserPromptSubmit": [{
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type UserPromptSubmit --summarize"
+        }
+      ]
+    }],
+    "Notification": [{
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type Notification --summarize"
+        }
+      ]
+    }],
+    "Stop": [{
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type Stop --add-chat --summarize"
+        }
+      ]
+    }],
+    "SubagentStop": [{
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type SubagentStop --summarize"
+        }
+      ]
+    }],
+    "SessionStart": [{
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type SessionStart --summarize"
+        }
+      ]
+    }],
+    "SessionEnd": [{
+      "hooks": [
+        {
+          "type": "command",
+          "command": "uv run .claude/hooks/send_event.py --source-app bigsirflrts --event-type SessionEnd --summarize"
+        }
+      ]
+    }]
+  }
+}
