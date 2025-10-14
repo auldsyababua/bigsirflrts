@@ -23,8 +23,6 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-COMMAND="$1"
-
 # Check if certificate exists
 if [ ! -f ~/.ssh/id_rsa-cert.pub ]; then
     echo "Error: SSH certificate not found at ~/.ssh/id_rsa-cert.pub"
@@ -38,8 +36,13 @@ if [ ! -f ~/.ssh/id_rsa-cert.pub ]; then
     exit 1
 fi
 
-# Run command via SSH with piped input
-printf "cd %s\n%s\nexit\n" "$BENCH_DIR" "$COMMAND" | \
-    ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" 2>&1 | \
+# Run command via SSH (use all args, properly quoted)
+ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" "cd '$BENCH_DIR' && ${*@Q}" 2>&1 | \
     grep -v "Pseudo-terminal will not be allocated" | \
-    grep -v "Connection to.*closed" || true
+    grep -v "Connection to.*closed"
+
+# Capture exit code from the pipeline
+EXIT_CODE=${PIPESTATUS[0]}
+
+# Exit with the SSH command's exit code
+exit $EXIT_CODE
