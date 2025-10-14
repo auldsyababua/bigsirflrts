@@ -183,37 +183,37 @@ Use these examples as templates for common agent-to-agent handoffs:
 
 ### 1. Planning → Action (Work Assignment)
 ```
-planning -> action | 10N-228: Execute ERPNext dev deployment
+[planning-agent] -> [action-agent] | Linear Issue 10N-228: work assignment
 ```
 **When**: Planning Agent assigns implementation work to Action Agent
 
 ### 2. Action → QA (Review Request)
 ```
-action -> qa | 10N-228: Review ERPNext deployment implementation
+[action-agent] -> [qa-agent] | Linear Issue 10N-228: review request
 ```
 **When**: Action Agent completes production code and requests verification
 
 ### 3. QA → Planning (Validation Complete)
 ```
-qa -> planning | 10N-228: QA PASS - deployment verified
+[qa-agent] -> [planning-agent] | Linear Issue 10N-228: validated PASS
 ```
 **When**: QA Agent validates all requirements met, ready to merge
 
 ### 4. QA → Action (Issues Found)
 ```
-qa -> action | 10N-228: QA FAIL - retry logic missing
+[qa-agent] -> [action-agent] | Linear Issue 10N-228: retry needed
 ```
 **When**: QA Agent finds issues requiring Action Agent fixes
 
 ### 5. Planning → Tracking (Bookkeeping)
 ```
-planning -> tracking | 10N-275: Update Work Block 1 status
+[planning-agent] -> [tracking-agent] | Linear Issue 10N-275: bookkeeping
 ```
 **When**: Planning Agent delegates git/Linear operations to preserve context
 
 ### 6. Planning → Researcher (Evidence Gathering)
 ```
-planning -> researcher | 10N-228: Research Frappe Cloud bench guardrails
+[planning-agent] -> [researcher-agent] | Linear Issue 10N-228: research request
 ```
 **When**: Planning Agent needs analysis, options comparison, or API validation
 
