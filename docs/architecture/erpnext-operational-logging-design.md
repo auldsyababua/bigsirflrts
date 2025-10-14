@@ -86,8 +86,7 @@ ticketing systems (OpenProject, GitHub, Linear)
 | `related_erpnext_doc` | Dynamic Link | Related ERPNext Doc | -        | -     | Link to Work Order/Maintenance Visit       |
 | `sync_metadata`       | Code (JSON)  | Sync Metadata       | -        | -     | Maps to Supabase `metadata` field          |
 
-**Child Table: Task Sync Attempt** Attached via Table MultiSelect field
-`sync_attempts`
+**Child Table: Task Sync Attempt** Attached via Table field `sync_attempts`
 
 | Field Name          | Type        | Label             | Description                       |
 | ------------------- | ----------- | ----------------- | --------------------------------- |
@@ -137,7 +136,7 @@ debugging, and analytics
 | `retry_count`        | Int        | Retry Count        | -        | -          | Number of processing attempts                   |
 | `last_retry_at`      | Datetime   | Last Retry At      | -        | -          | Last retry timestamp                            |
 
-**Child Table: Webhook Event Payload** Attached via Table MultiSelect field
+**Child Table: Webhook Event Payload** Attached via Table field
 `payload_history`
 
 | Field Name           | Type      | Label                | Description                      |
@@ -184,8 +183,7 @@ and model evaluation
 | `confidence_score`    | Float        | Confidence Score     | -        | -     | 0.0-1.0 overall confidence                     |
 | `source_text_preview` | Small Text   | Source Text Preview  | -        | -     | First 200 chars of input (for quick reference) |
 
-**Child Table: NLP Parsing Result** Attached via Table MultiSelect field
-`parsed_entities`
+**Child Table: NLP Parsing Result** Attached via Table field `parsed_entities`
 
 | Field Name       | Type  | Label          | Description                             |
 | ---------------- | ----- | -------------- | --------------------------------------- |
