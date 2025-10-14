@@ -1,14 +1,14 @@
 # BigSirFLRTS Linear Issue Reference
 
-This reference lists the primary Linear issues currently in scope for the BigSirFLRTS migration effort. Use issue numbers directly with Linear MCP tools (identifiers are case-insensitive). Update this document whenever new issues are added or reassigned so prompts remain accurate.
+**Scope**: Convenience reference only; not comprehensive. Always verify current status and details in Linear.
+**Last Updated**: 2025-10-13
+
+This reference lists primary Linear issues in scope for the BigSirFLRTS migration to Frappe Cloud. Use issue numbers directly with Linear MCP tools (identifiers are case-insensitive).
+
+## Active Issues
 
 | Identifier | UUID | Title | Parent |
 | --- | --- | --- | --- |
-| 10N-88 | ca3061ee-5454-4e19-ba0e-1b28f5095ad5 | [EPIC] OpenProject Deployment & Configuration | — |
-| 10N-93 | 301afd43-67b7-413e-b459-0ae89b247fa1 | Set up automated backups for OpenProject | 10N-88 |
-| 10N-101 | 844a4d9d-a16b-49c5-b007-ec75612d5847 | Performance Optimization: OpenProject P95 Response Time | — |
-| 10N-102 | b4bece6a-60cb-4a8a-b81d-267bf8d95aba | QA Gate PASS_WITH_CAVEAT: Story 1.1 - Deploy OpenProject via Docker Compose | — |
-| 10N-147 | e444c338-2023-4535-9be3-7b344d8a78fa | Epic 1.1: Deploy OpenProject via Docker Compose on DigitalOcean | — |
 | 10N-227 | 443189b6-223d-487d-9366-d04845e70cc5 | ERPNext Backend Adoption | — |
 | 10N-228 | bb9b579a-ab90-46d5-8f39-54b5b7020547 | Phase 1.1: Deploy ERPNext dev instance | 10N-227 |
 | 10N-229 | 14c3a4ea-c4a9-4156-949d-3665c34c82f4 | Phase 1.2: Connect ERPNext to Supabase PostgreSQL | 10N-227 |
@@ -22,5 +22,20 @@ This reference lists the primary Linear issues currently in scope for the BigSir
 | 10N-237 | 547d3354-3d04-4da3-9ee2-1fefbc6cd9e1 | Stage 2: Draft docs/infrastructure/frappe-cloud-operations.md | 10N-233 |
 | 10N-238 | f33ffaa2-f288-4ba8-8fb6-9ac35958ae76 | Stage 2: Update doc map & archive OpenProject assets | 10N-233 |
 | 10N-239 | 1683b5a5-fbee-4b6c-80b2-421bd2bec621 | Stage 2: Execute documentation automation | 10N-233 |
+| 10N-275 | [UUID] | Master Dashboard: Multi-Agent Workflow Audit | — |
 
-_Add additional rows as new issues become active in this workstream._
+## Archived Issues
+
+The following issues relate to the superseded OpenProject/DigitalOcean architecture (pre-ADR-006):
+
+| Identifier | Title | Status |
+| --- | --- | --- |
+| 10N-88 | [EPIC] OpenProject Deployment & Configuration | Superseded by ERPNext/Frappe Cloud |
+| 10N-93 | Set up automated backups for OpenProject | Superseded |
+| 10N-101 | Performance Optimization: OpenProject P95 Response Time | Superseded |
+| 10N-102 | QA Gate PASS_WITH_CAVEAT: Story 1.1 - Deploy OpenProject | Superseded |
+| 10N-147 | Epic 1.1: Deploy OpenProject via Docker Compose on DigitalOcean | Superseded |
+
+---
+
+_Update this document when new issues are created or when issue scope significantly changes._
