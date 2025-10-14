@@ -23,8 +23,8 @@
 **Required**:
 - All components must be present
 - Issue identifier format: `10N-XXX` (uppercase N, hyphenated)
-- Agent names: action-agent, qa-agent, planning-agent, tracking-agent, researcher-agent
-- Brief context should be actionable (e.g., "review request", "retry needed", "validated PASS")
+- Agent names: action-agent, qa-agent, planning-agent, tracking-agent, researcher-agent, browser-agent
+- Brief context should be actionable (e.g., "review request", "retry needed", "validated PASS", "app installation")
 
 ---
 
@@ -37,6 +37,7 @@
 | Planning Agent | `planning-agent` |
 | Tracking Agent | `tracking-agent` |
 | Researcher Agent | `researcher-agent` |
+| Browser Agent | `browser-agent` |
 
 ---
 
@@ -117,7 +118,27 @@
 
 ---
 
-### 7. Tracking Agent → Planning Agent (Completion Report)
+### 7. Planning Agent → Browser Agent (GUI Operation)
+```
+[planning-agent] -> [browser-agent] | Linear Issue 10N-228: app installation
+```
+
+**Context**: Planning delegates web dashboard operations to Browser Agent.
+**File Location**: `docs/.scratch/10n-228/handoffs/planning-to-browser-instructions.md`
+
+---
+
+### 8. Browser Agent → Planning Agent (Operation Results)
+```
+[browser-agent] -> [planning-agent] | Linear Issue 10N-228: installation complete
+```
+
+**Context**: Browser Agent reports GUI operation results with screenshots.
+**File Location**: `docs/.scratch/10n-228/handoffs/browser-to-planning-results.md`
+
+---
+
+### 9. Tracking Agent → Planning Agent (Completion Report)
 ```
 [tracking-agent] -> [planning-agent] | Linear Issue 10N-228: operations complete
 ```
@@ -217,6 +238,18 @@ Use these examples as templates for common agent-to-agent handoffs:
 ```
 **When**: Planning Agent needs analysis, options comparison, or API validation
 
+### 7. Planning → Browser (GUI Operation)
+```
+[planning-agent] -> [browser-agent] | Linear Issue 10N-228: app installation
+```
+**When**: Planning Agent needs web dashboard navigation, app installation, or GUI configuration
+
+### 8. Browser → Planning (Operation Complete)
+```
+[browser-agent] -> [planning-agent] | Linear Issue 10N-228: installation complete
+```
+**When**: Browser Agent completes GUI operation and reports results with screenshots
+
 ---
 
 ## Copy-Paste Template
@@ -226,7 +259,7 @@ Use these examples as templates for common agent-to-agent handoffs:
 ```
 
 **Fill in**:
-- `[source-agent]`: Your agent role (action, qa, planning, tracking, researcher)
+- `[source-agent]`: Your agent role (action, qa, planning, tracking, researcher, browser)
 - `[target-agent]`: Receiving agent role
 - `10N-XXX`: Linear issue number
 - `[brief context]`: 3-10 word description (< 80 chars)
