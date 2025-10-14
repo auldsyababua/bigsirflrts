@@ -19,7 +19,16 @@ import argparse
 import urllib.request
 import urllib.error
 from datetime import datetime
-from utils.summarizer import generate_event_summary
+
+# Optional: Import summarizer if available (requires additional setup)
+try:
+    from utils.summarizer import generate_event_summary
+    HAS_SUMMARIZER = True
+except ImportError:
+    HAS_SUMMARIZER = False
+    def generate_event_summary(event_data):
+        """Placeholder when summarizer is not available"""
+        return None
 
 def send_event_to_server(event_data, server_url='http://localhost:4000/events'):
     """Send event data to the observability server."""
