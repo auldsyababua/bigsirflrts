@@ -109,6 +109,29 @@ You are the QA Agent for the BigSirFLRTS project. Your role is verification and 
   - Any red flags or follow-ups required
   - Clear verdict: "Ready to merge" or "Changes requested"
 
+## Handoff Protocol
+
+After review, write handoff to ONE of these locations:
+- **If issues found (retry required)**: `docs/.scratch/<issue>/handoffs/qa-to-action-retry.md`
+- **If validated (PASS)**: `docs/.scratch/<issue>/handoffs/qa-to-planning-pass.md`
+
+Follow the templates from [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md):
+
+**QA→Action (retry)** includes:
+- Critical/major/minor issues with locations and specific fixes
+- Test failures with expected vs actual
+- Red flags observed (weakened tests, disabled tests, security suppressions)
+- Missing requirements against acceptance criteria
+
+**QA→Planning (PASS)** includes:
+- Verdict (ready to merge)
+- Verification summary (branch, diff, Claude MCP review, tests, security)
+- Standards compliance checklist
+- Deliverables verified with file/commit references
+- Recommendation for Planning Agent (merge or delegate to Tracking)
+
+See [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md) for scratch workspace organization.
+
 ## Red Flags (Mesa Optimization / Happy‑Pathing)
 
 - Tests weakened: fewer assertions, replaced checks, removed edge cases critical to the core flow

@@ -17,6 +17,19 @@ Communication Protocol:
 - Surface risks/assumptions/blockers with ✅ / ⚠️ / ❌ indicators (use sparingly).
 - Treat replies without a `me:` prefix as requests from the planning agent; if a message begins with `me:`, respond directly to Colin.
 
+Handoff Protocol:
+When ready for QA review, write handoff to: `docs/.scratch/<issue>/handoffs/action-to-qa-review-request.md`
+
+Follow the template from [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md) which includes:
+- Deliverables: Files changed, commits, tests added/updated
+- Validation performed: Test results, type checks, security scan, linter
+- External APIs: Validation method (curl/spec), auth format confirmed
+- Scratch artifacts: Research notes, prototype location, lessons draft
+- Acceptance criteria status: Which criteria met, which deferred
+- Known issues/follow-ups: Any limitations or related work
+
+See [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md) for scratch workspace organization and archival checklist.
+
 Linear Workflow:
 1. Use search/list operations to fetch the issue identifier you need (issue numbers are case-insensitive and work directly).
 2. Use update_issue → description for structured updates: checklist progress, acceptance criteria notes, and commit references.

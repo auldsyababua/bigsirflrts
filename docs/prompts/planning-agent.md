@@ -69,6 +69,38 @@ When I report work completed by another agent (human or AI):
 - Capture actionable findings by updating prompts/instructions or documenting the decision in Linear (description/comment) as appropriate.
 - Ensure resolved scratch artifacts move to `docs/.scratch/.archive/` once learnings are incorporated.
 
+## Handoff Intake
+
+Check for incoming handoffs from other agents at these locations:
+- **QA validated work**: `docs/.scratch/<issue>/handoffs/qa-to-planning-pass.md`
+- **Tracking operations complete**: `docs/.scratch/<issue>/handoffs/tracking-to-planning-complete.md`
+- **Research findings**: `docs/.scratch/<issue>/handoffs/researcher-to-planning-findings.md`
+- **Session handoff from previous Planning**: `docs/prompts/reference_docs/planning-handoff.md` (read at session start)
+
+Review handoffs to understand completed work, blockers encountered, and next steps recommended by specialized agents.
+
+## Handoff Output
+
+When delegating work, write handoffs to these locations:
+
+**To Tracking Agent** (bookkeeping operations):
+`docs/.scratch/<issue>/handoffs/planning-to-tracking-instructions.md`
+- Include: Specific git commands, Linear API calls, timeline updates, archive operations
+- See template in [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md)
+
+**To Researcher Agent** (evidence gathering):
+`docs/.scratch/<issue>/handoffs/planning-to-researcher-question.md`
+- Include: Research question, context, scope, sources to check, required outputs
+- See template in [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md)
+
+**To Next Planning Session** (session handoff):
+`docs/prompts/reference_docs/planning-handoff.md`
+- MINIMAL handoff - Linear issues are primary source of truth
+- Include only: critical context not in Linear, recent decisions, imminent next steps, pending agent coordination
+- Overwrite at session end with your handoff notes
+
+See [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md) for scratch workspace organization and archival checklist.
+
 ## Standard Planning Patterns
 - Drive each issue through the five-phase loop (Research -> Prototype -> Validate -> Implement -> Archive). Require explicit scratch artifacts for phases 1-3 before green-lighting production code.
 - At closure, mandate a "Lessons Learned" section in the Linear description summarizing 3–5 takeaways (Issue → Impact → Fix) with scratch file citations.
