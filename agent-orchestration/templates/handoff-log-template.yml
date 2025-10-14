@@ -1,0 +1,19 @@
+# Handoff Log Template (to paste into Linear comments)
+# Example addressing: planning -> action | issue 10N-273
+
+date: "YYYY-MM-DD"
+from: "planning|action|qa|research|browser|tracking"
+to: "planning|action|qa|research|browser|tracking"
+issue_id: "10N-XXX"
+summary: "<1 line summary>"
+deps_blockers:
+  - "None" # or list specific items
+acceptance:
+  - "Outcome 1"
+  - "Outcome 2"
+links_refs:
+  - "docs/prompts/reference_docs/agent-addressing.md"
+  - "https://linear.app/10netzero/issue/10N-275"
+notes:
+  - "Use '---' separators between multi-agent responses"
+  - "Descriptions are the source of truth; comments for narratives"
