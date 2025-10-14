@@ -95,4 +95,92 @@ describe('structured logging', () => {
       event: 'simple_event',
     });
   });
+
+  it('should redact secrets in object metadata', () => {
+    logInfo('test_event', {
+      token: 'secret123',
+      apiKey: 'key789abc',
+      data: 'safe-data',
+    });
+
+    const loggedData = JSON.parse(consoleLogSpy.mock.calls[0][0]);
+
+    expect(loggedData.token).toBe('se*****23'); // 9 chars: 2 + 5 + 2
+    expect(loggedData.apiKey).toBe('ke*****bc'); // 9 chars: 2 + 5 + 2
+    expect(loggedData.data).toBe('safe-data');
+  });
+});
+
+describe('redactMeta with arrays', () => {
+  let consoleLogSpy;
+
+  beforeEach(() => {
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should recursively redact secrets in array elements', () => {
+    const meta = [
+      { token: 'secret123', data: 'foo' },
+      { password: 'pass456', data: 'bar' },
+      { apiKey: 'key789abc', data: 'baz' },
+    ];
+
+    logInfo('test_event', meta);
+    const loggedData = JSON.parse(consoleLogSpy.mock.calls[0][0]);
+
+    // Verify secrets were redacted
+    expect(loggedData[0].token).toBe('se*****23'); // 9 chars: 2 + 5 + 2
+    expect(loggedData[1].password).toBe('pa***56'); // 7 chars: 2 + 3 + 2
+    expect(loggedData[2].apiKey).toBe('ke*****bc'); // 9 chars: 2 + 5 + 2
+
+    // Verify non-sensitive data remains
+    expect(loggedData[0].data).toBe('foo');
+    expect(loggedData[1].data).toBe('bar');
+    expect(loggedData[2].data).toBe('baz');
+  });
+
+  it('should handle nested arrays', () => {
+    const meta = [[{ secret: 'nested123' }], { arr: [{ token: 'inner456' }] }];
+
+    logInfo('test_event', meta);
+    const loggedData = JSON.parse(consoleLogSpy.mock.calls[0][0]);
+
+    // Verify nested secrets were redacted
+    expect(loggedData[0][0].secret).toBe('ne*****23'); // 9 chars: 2 + 5 + 2
+    expect(loggedData[1].arr[0].token).toBe('in****56'); // 8 chars: 2 + 4 + 2
+  });
+
+  it('should handle mixed arrays with primitives and objects', () => {
+    const meta = ['plain string', 42, { token: 'secret789' }, null, { data: 'safe' }];
+
+    logInfo('test_event', meta);
+    const loggedData = JSON.parse(consoleLogSpy.mock.calls[0][0]);
+
+    // Verify primitives passed through unchanged
+    expect(loggedData[0]).toBe('plain string');
+    expect(loggedData[1]).toBe(42);
+    expect(loggedData[3]).toBeNull();
+
+    // Verify object with secret was redacted
+    expect(loggedData[2].token).toBe('se*****89'); // 9 chars: 2 + 5 + 2
+
+    // Verify safe object passed through
+    expect(loggedData[4].data).toBe('safe');
+  });
+
+  it('should handle array metadata with object wrapper', () => {
+    // When passing array as metadata, wrap it in an object to preserve structure
+    const meta = { items: [{ token: 'secret123' }] };
+
+    logInfo('test_event', meta);
+    const loggedData = JSON.parse(consoleLogSpy.mock.calls[0][0]);
+
+    // Verify the array is preserved within object structure
+    expect(Array.isArray(loggedData.items)).toBe(true);
+    expect(loggedData.items[0].token).toBe('se*****23');
+  });
 });

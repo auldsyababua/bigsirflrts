@@ -23,8 +23,6 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-COMMAND="$1"
-
 # Check if certificate exists
 if [ ! -f ~/.ssh/id_rsa-cert.pub ]; then
     echo "Error: SSH certificate not found at ~/.ssh/id_rsa-cert.pub"
@@ -38,9 +36,9 @@ if [ ! -f ~/.ssh/id_rsa-cert.pub ]; then
     exit 1
 fi
 
-# Run command via SSH with timeout and proper error handling
-if ! printf "cd %s\n%s\nexit\n" "$BENCH_DIR" "$COMMAND" | \
-    timeout 600 ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" 2>&1 | \
+# Run command via SSH with timeout, proper quoting, and error handling
+# Combines PR #93 fix (${*@Q} prevents command injection) and PR #94 fix (timeout + explicit errors)
+if ! timeout 600 ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" "cd '$BENCH_DIR' && ${*@Q}" 2>&1 | \
     grep -v "Pseudo-terminal will not be allocated" | \
     grep -v "Connection to.*closed"
 then

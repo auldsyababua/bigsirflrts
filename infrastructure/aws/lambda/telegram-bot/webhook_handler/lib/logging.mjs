@@ -35,10 +35,18 @@ export function maskSecret(secret) {
  * @returns {void}
  */
 export function log(level, event, metadata = {}) {
-  // Shallow-redact sensitive keys in metadata
+  // Recursively redact sensitive keys in metadata
   const redactMeta = (meta) => {
     if (!meta || typeof meta !== 'object') return meta;
-    const out = Array.isArray(meta) ? [...meta] : {};
+
+    // Handle arrays recursively - THIS IS THE FIX
+    if (Array.isArray(meta)) {
+      // Recursively call redactMeta for each item in the array
+      return meta.map(item => redactMeta(item));
+    }
+
+    // Handle objects (existing logic)
+    const out = {};
     const reservedKeys = new Set(['timestamp', 'level', 'event']);
 
     for (const [k, v] of Object.entries(meta)) {
@@ -49,6 +57,9 @@ export function log(level, event, metadata = {}) {
 
       if (typeof v === 'string' && /(token|secret|key|password|authorization|auth)/i.test(k)) {
         out[k] = maskSecret(v);
+      } else if (typeof v === 'object' && v !== null) {
+        // Recursively process nested objects and arrays
+        out[k] = redactMeta(v);
       } else {
         out[k] = v;
       }
