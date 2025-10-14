@@ -22,7 +22,7 @@ from flrts_extensions.utils.security import mask_secret
 RETRYABLE_ERRORS = (
     requests.exceptions.ConnectionError,  # ECONNREFUSED, ECONNRESET
     requests.exceptions.Timeout,          # ETIMEDOUT
-)
+) if requests else ()
 
 
 def process_telegram_message(update):

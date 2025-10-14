@@ -36,13 +36,12 @@ if [ ! -f ~/.ssh/id_rsa-cert.pub ]; then
     exit 1
 fi
 
-# Run command via SSH (use all args, properly quoted)
-ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" "cd '$BENCH_DIR' && ${*@Q}" 2>&1 | \
+# Run command via SSH with timeout, proper quoting, and error handling
+# Combines PR #93 fix (${*@Q} prevents command injection) and PR #94 fix (timeout + explicit errors)
+if ! timeout 600 ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" "cd '$BENCH_DIR' && ${*@Q}" 2>&1 | \
     grep -v "Pseudo-terminal will not be allocated" | \
     grep -v "Connection to.*closed"
-
-# Capture exit code from the pipeline
-EXIT_CODE=${PIPESTATUS[0]}
-
-# Exit with the SSH command's exit code
-exit $EXIT_CODE
+then
+    echo "Error: Remote command failed or timed out." >&2
+    exit 1
+fi

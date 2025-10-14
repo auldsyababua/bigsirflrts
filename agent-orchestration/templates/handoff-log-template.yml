@@ -17,4 +17,3 @@ links_refs:
 notes:
   - "Use '---' separators between multi-agent responses"
   - "Descriptions are the source of truth; comments for narratives"
-
