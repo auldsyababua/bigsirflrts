@@ -130,6 +130,7 @@ EOF
 
 ```bash
 ssh bigsirflrts-prod bash -s << 'EOF'
+set -e
 cd ~/frappe-bench
 bench get-app flrts_extensions https://github.com/auldsyababua/flrts_extensions.git
 bench --site builder-rbt-sjk.v.frappe.cloud install-app flrts_extensions
@@ -142,6 +143,7 @@ EOF
 
 ```bash
 ssh bigsirflrts-prod bash -s << 'EOF'
+set -e
 bench --site builder-rbt-sjk.v.frappe.cloud set-config telegram_bot_token "1234567890:ABCDEF..."
 bench --site builder-rbt-sjk.v.frappe.cloud set-config openai_api_key "sk-..."
 bench restart

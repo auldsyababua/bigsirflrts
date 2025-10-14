@@ -12,9 +12,17 @@
 - **Status**: ✅ DONE (2025-10-14)
 - **Impact**: Browser Agent cannot be launched via shorthand command
 - **Action**: Add alias to shell config
-- **Added alias**:
+- **Added function**:
   ```bash
-  browseragent='cd ~/Desktop/bigsirflrts && claude --dangerously-skip-permissions "You are the Browser Agent. Initialize: 1) Read docs/prompts/browser-agent.md for your role, 2) Check for handoff at docs/.scratch/<issue>/handoffs/planning-to-browser-instructions.md, 3) Execute the browser operations specified (Mode A: automated via Kilo Code, Mode B: manual via Comet)"'
+  browseragent() {
+    if [ -z "$1" ]; then
+      echo "Usage: browseragent <issue>"
+      echo "Example: browseragent 10N-228"
+      return 1
+    fi
+    local issue="$1"
+    cd ~/Desktop/bigsirflrts && claude --dangerously-skip-permissions "You are the Browser Agent. Initialize: 1) Read docs/prompts/browser-agent.md for your role, 2) Check for handoff at docs/.scratch/${issue}/handoffs/planning-to-browser-instructions.md, 3) Execute the browser operations specified (Mode A: automated via Kilo Code, Mode B: manual via Comet)"
+  }
   ```
 - **Owner**: Colin
 - **Estimate**: 5 minutes

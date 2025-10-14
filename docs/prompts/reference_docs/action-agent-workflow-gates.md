@@ -67,6 +67,12 @@ TOOL_NAME="$1"
 FILE_PATH="$2"  # from tool arguments
 ISSUE=$(pwd | grep -oE '10[nN]-[0-9]+' | head -1)
 
+if [[ -z "$ISSUE" ]]; then
+  echo "❌ GATE 1 FAILED: Could not determine issue number from current directory."
+  echo "   Ensure you're in a directory path containing an issue number (e.g., 10N-228)"
+  exit 1
+fi
+
 # Allow scratch directory edits always
 if [[ "$FILE_PATH" == *"docs/.scratch/"* ]]; then
   exit 0  # Allow
@@ -122,6 +128,12 @@ docs/.scratch/<issue>/validation-checklist.md  # showing tsc, tests, linting
 
 FILE_PATH="$2"
 ISSUE=$(pwd | grep -oE '10[nN]-[0-9]+' | head -1)
+
+if [[ -z "$ISSUE" ]]; then
+  echo "❌ GATE 2 FAILED: Could not determine issue number from current directory."
+  echo "   Ensure you're in a directory path containing an issue number (e.g., 10N-228)"
+  exit 1
+fi
 
 # Allow scratch edits
 if [[ "$FILE_PATH" == *"docs/.scratch/"* ]]; then
