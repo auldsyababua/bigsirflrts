@@ -25,6 +25,7 @@ graph TD
     QA[QA Agent<br/>Verification]
     Tracking[Tracking Agent<br/>Git/Linear Ops]
     Researcher[Researcher Agent<br/>Evidence Gathering]
+    Browser[Browser Agent<br/>Web GUI Ops]
 
     Planning -->|Work Assignment| Action
     Action -->|Review Request| QA
@@ -32,8 +33,10 @@ graph TD
     QA -->|PASS| Planning
     Planning -->|Bookkeeping| Tracking
     Planning -->|Research Question| Researcher
+    Planning -->|GUI Operation| Browser
     Researcher -->|Findings| Planning
     Tracking -->|Completion| Planning
+    Browser -->|Results| Planning
     Planning -->|Session End| Planning
 ```
 
@@ -45,9 +48,11 @@ graph TD
 3. **QA → Planning** (if PASS, return control to supervisor)
 4. **Planning → Tracking** (large updates only, e.g., git/Linear bookkeeping)
 5. **Planning → Researcher** (evidence gathering only, no code)
-6. **Researcher → Planning** (ALWAYS return to supervisor)
-7. **Tracking → Planning** (ALWAYS return to supervisor)
-8. **Planning → Planning** (session handoff, read at start/overwrite at end)
+6. **Planning → Browser** (GUI operations, dashboard navigation, app installation)
+7. **Researcher → Planning** (ALWAYS return to supervisor)
+8. **Tracking → Planning** (ALWAYS return to supervisor)
+9. **Browser → Planning** (ALWAYS return to supervisor with screenshots/results)
+10. **Planning → Planning** (session handoff, read at start/overwrite at end)
 
 **10N-275 EXCLUSIVE AUTHORITY**: Only the Planning Agent may update Linear issue 10N-275 (Master Dashboard). All other agents update their assigned work-block issues only.
 
@@ -71,8 +76,10 @@ docs/.scratch/<issue-id>/handoffs/
 - `qa-to-planning-pass.md`
 - `planning-to-tracking-instructions.md`
 - `planning-to-researcher-question.md`
+- `planning-to-browser-instructions.md`
 - `researcher-to-planning-findings.md`
 - `tracking-to-planning-complete.md`
+- `browser-to-planning-results.md`
 
 **Exception**: Planning Agent session handoff uses fixed location:
 - `docs/prompts/reference_docs/planning-handoff.md`
@@ -104,6 +111,7 @@ Each handoff file follows this structure:
    - QA Agent: Verification ONLY (no implementation, no Linear updates)
    - Tracking Agent: Git/Linear operations ONLY (no code, no decisions)
    - Researcher Agent: Evidence gathering ONLY (no code, no implementation decisions)
+   - Browser Agent: GUI operations ONLY (no code, no strategic decisions, no Linear updates)
    - Planning Agent: Coordination ONLY (no code execution)
 
 3. **Handoff Timing**
@@ -645,7 +653,279 @@ None / [List any issues]
 
 ---
 
-### 8. Planning→Planning Session Handoff
+### 8. Planning→Browser Instructions
+
+**File**: `docs/.scratch/<issue>/handoffs/planning-to-browser-instructions.md`
+**When**: Planning needs GUI operations performed via web browser
+
+```markdown
+# Planning Agent → Browser Agent: GUI Operation Instructions
+
+**Issue**: 10N-XXX
+**Task ID**: BR-XXX (for tracking if multiple browser operations)
+**Date**: YYYY-MM-DD
+**Estimated Time**: [X minutes]
+
+## Task
+[Clear description of GUI operation to perform]
+
+**Examples**:
+- Install app via Frappe Cloud Dashboard
+- Configure webhook in external service admin panel
+- Enable/disable feature via settings UI
+- Verify deployment status in dashboard
+
+## Starting URL
+[Full URL to dashboard/admin panel]
+
+**Example**: https://frappecloud.com
+
+## Authentication
+**Method**: [Login form / SSO / Already authenticated]
+**Credentials**: [Location or reference, e.g., "1Password vault 'Frappe Cloud'", "ENV: DASHBOARD_USERNAME/PASSWORD"]
+
+**Security Note**: If credentials not accessible, STOP and report blocker (do not proceed without auth).
+
+## Navigation Path (Suggested)
+This path may not match actual UI. Treat as starting point and use adaptive navigation if needed.
+
+**Suggested Steps**:
+1. Navigate to [Menu/Section]
+2. Click [Button/Tab]
+3. Select [Option]
+4. Fill [Form/Fields]
+5. Submit [Action]
+
+**Common Alternative Locations** (if suggested path not found):
+- Check: [Alternative menu 1]
+- Try: [Alternative menu 2]
+- Search for: "[keyword]"
+
+## Operation Details
+
+### What to Configure/Install
+[Specific details of what to set up]
+
+**Examples**:
+- **App Installation**:
+  - Repository URL: https://github.com/user/repo.git
+  - Branch: main
+  - Subdirectory: `app_name` (try first, may auto-detect)
+
+- **Webhook Configuration**:
+  - Webhook URL: https://example.com/api/webhook
+  - Events: [list events to subscribe]
+  - Auth: Bearer token (see credentials section)
+
+### Form Fields to Fill
+| Field Name (Suggested) | Value | Required | Notes |
+|------------------------|-------|----------|-------|
+| Repository URL         | https://... | Yes | Full URL with .git |
+| Branch                 | main | Yes | Default branch |
+| Subdirectory           | app_name | Optional | Try if available |
+
+## Success Criteria
+How to verify operation completed successfully:
+
+- [ ] [Criterion 1: e.g., App appears in installed apps list]
+- [ ] [Criterion 2: e.g., Status shows "Active" or "Installed"]
+- [ ] [Criterion 3: e.g., No error messages in logs]
+- [ ] [Criterion 4: e.g., Version matches expected]
+
+## Screenshot Requirements
+Capture screenshots at these stages:
+
+1. **Landing page** (after navigation to URL)
+2. **Authentication** (after login, showing username/logout button)
+3. **Navigation steps** (each major menu/page traversal)
+4. **Before operation** (form filled, ready to submit)
+5. **Operation submitted** (after clicking submit/install)
+6. **Progress** (if operation shows progress indicator)
+7. **Completion** (success message or status)
+8. **Final verification** (success criteria check)
+
+**Save to**: `docs/.scratch/10n-xxx/screenshots/`
+**Naming**: `00-landing-page.png`, `01-authenticated.png`, etc.
+
+## Fallback Instructions
+If suggested navigation path doesn't work:
+
+1. **Use site search**: Try keywords "[feature name]", "[action verb]"
+2. **Scan menus systematically**: Check Settings, Admin, Tools, Configuration
+3. **Check help/docs links**: May link directly to feature
+4. **Try common synonyms**: "Install" = "Add" = "Deploy" = "Marketplace"
+5. **Document actual path found**: Record in handoff for future reference
+
+**If element not found after adaptive search**: STOP and report blocker to Planning with screenshots of attempted paths.
+
+## Known Issues / Warnings
+- [Any known UI quirks, e.g., "Dashboard may show cached status for 2-3 minutes after operation"]
+- [Any warnings to expect, e.g., "May show 'unverified app' warning - dismiss as expected"]
+
+## Blockers to Report
+Stop and report immediately if:
+- Authentication fails
+- Critical UI element not found after adaptive search
+- Operation fails with error
+- Success criteria not met after completion
+- Time exceeds estimate by 2x
+
+## Handoff Back
+When complete (success or blocked), write handoff to: `docs/.scratch/<issue>/handoffs/browser-to-planning-results.md`
+```
+
+---
+
+### 9. Browser→Planning Results
+
+**File**: `docs/.scratch/<issue>/handoffs/browser-to-planning-results.md`
+**When**: Browser Agent completes GUI operation (success or blocked)
+
+```markdown
+# Browser Agent → Planning Agent: Operation Results
+
+**Issue**: 10N-XXX
+**Task ID**: BR-XXX
+**Completion Date**: YYYY-MM-DD HH:MM
+**Time Spent**: [actual vs estimated]
+
+## Status
+✅ **COMPLETE** - Operation succeeded, criteria met
+❌ **FAILED** - Operation failed (see Error Details)
+⚠️ **PARTIAL** - Operation completed but with warnings (see Notes)
+
+## Operation Summary
+
+**Starting URL**: [URL]
+**Target Operation**: [What was configured/installed/changed]
+**Authentication**: ✅ Successful / ❌ Failed
+**Navigation Path**: [Actual path taken]
+**Operation Result**: [Success/Failure with details]
+
+## Navigation Path Details
+
+**Suggested Path** (from handoff):
+[Restate suggested path from intake]
+
+**Actual Path Taken**:
+[Document exact path used]
+
+**Deviations from Suggested Path**:
+- [Note any differences, e.g., "Menu renamed from 'Apps' to 'Marketplace'"]
+- [Document UI changes that differ from instructions]
+
+**Rationale for Deviations**:
+[Why alternative path was needed]
+
+## Screenshots
+
+All screenshots saved to: `docs/.scratch/10n-xxx/screenshots/`
+
+1. `00-landing-page.png` - [Description]
+2. `01-authenticated.png` - [Description]
+3. `02-navigation-to-target.png` - [Description]
+4. `03-before-operation.png` - [Description]
+5. `04-operation-submitted.png` - [Description]
+6. `05-progress-monitor.png` - [Description]
+7. `06-operation-complete.png` - [Description]
+8. `final-verification.png` - [Description]
+
+## Success Criteria Status
+
+From handoff acceptance criteria:
+
+- [x] Criterion 1: ✅ Met (details)
+- [x] Criterion 2: ✅ Met (details)
+- [ ] Criterion 3: ❌ Not met (reason)
+- [x] Criterion 4: ✅ Met (details)
+
+**Overall**: X/Y criteria met
+
+## UI Deviations from Instructions
+
+Document any UI differences encountered (helps update future instructions):
+
+**Expected**: [What handoff instructions said]
+**Actual**: [What UI actually shows]
+**Impact**: [None / Required alternative path / Blocked operation]
+
+## Warnings / Notes
+
+- [Any warnings displayed during operation]
+- [Time estimates vs actual]
+- [Unexpected behavior observed]
+- [UI quirks encountered]
+
+## Error Details
+
+**None** / [If errors occurred, full details here]
+
+**Error Format** (if applicable):
+- **Error occurred at**: [Stage/step]
+- **Error message**: "[Exact error text]"
+- **Screenshot**: `XX-error.png`
+- **Root cause** (if known): [Analysis]
+- **Recommended fix**: [Suggestion for Planning]
+
+## Time Tracking
+
+**Estimated** (from handoff): [X minutes]
+**Actual**: [Y minutes]
+- Authentication: [Z min]
+- Navigation: [Z min]
+- Operation: [Z min]
+- Verification: [Z min]
+- Documentation: [Z min]
+
+**Deviation Reason** (if significantly over/under): [Explanation]
+
+## Lessons Learned
+
+1. **UI Change**: [Document any UI changes from expectations]
+2. **Navigation Tip**: [Any shortcuts or patterns discovered]
+3. **Timing**: [Actual operation time for future estimates]
+4. **Blockers Avoided**: [How any obstacles were overcome]
+
+## Next Steps for Planning Agent
+
+Based on results:
+
+**If COMPLETE**:
+1. [Recommended next step, e.g., "Proceed to Phase 4 (secrets configuration)"]
+2. [Update instructions if UI deviated significantly]
+3. [Handoff to next agent if ready]
+
+**If FAILED**:
+1. [Recommended troubleshooting step]
+2. [Alternative approach to try]
+3. [Decision needed from Colin/Planning]
+
+**If PARTIAL**:
+1. [What succeeded and can proceed]
+2. [What needs retry or alternative approach]
+3. [Dependencies blocking full completion]
+
+## Blockers Encountered
+
+**None** / [List blockers that prevented completion or required workarounds]
+
+**Blocker Format** (if applicable):
+- **Blocker**: [Description]
+- **Impact**: [What couldn't be completed]
+- **Workaround Attempted**: [What was tried]
+- **Recommendation**: [How Planning should resolve]
+
+## Follow-Up Items
+
+- [ ] Update handoff template with actual UI path found
+- [ ] Document UI changes in project wiki/docs
+- [ ] Schedule retry if transient error suspected
+- [ ] Escalate to user if requires account/permission changes
+```
+
+---
+
+### 10. Planning→Planning Session Handoff
 
 **File**: `docs/prompts/reference_docs/planning-handoff.md`
 **When**: Planning Agent session ends, needs to hand off to next Planning session
