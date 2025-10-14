@@ -2,7 +2,10 @@
 
 ## Context
 
-A documentation audit has been completed (see `docs/DOCUMENTATION-AUDIT-SUMMARY.md`). The audit identified 4 critical orphaned documents that need to be linked to Linear issues, and the ERPNext documentation has been reorganized into `docs/erpnext/`.
+A documentation audit has been completed (see
+`docs/DOCUMENTATION-AUDIT-SUMMARY.md`). The audit identified 4 critical orphaned
+documents that need to be linked to Linear issues, and the ERPNext documentation
+has been reorganized into `docs/erpnext/`.
 
 ## Your Mission
 
@@ -15,13 +18,19 @@ Link the orphaned documentation to appropriate Linear issues by:
 ## Input Files
 
 **Primary References:**
-- [`docs/ORPHANED-DOCUMENTATION-REPORT.md`](../ORPHANED-DOCUMENTATION-REPORT.md) - Lists all orphaned docs
-- [`docs/LINEAR-DOCUMENTATION-MAP.md`](../LINEAR-DOCUMENTATION-MAP.md) - Current doc-to-Linear mapping
-- [`docs/DOCUMENTATION-AUDIT-SUMMARY.md`](../DOCUMENTATION-AUDIT-SUMMARY.md) - Executive summary
+
+- [`docs/ORPHANED-DOCUMENTATION-REPORT.md`](../ORPHANED-DOCUMENTATION-REPORT.md) -
+  Lists all orphaned docs
+- [`docs/LINEAR-DOCUMENTATION-MAP.md`](../LINEAR-DOCUMENTATION-MAP.md) - Current
+  doc-to-Linear mapping
+- [`docs/DOCUMENTATION-AUDIT-SUMMARY.md`](../DOCUMENTATION-AUDIT-SUMMARY.md) -
+  Executive summary
 
 **Key Context:**
+
 - All ERPNext docs are now consolidated in `docs/erpnext/`
-- Linear epic: [10N-227 ERPNext Backend Adoption](https://linear.app/10netzero/issue/10N-227/erpnext-backend-adoption)
+- Linear epic:
+  [10N-227 ERPNext Backend Adoption](https://linear.app/10netzero/issue/10N-227/erpnext-backend-adoption)
 - GitHub repo: `auldsyababua/bigsirflrts` on branch `main`
 
 ## Orphaned Documents to Link
@@ -29,28 +38,38 @@ Link the orphaned documentation to appropriate Linear issues by:
 ### Priority 1: Critical Migration Workflow Docs
 
 #### 1. ERPNext Migration Workflow
+
 - **File:** `docs/erpnext/architecture/erpnext-migration-workflow.md`
 - **Should link to:** Linear issue 10N-227 (main epic)
-- **Action:** Add GitHub link to 10N-227 description section "📋 Migration Workflow:"
-- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/architecture/erpnext-migration-workflow.md`
+- **Action:** Add GitHub link to 10N-227 description section "📋 Migration
+  Workflow:"
+- **New GitHub URL:**
+  `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/architecture/erpnext-migration-workflow.md`
 
 #### 2. ERPNext Migration Naming Standards
+
 - **File:** `docs/erpnext/ERPNext-Migration-Naming-Standards.md`
 - **Should link to:** Linear issue 10N-227 (main epic)
-- **Action:** Add GitHub link to 10N-227 description section "🎯 Naming Standards:"
-- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/ERPNext-Migration-Naming-Standards.md`
+- **Action:** Add GitHub link to 10N-227 description section "🎯 Naming
+  Standards:"
+- **New GitHub URL:**
+  `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/ERPNext-Migration-Naming-Standards.md`
 
 #### 3. Codebase Audit Report
+
 - **File:** `docs/erpnext/codebase-audit-report.md`
 - **Should link to:** Linear issue 10N-231 (Phase 1.4)
 - **Action:** Add as deliverable in 10N-231 description
-- **New GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/codebase-audit-report.md`
+- **New GitHub URL:**
+  `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/codebase-audit-report.md`
 
 #### 4. Linear Audit Report
+
 - **File:** `docs/architecture/linear-audit-erpnext-migration.md`
 - **Should link to:** Linear issue 10N-227 (main epic)
 - **Action:** Add to 10N-227 description under "## Documentation" section
-- **GitHub URL:** `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/architecture/linear-audit-erpnext-migration.md`
+- **GitHub URL:**
+  `https://github.com/auldsyababua/bigsirflrts/blob/main/docs/architecture/linear-audit-erpnext-migration.md`
 
 ## Linear Issue Updates Required
 
@@ -95,6 +114,7 @@ NEW: docs/erpnext/codebase-audit-report.md
 
 ```markdown
 **📊 Project Audits:**
+
 - [Linear Issues Audit](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/architecture/linear-audit-erpnext-migration.md)
 - [Documentation Audit Summary](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/DOCUMENTATION-AUDIT-SUMMARY.md)
 ```
@@ -108,9 +128,11 @@ Add deliverables section:
 ```markdown
 ## Deliverables
 
-**📄 Output:** [docs/erpnext/codebase-audit-report.md](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/codebase-audit-report.md)
+**📄 Output:**
+[docs/erpnext/codebase-audit-report.md](https://github.com/auldsyababua/bigsirflrts/blob/main/docs/erpnext/codebase-audit-report.md)
 
 This document provides:
+
 - Complete inventory of code changes needed for ERPNext migration
 - Module-by-module analysis organized by priority
 - Effort estimates for each change
@@ -120,21 +142,25 @@ This document provides:
 ## Tools You'll Need
 
 **Linear MCP Server:**
+
 - `mcp__linear-server__get_issue` - Retrieve current issue descriptions
 - `mcp__linear-server__update_issue` - Update issue descriptions with new links
 
 **Verification:**
+
 - Read the issue first to see current content
 - Make surgical edits (find-replace for path updates)
 - Verify all GitHub URLs use correct branch (`main`)
 
 ## Success Criteria
 
-- [ ] All 9 GitHub URLs in Linear issue 10N-227 updated to new `docs/erpnext/` paths
+- [ ] All 9 GitHub URLs in Linear issue 10N-227 updated to new `docs/erpnext/`
+      paths
 - [ ] Linear issue 10N-231 contains link to codebase-audit-report.md
 - [ ] Audit reports linked in 10N-227 for visibility
 - [ ] All GitHub URLs point to correct branch: `main`
-- [ ] Updated `docs/LINEAR-DOCUMENTATION-MAP.md` to mark orphaned docs as "✅ Linked"
+- [ ] Updated `docs/LINEAR-DOCUMENTATION-MAP.md` to mark orphaned docs as "✅
+      Linked"
 
 ## Validation Steps
 
@@ -145,6 +171,7 @@ After completing the updates:
 3. Update LINEAR-DOCUMENTATION-MAP.md orphaned status:
    - Change "❌ Not linked yet" → "✅ Linked in epic" for all 4 docs
 4. Commit changes to LINEAR-DOCUMENTATION-MAP.md with message:
+
    ```
    docs: mark orphaned documentation as linked in Linear
 
@@ -160,17 +187,20 @@ After completing the updates:
 - **All file paths have changed** - don't use cached/old paths
 - **GitHub URLs must include branch** - use `main`
 - **Test links before finalizing** - click them to verify they work
-- **Document structure is now cleaner** - everything ERPNext is under `docs/erpnext/`
+- **Document structure is now cleaner** - everything ERPNext is under
+  `docs/erpnext/`
 
 ## Context from Previous Work
 
 **What was done:**
+
 - Archived 18 obsolete documentation files (preserved in git history)
 - Consolidated all ERPNext docs into `docs/erpnext/` directory
 - Updated all internal cross-references within documentation
 - Created comprehensive audit reports
 
 **What remains:**
+
 - Update Linear issue GitHub URLs (this task)
 - Further cleanup of setup guides and QA directories (future task)
 - Update docs/README.md with new structure (future task)

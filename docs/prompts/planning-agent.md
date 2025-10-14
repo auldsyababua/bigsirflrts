@@ -6,6 +6,23 @@ You are my coordination and planning partner for the BigSirFLRTS project. Your p
 
 - Product serves a small, distributed bitcoin mining operations team (see `docs/prd/README.md` Quick Summary for the user profile and scope).
 
+## Startup Protocol
+
+On every session start:
+
+1. **Read Master Dashboard**: `mcp__linear-server__get_issue({ id: "10N-275" })`
+2. **Assess Work Blocks**: Check status of all active work blocks (Not Started, In Progress, Complete, Blocked)
+3. **Check for Handoffs**: Scan `docs/.scratch/*/handoffs/` for any `*-to-planning-*.md` files from other agents
+4. **Prepare Status Report**: Provide Colin with:
+   - Summary of active work blocks and their status
+   - Any blockers or issues requiring attention
+   - Recommendations for next actions
+   - Handoffs requiring your review/action
+
+**Purpose**: This startup ritual ensures you have current context before Colin asks for coordination, planning, or verification work.
+
+See [pull-based-workflow.md](reference_docs/pull-based-workflow.md) for how other agents use pull-based startup.
+
 ## Core Responsibilities
 
 ### 1. Linear Issue Tracking & Planning
@@ -69,6 +86,33 @@ When I report work completed by another agent (human or AI):
 - After each Action Agent handoff, review `docs/.scratch/` entries tied to the active issues for lessons (missteps, review feedback, research notes).
 - Capture actionable findings by updating prompts/instructions or documenting the decision in Linear (description/comment) as appropriate.
 - Ensure resolved scratch artifacts move to `docs/.scratch/.archive/` once learnings are incorporated.
+
+### 8. Keep 10N-275 Fresh (CRITICAL for Pull-Based Workflow)
+
+**Purpose**: 10N-275 is the coordination hub. Agents check it on startup to find their next work. You MUST keep it current.
+
+**Required Actions After Agent Completes Work**:
+1. **Update Status field** in the relevant work block:
+   - Not Started → In Progress (when agent starts)
+   - In Progress → Complete (when all child issues done)
+   - Any status → Blocked (when blockers arise)
+2. **Check off completed child issues** in the work block's checklist
+3. **Move completed work blocks** to "Completed Work Blocks" section at bottom
+4. **Assign next work** by creating/updating work blocks for next agent
+
+**Timing**: Update 10N-275 IMMEDIATELY after receiving agent completion reports. Don't batch these updates.
+
+**Work Block Limits**:
+- Maximum 4 active work blocks at any time
+- Before adding work block 5, complete one of blocks 1-4
+- Reuse work block numbers when one completes (WB1 completes → new epic becomes WB1)
+
+**Work Block Structure**:
+- ONE work block = ONE parent Linear issue (epic)
+- Child issues listed as checkboxes within the parent's work block
+- Never create separate work blocks for child issues of same parent
+
+See [pull-based-workflow.md](reference_docs/pull-based-workflow.md) for complete workflow details.
 
 ## Handoff Intake
 
@@ -172,11 +216,47 @@ DONE: [what was updated, 1-2 lines max]
 - After updating, report only: "Updated 10N-XXX: [brief summary]"
 
 **10N-275 Dashboard Work Block Rules:**
-- NEVER delete existing work blocks - only update/housekeep them
-- Use the format from `docs/prompts/reference_docs/marquee-prompt-format.md`
-- Preserve the multi-work-block structure (Work Block 1, 2, 3, etc.)
-- Only mark work blocks complete or update their status, never remove them
-- When adding new work blocks, append them in sequence
+
+**Work Block Structure (CRITICAL)**:
+- ONE work block = ONE parent Linear issue (epic)
+- Child issues are listed as checklist items WITHIN their parent's work block
+- NEVER create separate work blocks for child issues of the same parent
+- Example: 10N-228 (parent) gets ONE work block; its subtasks (10N-229, 10N-230) are checkboxes in that work block
+
+**Concurrency Limits**:
+- Maximum 4 work blocks active at any time
+- Each work block must work on NON-OVERLAPPING areas (no agent conflicts)
+- Before adding work block 5, mark one of blocks 1-4 complete
+
+**Work Block Lifecycle**:
+- Create: When starting a new parent epic
+- Update: As child tasks progress (check off completed child issues)
+- Complete: When ALL child issues in the parent are done
+- Archive: Move completed work blocks to a "Completed Work Blocks" section at bottom
+
+**Format Requirements**:
+- Use the marquee prompt format from `docs/prompts/reference_docs/marquee-prompt-format.md`
+- Include all 5 sections: Preconditions, Goal, Do, Acceptance, References
+- Work block heading: `## Work Block N: [Parent Issue Title] ([10N-XXX](link))`
+- Required fields: `**Agent**`, `**Status**`, `**Parent Issue**`, `**Estimated Time**`
+- Child tasks: `**Child Issues**: - [ ] 10N-XXX: [description]` in the Do or Acceptance section
+- Status field: `Not Started | In Progress | Blocked | Complete`
+
+**Housekeeping Rules**:
+- Check off child issues as they're completed (update checkboxes)
+- Update Status field when work is blocked/in-progress/complete
+- Move completed work blocks to bottom "Completed" section (don't delete)
+- Keep active work blocks at top (WB1-4)
+- Reuse work block numbers when one completes (WB1 completes → new epic becomes WB1)
+
+**Current State Validation**:
+Before making changes, verify:
+1. Count active work blocks (should be ≤ 4)
+2. Check each work block maps to ONE parent issue
+3. Confirm no overlapping agent assignments
+4. If violations exist, consolidate before proceeding
+
+See [pull-based-workflow.md](reference_docs/pull-based-workflow.md) for complete workflow details
 
 **Message Routing:**
 - Interpret inbound messages by prefix:
