@@ -9,7 +9,7 @@
  * 5. Invalid model configurations are rejected
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 const NLP_API_URL = process.env.NLP_PARSER_API_URL || 'http://localhost:3001';
 

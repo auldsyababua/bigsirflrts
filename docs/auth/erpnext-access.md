@@ -41,6 +41,7 @@ is needed.
    ```
 
    (Certificates expire in ~6 hours; regenerate as needed.)
+
 3. SSH into the bench:
 
    ```bash

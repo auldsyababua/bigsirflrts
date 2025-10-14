@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
-import { getBackendConfig, isERPNextActive } from './config';
-import { ERPNextClient } from './clients/erpnext';
+import { getBackendConfig } from './config';
+// import { ERPNextClient } from './clients/erpnext'; // Currently unused
 
 dotenv.config();
 dotenv.config({ path: '.env.local', override: true });

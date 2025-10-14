@@ -136,8 +136,8 @@ debugging, and analytics
 | `retry_count`        | Int        | Retry Count        | -        | -          | Number of processing attempts                   |
 | `last_retry_at`      | Datetime   | Last Retry At      | -        | -          | Last retry timestamp                            |
 
-**Child Table: Webhook Event Payload** Attached via Table field `payload_history`
-`payload_history`
+**Child Table: Webhook Event Payload** Attached via Table field
+`payload_history` `payload_history`
 
 | Field Name           | Type      | Label                | Description                      |
 | -------------------- | --------- | -------------------- | -------------------------------- |

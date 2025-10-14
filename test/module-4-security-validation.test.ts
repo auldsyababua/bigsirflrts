@@ -18,8 +18,8 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'http://localhost:54321';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const TELEGRAM_WEBHOOK_URL = `${SUPABASE_URL}/functions/v1/telegram-webhook`;
-const N8N_WEBHOOK_URL =
-  process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook-test/telegram';
+// const N8N_WEBHOOK_URL =
+//   process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook-test/telegram';
 const N8N_WEBHOOK_SECRET = process.env.N8N_WEBHOOK_SECRET || 'test-secret-key';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -374,7 +374,7 @@ describe('10N-179: User Metadata Retention Policy', () => {
   test("Should enforce RLS - anon users cannot read others' logs", async () => {
     const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const { data, error } = await anonClient.from('telegram_logs').select('*').limit(10);
+    const { data } = await anonClient.from('telegram_logs').select('*').limit(10);
 
     // Anon should get empty result or error depending on policy
     expect(data?.length).toBe(0);
