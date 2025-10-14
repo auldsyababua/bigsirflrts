@@ -1,0 +1,50 @@
+name: PR Core
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '**/*.md'
+      - 'audit-results/**'
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_only: ${{ steps.set.outputs.docs_only }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Classify changes (docs vs code)
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - '**/*.md'
+              - 'audit-results/**'
+            code:
+              - '!docs/**'
+              - '!**/*.md'
+              - '!audit-results/**'
+              - '**'
+
+      - name: Set docs_only output
+        id: set
+        run: |
+          if [ "${{ steps.filter.outputs.docs }}" = "true" ] && [ "${{ steps.filter.outputs.code }}" != "true" ]; then
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  core:
+    if: needs.detect.outputs.docs_only == 'true'
+    needs: detect
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Docs-only PR — stub pass to satisfy required check."
+
