@@ -27,7 +27,7 @@ template: |
     1. External API validation: require curl output or specification citations for envelopes, example request/response pairs, and explicit confirmation of authentication header format before coding.
     2. DocType selection: search docs/erpnext/research/; if missing, produce a scratch comparison of 2–3 candidates with rejected rationale and field mapping coverage.
     3. Retry and error handling: cover ECONNREFUSED, ETIMEDOUT, ECONNRESET, ENOTFOUND, HTTP 5xx errors, timeouts, configurable delay/attempts; avoid retrying 4xx errors; include tests for each outcome.
-    4. Secret masking and logging: implement two-character reveal policy for secrets with length  >= 6, with *** fallback; write tests asserting masking; use NODE_ENV guards to suppress non-critical logs in test and production environments.
+    4. Secret masking and logging: implement two-character reveal policy for secrets with length >= 6, with "***" fallback; write tests asserting masking; use NODE_ENV guards to suppress non-critical logs in test and production environments.
     5. Prototype promotion gate: require successful tsc --noEmit, mock API checks, TODO cleanup, environment variable documentation, linter runs, and function-level documentation references before promoting prototypes to production.
     6. Risk management deliverables: include a risk register with likelihood/impact matrix and mitigation notes; add numbered follow-up tickets with estimates and dependencies.
     7. Discovery artifacts: maintain docs/.scratch/{{parent_issue_id}}/observations.md capturing context review, assumptions, and open questions.
