@@ -38,8 +38,12 @@ if [ ! -f ~/.ssh/id_rsa-cert.pub ]; then
     exit 1
 fi
 
-# Run command via SSH with piped input
-printf "cd %s\n%s\nexit\n" "$BENCH_DIR" "$COMMAND" | \
-    ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" 2>&1 | \
+# Run command via SSH with timeout and proper error handling
+if ! printf "cd %s\n%s\nexit\n" "$BENCH_DIR" "$COMMAND" | \
+    timeout 600 ssh -tt "${BENCH_USER}@${BENCH_HOST}" -p "${BENCH_PORT}" 2>&1 | \
     grep -v "Pseudo-terminal will not be allocated" | \
-    grep -v "Connection to.*closed" || true
+    grep -v "Connection to.*closed"
+then
+    echo "Error: Remote command failed or timed out." >&2
+    exit 1
+fi
