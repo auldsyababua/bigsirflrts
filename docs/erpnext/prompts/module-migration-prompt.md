@@ -1,13 +1,14 @@
 # Module Migration Prompt Template
 
-**Status:** Not Started
-**Phase:** Phase 1.4
-**Related Linear:** [10N-231](https://linear.app/10netzero/issue/10N-231)
-**Date Created:** 2025-10-01
+**Status:** Not Started **Phase:** Phase 1.4 **Related Linear:**
+[10N-231](https://linear.app/10netzero/issue/10N-231) **Date Created:**
+2025-10-01
 
 ## Purpose
 
-Standardized template prompt for migrating individual modules from OpenProject to ERPNext. Use this template when auditing and planning migration of each codebase module.
+Standardized template prompt for migrating individual modules from OpenProject
+to ERPNext. Use this template when auditing and planning migration of each
+codebase module.
 
 ## Prerequisites
 
@@ -19,10 +20,8 @@ Standardized template prompt for migrating individual modules from OpenProject t
 
 ### Module: [Module Name]
 
-**Location:** [Directory path]
-**Current Backend:** OpenProject
-**Target Backend:** ERPNext
-**Priority:** [High/Medium/Low]
+**Location:** [Directory path] **Current Backend:** OpenProject **Target
+Backend:** ERPNext **Priority:** [High/Medium/Low]
 
 ---
 
@@ -118,9 +117,8 @@ Standardized template prompt for migrating individual modules from OpenProject t
 ```markdown
 ### Module: Sync Service
 
-**Location:** `packages/sync-service/`
-**Current Backend:** OpenProject
-**Target Backend:** ERPNext
+**Location:** `packages/sync-service/` **Current Backend:** OpenProject **Target
+Backend:** ERPNext
 
 #### OpenProject Dependencies
 

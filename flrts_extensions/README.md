@@ -4,15 +4,21 @@ Custom Field Service Management extensions for BigSir FLRTS on ERPNext.
 
 ## Overview
 
-FLRTS Extensions provides hook-based event automation and background job processing for the BigSir FLRTS (Field Reports, Lists, Reminders, Tasks, and Sub-Tasks) system deployed on Frappe Cloud Private Bench.
+FLRTS Extensions provides hook-based event automation and background job
+processing for the BigSir FLRTS (Field Reports, Lists, Reminders, Tasks, and
+Sub-Tasks) system deployed on Frappe Cloud Private Bench.
 
 ## Features
 
-- **Task Event Handlers**: Automated validation and processing for Task DocType lifecycle events
-- **Telegram Integration**: Webhook endpoint for Telegram Bot API with signature validation
+- **Task Event Handlers**: Automated validation and processing for Task DocType
+  lifecycle events
+- **Telegram Integration**: Webhook endpoint for Telegram Bot API with signature
+  validation
 - **Background Jobs**: Retry-enabled async processing with exponential backoff
-- **Security**: Two-character reveal secret masking and environment-aware logging
-- **Error Handling**: Comprehensive retry logic for network errors (ECONNREFUSED, ETIMEDOUT, HTTP 5xx)
+- **Security**: Two-character reveal secret masking and environment-aware
+  logging
+- **Error Handling**: Comprehensive retry logic for network errors
+  (ECONNREFUSED, ETIMEDOUT, HTTP 5xx)
 
 ## Installation
 
@@ -25,6 +31,7 @@ FLRTS Extensions provides hook-based event automation and background job process
 ### Deployment via Frappe Cloud
 
 1. **Push to Git repository**:
+
    ```bash
    git add flrts_extensions/
    git commit -m "feat: Add flrts_extensions custom app"
@@ -37,6 +44,7 @@ FLRTS Extensions provides hook-based event automation and background job process
    - Wait for deployment to complete
 
 3. **Run migrations via SSH**:
+
    ```bash
    ssh <bench-id>@ssh.frappe.cloud
    bench --site <your-site> migrate
@@ -44,6 +52,7 @@ FLRTS Extensions provides hook-based event automation and background job process
    ```
 
 4. **Verify installation**:
+
    ```bash
    bench --site <your-site> console
    >>> import frappe
@@ -123,6 +132,7 @@ mypy flrts_extensions/ --ignore-missing-imports
 ### Error Logs
 
 View errors in ERPNext:
+
 - Navigate to **Error Log** DocType
 - Filter by title: "Automation Error", "Telegram Config Error", etc.
 
@@ -146,15 +156,19 @@ bench --site <your-site> scheduler status
 
 ## Security
 
-- **Secret Masking**: All secrets logged with two-character reveal policy (first 2 + last 2 chars for secrets ≥ 6 chars, otherwise `***`)
-- **Webhook Validation**: Telegram webhooks require `X-Telegram-Bot-Api-Secret-Token` header
-- **Environment Guards**: Debug logs suppressed in `test` and `production` NODE_ENV
+- **Secret Masking**: All secrets logged with two-character reveal policy (first
+  2 + last 2 chars for secrets ≥ 6 chars, otherwise `***`)
+- **Webhook Validation**: Telegram webhooks require
+  `X-Telegram-Bot-Api-Secret-Token` header
+- **Environment Guards**: Debug logs suppressed in `test` and `production`
+  NODE_ENV
 
 ## Troubleshooting
 
 ### Webhook Not Receiving Messages
 
 1. Verify webhook URL configured:
+
    ```bash
    curl "https://api.telegram.org/bot<BOT_TOKEN>/getWebhookInfo"
    ```
@@ -166,11 +180,13 @@ bench --site <your-site> scheduler status
 ### Background Jobs Not Processing
 
 1. Check scheduler enabled:
+
    ```bash
    bench --site <your-site> scheduler status
    ```
 
 2. Verify queue not stalled:
+
    ```bash
    bench --site <your-site> console
    >>> from rq import Queue
@@ -187,8 +203,10 @@ MIT License - See LICENSE file for details.
 ## Support
 
 For issues or questions:
-- Create GitHub issue: [bigsirflrts/issues](https://github.com/auldsyababua/bigsirflrts/issues)
-- Email: ops@10nz.tools
+
+- Create GitHub issue:
+  [bigsirflrts/issues](https://github.com/auldsyababua/bigsirflrts/issues)
+- Email: <ops@10nz.tools>
 
 ## Related Documentation
 

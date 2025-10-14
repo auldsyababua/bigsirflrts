@@ -9,11 +9,14 @@ original_location: docs/setup/openproject.md
 
 > **This document is archived and represents obsolete infrastructure.**
 >
-> **Migration Status**: OpenProject setup has been superseded by ERPNext on Frappe Cloud.
+> **Migration Status**: OpenProject setup has been superseded by ERPNext on
+> Frappe Cloud.
 >
-> **See**: [ADR-006: ERPNext Frappe Cloud Migration](../../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md)
+> **See**:
+> [ADR-006: ERPNext Frappe Cloud Migration](../../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md)
 >
-> **Current Setup**: [Frappe Cloud Site Setup Guide](../../setup/frappe-cloud-site.md)
+> **Current Setup**:
+> [Frappe Cloud Site Setup Guide](../../setup/frappe-cloud-site.md)
 
 ---
 
