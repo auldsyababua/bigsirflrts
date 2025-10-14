@@ -12,7 +12,6 @@
 
 import { testConfig } from '../config/test-config.js';
 import http from 'http';
-import { URL } from 'url';
 
 class RetryTestSimulator {
   constructor() {

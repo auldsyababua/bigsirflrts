@@ -8,8 +8,26 @@ coverage/
 package-lock.json
 dist/
 build/
+
+# Hidden config/tool directories
+.augment/
 .bmad-core/
+.bmad-infrastructure-devops/
+.claude/
+.cursor/
+.gemini/
+.github/
+.husky/
+.reviews/
+
+# Other ignores
+audit-results/
 tools/
 infrastructure/digitalocean/monitoring/
 infrastructure/github-runner/work/
 infrastructure/github-runner/_work/
+docs/.scratch
+
+# Agent prompts - local development only
+docs/prompts/
+docs/.prompts-local/

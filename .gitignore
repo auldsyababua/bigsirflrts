@@ -59,6 +59,13 @@ AGENTS.md
 *.so
 *.dylib
 
+# SSH/Certificate files
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
 # Large generated files
 *.min.js
 *.bundle.js
@@ -89,6 +96,7 @@ Thumbs.db
 tmp/
 temp/
 scratch/
+docs/.scratch
 *.tmp
 
 # Documentation builds
@@ -115,6 +123,11 @@ vitest.config.*.ts
 .ai/
 .ai/debug-log.md
 
+# Agent prompts - local development only, not tracked in Git
+# Backup copy maintained in docs/.prompts-local/ for reference
+docs/prompts/
+docs/.prompts-local/
+
 # === INFRASTRUCTURE TEMPORARY FILES ===
 # Migration fix scripts and temporary configs
 infrastructure/digitalocean/*.sh
@@ -131,3 +144,11 @@ infrastructure/github-runner/test-*.sh
 infrastructure/github-runner/.env
 infrastructure/github-runner/work/
 infrastructure/github-runner/_work/
+
+# === ARCHIVE ALLOWLIST ===
+# Keep archived docs tracked for reference (intentional override)
+!docs/archive/
+!docs/archive/**__pycache__/
+*.pyc
+*.pyo
+*.pyd

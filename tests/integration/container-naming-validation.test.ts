@@ -174,7 +174,7 @@ describe('Container Naming Standardization Tests', () => {
 
             return { file, containerNames };
           } catch (error) {
-            return { file, error: error.message };
+            return { file, error: error instanceof Error ? error.message : String(error) };
           }
         })
       );
@@ -195,16 +195,47 @@ describe('Container Naming Standardization Tests', () => {
     });
 
     test('No hardcoded container references in compose files', async () => {
-      const command =
-        'grep -r "docker-.*-1\\|bigsirflrts-" infrastructure/docker/*.yml 2>/dev/null || true';
+      // Use Node.js fs module instead of shell command to avoid command injection
+      const { readdir, readFile, stat } = await import('node:fs/promises');
+      const { join, relative } = await import('node:path');
 
-      try {
-        const { stdout } = await execAsync(command);
-        expect(stdout.trim()).toBe('');
-      } catch (error) {
-        // Command failed - that's good, means no matches found
-        expect(error).toBeDefined();
+      const dockerDir = join(process.cwd(), 'infrastructure/docker');
+      const violations: string[] = [];
+      const patterns = [/docker-.*-1/, /bigsirflrts-/];
+
+      // Recursive function to scan directories
+      async function scanDirectory(dir: string): Promise<void> {
+        const entries = await readdir(dir);
+
+        for (const entry of entries) {
+          const fullPath = join(dir, entry);
+          const stats = await stat(fullPath);
+
+          if (stats.isDirectory()) {
+            // Recursively scan subdirectories
+            await scanDirectory(fullPath);
+          } else if (entry.endsWith('.yml') || entry.endsWith('.yaml')) {
+            // Check both .yml and .yaml files
+            const content = await readFile(fullPath, 'utf-8');
+            const lines = content.split('\n');
+            const relativePath = relative(dockerDir, fullPath);
+
+            lines.forEach((line, index) => {
+              patterns.forEach((pattern) => {
+                if (pattern.test(line)) {
+                  violations.push(`${relativePath}:${index + 1}: ${line.trim()}`);
+                }
+              });
+            });
+          }
+        }
       }
+
+      await scanDirectory(dockerDir);
+
+      expect(violations, `Found hardcoded container references:\n${violations.join('\n')}`).toEqual(
+        []
+      );
     });
   });
 
@@ -240,7 +271,10 @@ describe('Container Naming Standardization Tests', () => {
           }
         }
       } catch (error) {
-        console.error('Error checking containers:', error.message);
+        console.error(
+          'Error checking containers:',
+          error instanceof Error ? error.message : String(error)
+        );
         throw error;
       }
     });

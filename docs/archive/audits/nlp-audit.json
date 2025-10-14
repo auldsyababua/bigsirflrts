@@ -1,0 +1,75 @@
+{
+  "module": "NLP Service & AI Integration",
+  "status": "complete",
+  "timestamp": "2025-09-28T00:00:00Z",
+  "service": {
+    "name": "nlp-service",
+    "files": [
+      "packages/nlp-service/src/index.ts",
+      "packages/nlp-service/src/parser.ts",
+      "packages/nlp-service/src/prompt.ts",
+      "packages/nlp-service/src/logger.ts",
+      "packages/nlp-service/src/schemas.ts"
+    ],
+    "openai": {
+      "sdk": "openai (chat.completions.parse)",
+      "model": "gpt-4o-2024-08-06",
+      "response_format": "zod structured outputs",
+      "temperature": 0.1
+    },
+    "security": {
+      "apiKeySource": "process.env.OPENAI_API_KEY",
+      "logs": "only key length is logged (no prefixes/values)",
+      "piiPolicy": "not defined; inputs and reasoning stored in Supabase"
+    }
+  },
+  "issues": [
+    {
+      "id": "NLP-1",
+      "severity": "HIGH",
+      "title": "No explicit timeout, retry, or backoff for OpenAI calls",
+      "location": "packages/nlp-service/src/parser.ts",
+      "description": "OpenAI completion requests rely on SDK defaults with no timeout or retry/backoff strategy. A stalled request could block the request lifecycle.",
+      "remediation": "Wrap calls with request timeout (e.g., AbortController), implement exponential backoff with jitter, and add a circuit breaker for consecutive failures."
+    },
+    {
+      "id": "NLP-2",
+      "severity": "MEDIUM",
+      "title": "No token usage or cost tracking",
+      "location": "packages/nlp-service/src/parser.ts",
+      "description": "The service does not record token usage or estimated cost per request.",
+      "remediation": "Capture usage from OpenAI response (if available) or estimate from prompt/response sizes; log to analytics with requestId and userId (if present)."
+    },
+    {
+      "id": "NLP-3",
+      "severity": "MEDIUM",
+      "title": "Input and reasoning stored without redaction policy",
+      "location": "packages/nlp-service/src/index.ts (Supabase logging)",
+      "description": "User input and detailed reasoning are stored; PII policy, retention, and optional redaction are not documented.",
+      "remediation": "Define retention window, add configurable redaction of emails/phones/IDs; allow opt-out flags; ensure RLS prevents unauthorized reads."
+    },
+    {
+      "id": "NLP-4",
+      "severity": "LOW",
+      "title": "Model selection hardcoded",
+      "location": "packages/nlp-service/src/parser.ts",
+      "description": "Model `gpt-4o-2024-08-06` is hardcoded; switching models requires code change.",
+      "remediation": "Parameterize via env (OPENAI_MODEL) with safe defaults; validate allowed values."
+    },
+    {
+      "id": "NLP-5",
+      "severity": "LOW",
+      "title": "Supabase logging uses anon key",
+      "location": "packages/nlp-service/src/index.ts",
+      "description": "Writes to `parsing_logs` with anon key; depending on RLS, inserts may fail or be too permissive.",
+      "remediation": "Prefer service role key via server-only secret or route writes through a trusted backend/edge function with narrow privileges."
+    }
+  ],
+  "recommendations": [
+    "Add timeout/backoff/circuit breaker around OpenAI calls with request correlation IDs",
+    "Track token usage and cost; emit metrics to OpenTelemetry",
+    "Implement redaction and retention policy for stored inputs/reasoning; verify RLS",
+    "Parameterize model and temperature via environment variables",
+    "Switch logging to a service role context or controlled function"
+  ]
+}

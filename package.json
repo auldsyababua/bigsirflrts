@@ -37,6 +37,7 @@
     "test:ci-local": "bash scripts/test-like-github.sh",
     "test:ci-validate": "bash scripts/validate-test-env.sh",
     "test:ci-debug": "CI=true NODE_ENV=test npm run test:mvp -- --reporter=verbose",
+    "test:security:grep-leak": "bash tests/security/no-grep-leak.test.sh",
     "prepare": "husky"
   },
   "devDependencies": {
@@ -67,12 +68,14 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
+      "eslint --fix",
+      "prettier --write"
     ],
-    "*.{js,jsx,ts,tsx,json,md,yml,yaml}": [
+    "*.{json,yml,yaml}": [
       "prettier --write"
     ],
     "*.md": [
+      "prettier --write",
       "markdownlint --fix --config .markdownlint.json --ignore-path .markdownlintignore"
     ]
   },

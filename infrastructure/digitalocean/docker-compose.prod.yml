@@ -155,27 +155,6 @@ services:
           cpus: "0.125"
           memory: 256M
 
-  # Cloudflare Tunnel for Zero-Trust Access
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: flrts-cloudflared
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
-    networks:
-      - flrts_network
-    depends_on:
-      - openproject
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-        reservations:
-          cpus: "0.125"
-          memory: 128M
-
   # PostgreSQL Backup Service (runs daily at 2 AM)
   postgres-backup:
     image: postgres:16-alpine

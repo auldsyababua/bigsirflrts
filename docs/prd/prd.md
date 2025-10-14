@@ -31,13 +31,13 @@ architecture:
 - **Reflex Layer (Edge Functions)**: Handles immediate responses (<100ms) for
   Telegram acknowledgments and simple queries
 - **Brain Layer (n8n Workflows)**: Orchestrates complex business logic,
-  multi-step operations, and all OpenProject API interactions
+  multi-step operations, and all ERPNext API interactions
 - **Data Flow**: User → Telegram → Edge Function (instant ACK) → n8n Workflow →
-  OpenProject API → Supabase PostgreSQL
+  ERPNext REST API → Frappe Cloud MariaDB
 - **Performance Rule**: Operations requiring <500ms response use Edge Functions;
   all others use n8n workflows
 - **Database Rule**: FLRTS never writes to the database directly - all writes go
-  through OpenProject REST API
+  through ERPNext REST API
 
 ### Change Log
 
@@ -59,7 +59,7 @@ architecture:
 - Natural language task creation via Telegram
 - Natural language list creation via Telegram
 - OpenAI parsing of messages to structured data
-- Creation of tasks/lists in OpenProject via API
+- Creation of tasks/service calls in ERPNext via API
 - Simple confirmation messages back to users
 - Basic error handling for unparseable input
 
@@ -92,21 +92,21 @@ phase) • **FR3 (Post-MVP):** The system shall parse time references to identif
 context (sender's time, assignee's time, or absolute time), then convert times
 to assignee's local timezone using application-layer timezone logic (OpenAI
 provides time_context field, FLRTS performs actual conversion) • **FR4:** The
-system shall recognize @mentions for task assignees and map them to OpenProject
-user IDs • **FR5:** The system shall parse relative dates and times ("tomorrow
-at 2pm", "next Monday", "in 3 days") into absolute timestamps • **FR6 (MVP):**
-The system shall display a simple confirmation message showing the created
-task/list title and assignee • **FR7:** The system shall integrate with
-OpenProject's REST API to execute ALL task management operations (no direct
-database writes) • **FR8:** The system shall provide error messages with
-suggested manual entry when parsing fails • **FR9 (MVP):** The system shall
-support /create command for explicit task/list creation (other commands like
-/update, /archive, /list deferred to post-MVP) • **FR10 (Post-MVP):** The system
-shall send task reminder notifications to both Telegram and email channels •
-**FR11:** The system shall maintain user access to the full OpenProject UI
-alongside the NLP interface • **FR12 (Post-MVP):** The system shall maintain a
-complete audit trail by implementing soft-delete/archive operations only - true
-deletions are restricted to admin users (Colin) via direct database access
+system shall recognize @mentions for task assignees and map them to ERPNext user
+IDs • **FR5:** The system shall parse relative dates and times ("tomorrow at
+2pm", "next Monday", "in 3 days") into absolute timestamps • **FR6 (MVP):** The
+system shall display a simple confirmation message showing the created
+task/service call title and assignee • **FR7:** The system shall integrate with
+ERPNext's REST API to execute ALL task management operations (no direct database
+writes) • **FR8:** The system shall provide error messages with suggested manual
+entry when parsing fails • **FR9 (MVP):** The system shall support /create
+command for explicit task/list creation (other commands like /update, /archive,
+/list deferred to post-MVP) • **FR10 (Post-MVP):** The system shall send task
+reminder notifications to both Telegram and email channels • **FR11:** The
+system shall maintain user access to the full OpenProject UI alongside the NLP
+interface • **FR12 (Post-MVP):** The system shall maintain a complete audit
+trail by implementing soft-delete/archive operations only - true deletions are
+restricted to admin users (Colin) via direct database access
 
 ### Non-Functional Requirements
 
@@ -240,22 +240,22 @@ Migrate from single-instance to queue mode when:
 
 ### Additional Technical Assumptions and Requests
 
-• **Single Supabase PostgreSQL database** with logical schema separation
-(openproject schema owned by OpenProject, flrts schema for FLRTS logs/metrics
-only) • **OpenProject connects directly to Supabase** via DATABASE_URL - no
-synchronization needed • **FLRTS never writes to openproject schema** - all
-writes go through OpenProject REST API • **All parsing logic in single OpenAI
-GPT-4o prompt** - no preprocessing or separate intent detection for MVP •
-**Hardcoded entity lists in prompt** (team member names, project names) rather
-than dynamic lookups for MVP • **Node.js/TypeScript** for FLRTS NLP service with
-Zod schema validation • **Telegram Bot API** for primary user interface •
-**Cloudflare Tunnel** for secure external access to services • **Cloudflare R2**
-for object storage (replaces local file uploads) • **Digital Ocean VM**
-deployment in same region as Supabase • **Docker Compose** for service
-orchestration and container management • **OpenProject REST API** for all task
-operations (not direct database access) • **n8n in Queue Mode** with Redis for
-workflow orchestration • **Supabase Edge Functions** for latency-critical
-operations • **Lists Management** as core feature alongside Tasks
+• **ERPNext on Frappe Cloud** with managed MariaDB, Redis, background workers,
+and scheduler • **FLRTS writes through ERPNext REST API only** - no direct
+database access • **All parsing logic in single OpenAI GPT-4o prompt** - no
+preprocessing or separate intent detection for MVP • **Hardcoded entity lists in
+prompt** (team member names, project names) rather than dynamic lookups for MVP
+• **Node.js/TypeScript** for FLRTS NLP service with Zod schema validation •
+**Telegram Bot API** for primary user interface • **Cloudflare DNS** (no tunnel;
+direct DNS-only routing to Frappe Cloud) • **Native ERPNext attachments** for
+file storage (optional R2 integration via marketplace app) • **Custom Frappe
+app** (flrts_extensions) for mining-specific DocTypes and automation • **ERPNext
+REST API and webhooks** for all task/service call operations • **n8n** for
+workflow orchestration (optional; may be replaced by Frappe automation) •
+**Lists Management** as core feature alongside Tasks
+
+See [ADR-006](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
+platform migration details.
 
 ## Epic List
 
@@ -263,8 +263,8 @@ operations • **Lists Management** as core feature alongside Tasks
 
 • **Epic 1: Infrastructure Foundation** - ✅ COMPLETE (Stories 1.1-1.5) • **Epic
 2: Telegram Interface** - Stories 2.1 (Task Creation) and 2.2 (Command Parser -
-CREATE only) • **Epic 3: Integration Layer** - Stories 3.1 (OpenProject API -
-CREATE only) and 3.2 (OpenAI Context Injection)
+CREATE only) • **Epic 3: Integration Layer** - Stories 3.1 (ERPNext API - CREATE
+only) and 3.2 (OpenAI Context Injection)
 
 ### Post-MVP Stories (Deferred)
 
@@ -390,7 +390,7 @@ language, so that I can quickly assign work without opening OpenProject.
 2. Messages sent to n8n workflow for processing
 3. Parsed results shown as confirmation message
 4. User can confirm or correct before execution
-5. Task created in OpenProject via API
+5. Task/service call created in ERPNext via API
 6. Success/failure notification sent back
 
 ### Story 2.2: Telegram Reminder System
@@ -529,19 +529,19 @@ expanded to include:
 
 ## Epic 3: Integration Layer
 
-**Goal:** Build n8n workflows for OpenProject API integration, webhook
-processing, batch operations, and NLP processing.
+**Goal:** Build n8n workflows for ERPNext API integration, webhook processing,
+batch operations, and NLP processing.
 
-### Story 3.1: OpenProject API Workflows [TODO]
+### Story 3.1: ERPNext API Workflows [TODO]
 
-As a backend developer, I want n8n workflows for all OpenProject operations, so
-that we have reliable API integration.
+As a backend developer, I want n8n workflows for all ERPNext operations, so that
+we have reliable API integration.
 
 **Acceptance Criteria:**
 
-1. CREATE work package workflow via POST /api/v3/work_packages
-2. READ work packages workflow with filtering
-3. UPDATE work package workflow via PATCH
+1. CREATE Maintenance Visit workflow via POST /api/resource/Maintenance Visit
+2. READ Maintenance Visit workflow with appropriate filters
+3. UPDATE workflow via PATCH /api/resource/Maintenance Visit/\<name\>
 4. ARCHIVE workflow via status change (never DELETE)
 5. Error handling with retries
 6. Response transformation to standard format
@@ -690,7 +690,7 @@ informed about shared work.
 ### 🚧 MVP Implementation (5-Day Sprint)
 
 1. **Day 1-2:** Story 2.1 - Telegram webhook activation and basic bot
-2. **Day 2-3:** Story 3.1 - OpenProject CREATE API workflow in n8n
+2. **Day 2-3:** Story 3.1 - ERPNext CREATE API workflow in n8n
 3. **Day 3-4:** Story 3.2 - OpenAI context injection with hardcoded entities
 4. **Day 4-5:** Story 2.2 - Command parser for CREATE operations only
 5. **Day 5:** Integration testing and demo preparation

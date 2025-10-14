@@ -1,0 +1,53 @@
+name: PR Core
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - 'docs/**'
+      - 'audit-results/**'
+      - '**/*.md'
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm i
+
+      - name: Lint JS/TS
+        run: npm run lint:js -- --max-warnings 100
+
+      - name: Prettier check (code only)
+        run: npx prettier --check '**/*.{js,jsx,ts,tsx,json,yml,yaml}'
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Unit tests (@P0)
+        run: npm run test:unit
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-pr-${{ github.run_id }}
+          path: |
+            test-results/**/*.xml
+            test-results/**/*.json
+            playwright-report/**/*.html
+            playwright-report/**/*.png
+            coverage/**/*.html
+            coverage/**/*.json
+          if-no-files-found: ignore
+          retention-days: 7

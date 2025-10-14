@@ -1,0 +1,35 @@
+node_modules/
+dist/
+build/
+coverage/
+.git/
+*.min.js
+package-lock.json
+ARCHIVE(DEPRECATED)/
+archive/
+
+# Hidden config/tool directories
+.augment/
+.bmad-core/
+.bmad-infrastructure-devops/
+.claude/
+.cursor/
+.gemini/
+.github/
+.husky/
+.reviews/
+
+# Other ignores
+infrastructure/digitalocean/monitoring/
+docs/archive/
+*.config.js
+*.config.ts
+vitest.config.ts
+playwright.config.ts
+infrastructure/github-runner/work/
+infrastructure/github-runner/_work/
+docs/.scratch
+
+# Agent prompts - local development only
+docs/prompts/
+docs/.prompts-local/

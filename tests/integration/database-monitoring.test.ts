@@ -71,7 +71,10 @@ describe.skipIf(!hasDbConfig)('@P0 Database Monitoring Integration Tests', () =>
       await dbClient.query('SELECT pg_stat_reset();');
     } catch (error) {
       // Ignore errors if pg_stat_reset requires superuser privileges
-      console.warn('Could not reset pg_stat (may require superuser):', error.message);
+      console.warn(
+        'Could not reset pg_stat (may require superuser):',
+        error instanceof Error ? error.message : String(error)
+      );
     }
   });
 
@@ -443,6 +446,8 @@ describe.skipIf(!hasDbConfig)('@P0 Database Monitoring Integration Tests', () =>
       // Act & Assert - Each view should be queryable
       for (const viewName of monitoringViews) {
         await expect(async () => {
+          // SECURITY-REVIEWED: James 2025-01-30
+          // viewName comes from predefined monitoringViews array, not user input
           const result = await dbClient.query(`SELECT * FROM ${viewName} LIMIT 1;`);
           expect(result).toBeDefined();
         }).not.toThrow();

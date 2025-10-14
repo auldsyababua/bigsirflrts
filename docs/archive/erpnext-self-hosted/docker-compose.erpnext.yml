@@ -1,0 +1,291 @@
+version: "3.8"
+
+# ERPNext Production Deployment - Replace OpenProject
+# Deployed at: ops.10nz.tools (via Cloudflare Tunnel)
+# Database: Supabase PostgreSQL
+# Storage: Cloudflare R2
+# Architecture: frappe_docker official setup
+
+x-customizable-image: &customizable_image
+  image: frappe/erpnext:${ERPNEXT_VERSION:-latest}
+  pull_policy: always
+  restart: unless-stopped
+
+x-depends-on-configurator: &depends_on_configurator
+  depends_on:
+    erpnext-configurator:
+      condition: service_completed_successfully
+
+x-backend-defaults: &backend_defaults
+  <<: [*depends_on_configurator, *customizable_image]
+  volumes:
+    - erpnext_sites:/home/frappe/frappe-bench/sites
+  networks:
+    - ops_network
+
+services:
+  # One-time configuration service (exits after setup)
+  erpnext-configurator:
+    <<: *customizable_image
+    container_name: flrts-erpnext-configurator
+    platform: linux/amd64
+    entrypoint:
+      - bash
+      - -c
+    command:
+      - >
+        ls -1 apps > sites/apps.txt;
+        bench set-config -g db_host $$DB_HOST;
+        bench set-config -gp db_port $$DB_PORT;
+        bench set-config -g redis_cache "redis://$$REDIS_CACHE";
+        bench set-config -g redis_queue "redis://$$REDIS_QUEUE";
+        bench set-config -g redis_socketio "redis://$$REDIS_QUEUE";
+        bench set-config -gp socketio_port 9000;
+    environment:
+      DB_HOST: ${SUPABASE_DB_HOST}
+      DB_PORT: ${SUPABASE_DB_PORT:-5432}
+      REDIS_CACHE: redis-cache:6379
+      REDIS_QUEUE: redis-queue:6379
+      SOCKETIO_PORT: 9000
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+    networks:
+      - ops_network
+    depends_on: {}
+    restart: on-failure
+
+  # Python backend (Gunicorn)
+  erpnext-backend:
+    <<: *backend_defaults
+    container_name: flrts-erpnext-backend
+    platform: linux/amd64
+    environment:
+      # Database Configuration (Supabase PostgreSQL)
+      DB_HOST: ${SUPABASE_DB_HOST}
+      DB_PORT: ${SUPABASE_DB_PORT:-5432}
+      DB_NAME: ${SUPABASE_DB_NAME:-postgres}
+      DB_USER: ${SUPABASE_DB_USER}
+      DB_PASSWORD: ${SUPABASE_DB_PASSWORD}
+
+      # Redis Configuration
+      REDIS_CACHE: redis-cache:6379
+      REDIS_QUEUE: redis-queue:6379
+
+      # Frappe Configuration
+      FRAPPE_SITE_NAME_HEADER: ${FRAPPE_SITE_NAME_HEADER:-$$host}
+
+      # Storage Configuration - Cloudflare R2
+      # TODO: Configure S3-compatible storage for attachments
+      # AWS_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      # AWS_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      # AWS_S3_ENDPOINT_URL: ${R2_ENDPOINT}
+      # AWS_S3_REGION_NAME: auto
+      # AWS_STORAGE_BUCKET_NAME: ${R2_BUCKET}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/method/ping || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 3G
+        reservations:
+          cpus: "0.5"
+          memory: 1G
+
+  # Nginx frontend (serves static assets and proxies to backend)
+  erpnext-frontend:
+    <<: *customizable_image
+    container_name: flrts-erpnext-frontend
+    platform: linux/amd64
+    command:
+      - nginx-entrypoint.sh
+    environment:
+      BACKEND: erpnext-backend:8000
+      SOCKETIO: erpnext-websocket:9000
+      FRAPPE_SITE_NAME_HEADER: ${FRAPPE_SITE_NAME_HEADER:-$$host}
+      UPSTREAM_REAL_IP_ADDRESS: ${UPSTREAM_REAL_IP_ADDRESS:-127.0.0.1}
+      UPSTREAM_REAL_IP_HEADER: ${UPSTREAM_REAL_IP_HEADER:-X-Forwarded-For}
+      UPSTREAM_REAL_IP_RECURSIVE: ${UPSTREAM_REAL_IP_RECURSIVE:-off}
+      PROXY_READ_TIMEOUT: ${PROXY_READ_TIMEOUT:-120}
+      CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE:-50m}
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+    networks:
+      - ops_network
+    ports:
+      - "127.0.0.1:8080:8080" # Only bind to localhost (Cloudflare tunnel will access)
+    depends_on:
+      - erpnext-backend
+      - erpnext-websocket
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/method/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  # WebSocket server (Socket.IO for real-time features)
+  erpnext-websocket:
+    <<: [*depends_on_configurator, *customizable_image]
+    container_name: flrts-erpnext-websocket
+    platform: linux/amd64
+    command:
+      - node
+      - /home/frappe/frappe-bench/apps/frappe/socketio.js
+    volumes:
+      - erpnext_sites:/home/frappe/frappe-bench/sites
+    networks:
+      - ops_network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  # Worker for short/fast background jobs
+  erpnext-queue-short:
+    <<: *backend_defaults
+    container_name: flrts-erpnext-queue-short
+    platform: linux/amd64
+    command: bench worker --queue short,default
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1G
+
+  # Worker for long-running background jobs
+  erpnext-queue-long:
+    <<: *backend_defaults
+    container_name: flrts-erpnext-queue-long
+    platform: linux/amd64
+    command: bench worker --queue long,default,short
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1G
+
+  # Scheduler for cron-like tasks
+  erpnext-scheduler:
+    <<: *backend_defaults
+    container_name: flrts-erpnext-scheduler
+    platform: linux/amd64
+    command: bench schedule
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 512M
+
+  # Redis for cache
+  redis-cache:
+    image: redis:7-alpine
+    container_name: flrts-redis-cache
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - ops_network
+    volumes:
+      - redis_cache_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 384M
+
+  # Redis for queue/job processing
+  redis-queue:
+    image: redis:7-alpine
+    container_name: flrts-redis-queue
+    restart: unless-stopped
+    networks:
+      - ops_network
+    volumes:
+      - redis_queue_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 384M
+
+  # Cloudflare Tunnel for Zero-Trust Access
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: flrts-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - ops_network
+    depends_on:
+      - erpnext-frontend
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+        reservations:
+          cpus: "0.125"
+          memory: 128M
+
+  # Health Monitor (Uptime Kuma - Optional)
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: flrts-uptime-kuma
+    restart: unless-stopped
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - ops_network
+    ports:
+      - "127.0.0.1:3001:3001"
+    profiles:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+networks:
+  ops_network:
+    external: true
+
+volumes:
+  erpnext_sites:
+    driver: local
+  redis_cache_data:
+    driver: local
+  redis_queue_data:
+    driver: local
+  uptime_kuma_data:
+    driver: local

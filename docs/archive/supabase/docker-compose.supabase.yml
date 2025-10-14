@@ -1,0 +1,106 @@
+version: "3.8"
+
+# OpenProject connected to Supabase PostgreSQL
+# Following PRD architecture: Single database with schema separation
+#
+# IMPORTANT: Run ./validate-env.sh before starting to ensure all required
+# environment variables are set. This prevents boot with empty credentials.
+
+services:
+  openproject-migrate:
+    image: openproject/openproject:14-slim
+    container_name: openproject-migrate
+    restart: "no"
+    environment:
+      # Supabase Direct Connection (IPv4 add-on enabled)
+      # Format: postgresql://[user]:[password]@[host]:[port]/[database]?schema=[schema]
+      DATABASE_URL: "postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?schema=${SUPABASE_DB_SCHEMA}"
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      RAILS_ENV: production
+      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: ${SUPABASE_DB_SCHEMA}
+    command: bundle exec rake db:migrate db:seed
+
+  openproject:
+    image: openproject/openproject:14-slim
+    container_name: openproject
+    restart: always
+    environment:
+      # Supabase Direct Connection (IPv4 add-on enabled)
+      # Format: postgresql://[user]:[password]@[host]:[port]/[database]?schema=[schema]
+      DATABASE_URL: "postgresql://${SUPABASE_DB_USER}:${SUPABASE_DB_PASSWORD}@${SUPABASE_DB_HOST}:${SUPABASE_DB_PORT}/${SUPABASE_DB_NAME}?schema=${SUPABASE_DB_SCHEMA}"
+
+      # OpenProject configuration
+      OPENPROJECT_HOST__NAME: ${OPENPROJECT_HOST_NAME}
+      OPENPROJECT_HTTPS: ${OPENPROJECT_HTTPS}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      RAILS_ENV: production
+      RAILS_MIN_THREADS: 2
+      RAILS_MAX_THREADS: 5
+
+      # Database pool configuration (per PRD NFR16)
+      DB_POSTGRESDB_POOL_SIZE: ${DB_POSTGRESDB_POOL_SIZE:-4}
+
+      # Schema configuration
+      OPENPROJECT_DB__APPLICATION__MAIN__SCHEMA: ${SUPABASE_DB_SCHEMA}
+
+      # Attachments storage: Cloudflare R2 via fog (S3-compatible)
+      OPENPROJECT_ATTACHMENTS__STORAGE: fog
+      OPENPROJECT_DIRECT__UPLOADS: "true"
+      OPENPROJECT_FOG__CREDENTIALS__PROVIDER: AWS
+      OPENPROJECT_FOG__CREDENTIALS__AWS__ACCESS__KEY__ID: ${R2_ACCESS_KEY_ID}
+      OPENPROJECT_FOG__CREDENTIALS__AWS__SECRET__ACCESS__KEY: ${R2_SECRET_ACCESS_KEY}
+      OPENPROJECT_FOG__CREDENTIALS__ENDPOINT: ${R2_ENDPOINT}
+      OPENPROJECT_FOG__CREDENTIALS__REGION: ${R2_REGION:-auto}
+      OPENPROJECT_FOG__DIRECTORY: ${R2_BUCKET}
+
+      # Admin credentials
+      OPENPROJECT_SEED_ADMIN_USER_NAME: ${OPENPROJECT_ADMIN_USERNAME}
+      OPENPROJECT_SEED_ADMIN_USER_PASSWORD: ${OPENPROJECT_ADMIN_PASSWORD}
+
+    volumes:
+      - openproject_data:/var/openproject/assets
+    networks:
+      - flrts_network
+    ports:
+      - "127.0.0.1:8080:8080" # Localhost only - access via Cloudflare Tunnel
+    depends_on:
+      openproject-migrate:
+        condition: service_completed_successfully
+      memcached:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health_checks/default"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+
+  # NO openproject-db container - using Supabase instead!
+
+  memcached:
+    image: memcached:alpine
+    container_name: memcached
+    restart: always
+    command: memcached -m 256
+    networks:
+      - flrts_network
+
+  cloudflared:
+    image: cloudflare/cloudflared:2024.8.3
+    container_name: cloudflared
+    restart: always
+    command: tunnel run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - flrts_network
+    depends_on:
+      - openproject
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+
+networks:
+  flrts_network:
+    driver: bridge
+
+volumes:
+  openproject_data: # Only need volume for assets now

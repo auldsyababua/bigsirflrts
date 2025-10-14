@@ -1,0 +1,32 @@
+{
+  "version": "2.0",
+  "routeKey": "$default",
+  "rawPath": "/",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "application/json",
+    "content-type": "application/json",
+    "x-telegram-bot-api-secret-token": "test-secret-token",
+    "user-agent": "TelegramBot"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "abc123",
+    "domainName": "abc123.lambda-url.us-east-1.on.aws",
+    "domainPrefix": "abc123",
+    "http": {
+      "method": "POST",
+      "path": "/",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "149.154.167.99",
+      "userAgent": "TelegramBot"
+    },
+    "requestId": "test-request-id-123",
+    "routeKey": "$default",
+    "stage": "$default",
+    "time": "01/Jan/2024:00:00:00 +0000",
+    "timeEpoch": 1704067200000
+  },
+  "body": "{\"update_id\":123456789,\"message\":{\"message_id\":1,\"from\":{\"id\":987654321,\"is_bot\":false,\"first_name\":\"John\",\"username\":\"johndoe\",\"language_code\":\"en\"},\"chat\":{\"id\":987654321,\"first_name\":\"John\",\"username\":\"johndoe\",\"type\":\"private\"},\"date\":1704067200,\"text\":\"Fix the login bug by Friday\"}}",
+  "isBase64Encoded": false
+}

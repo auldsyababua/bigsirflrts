@@ -47,12 +47,17 @@ const mockScope = {
 };
 
 // Mock Deno globals for testing
+declare global {
+  // eslint-disable-next-line no-var
+  var Deno: any;
+}
+
 global.Deno = {
   env: {
     get: vi.fn(),
   },
   serve: vi.fn(),
-} as any;
+};
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -208,11 +213,6 @@ describe('@P0 Sentry Edge Function Tests', () => {
     it('should capture exceptions with proper context', async () => {
       // Arrange
       const testError = new Error('Test error message');
-      const testRequest = new Request('https://test.com/parse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invalidJson: 'missing_bracket' }),
-      });
 
       // Mock scope behavior for error context
       const capturedContext: any = {};
@@ -221,7 +221,7 @@ describe('@P0 Sentry Edge Function Tests', () => {
       });
 
       // Act
-      await mockSentry.withScope(async (scope) => {
+      await mockSentry.withScope(async (scope: any) => {
         scope.setContext('error_details', {
           name: testError.name,
           message: testError.message,
@@ -261,7 +261,7 @@ describe('@P0 Sentry Edge Function Tests', () => {
       const testHeaders = { 'Content-Type': 'application/json' };
 
       // Act
-      await mockSentry.withScope(async (scope) => {
+      await mockSentry.withScope(async (scope: any) => {
         scope.setTag('request_method', testMethod);
         scope.setTag('request_url', testUrl);
         scope.setContext('request', {
@@ -286,7 +286,7 @@ describe('@P0 Sentry Edge Function Tests', () => {
       const warningMessage = 'Missing required input field';
 
       // Act
-      await mockSentry.withScope(async (scope) => {
+      await mockSentry.withScope(async (scope: any) => {
         scope.setContext('validation', { missingField: 'input' });
         mockSentry.captureMessage(warningMessage, 'warning');
       });
@@ -300,10 +300,9 @@ describe('@P0 Sentry Edge Function Tests', () => {
 
     it('should set user context for authentication tracking', async () => {
       // Arrange
-      const authHeader = 'Bearer test-token';
 
       // Act
-      await mockSentry.withScope(async (scope) => {
+      await mockSentry.withScope(async (scope: any) => {
         scope.setUser({
           id: 'authenticated',
           authMethod: 'supabase_jwt',
@@ -332,7 +331,7 @@ describe('@P0 Sentry Edge Function Tests', () => {
   describe('Performance Monitoring', () => {
     it('should create performance transactions with proper naming', async () => {
       // Act
-      await mockSentry.withScope(async (scope) => {
+      await mockSentry.withScope(async (scope: any) => {
         const transaction = mockSentry.startTransaction({
           name: 'parse-request-handler',
           op: 'http.server',
@@ -350,12 +349,12 @@ describe('@P0 Sentry Edge Function Tests', () => {
 
     it('should create child spans for different operations', async () => {
       // Act
-      const authSpan = mockTransaction.startChild({
+      mockTransaction.startChild({
         op: 'auth.validate',
         description: 'Validate authentication',
       });
 
-      const parseSpan = mockTransaction.startChild({
+      mockTransaction.startChild({
         op: 'request.parse',
         description: 'Parse request body',
       });
@@ -377,7 +376,7 @@ describe('@P0 Sentry Edge Function Tests', () => {
       const responseTime = 150;
 
       // Act
-      await mockSentry.withScope(async (scope) => {
+      await mockSentry.withScope(async (scope: any) => {
         scope.setContext('performance', { responseTime });
       });
 

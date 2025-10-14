@@ -1,6 +1,4 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
+#!/usr/bin/env bash
 # Allow skipping the hook entirely (emergencies/refactors)
 if [ "$SKIP_PREPUSH" = "1" ]; then
   echo "⏭️  SKIP_PREPUSH=1 set — skipping pre-push checks."
@@ -18,6 +16,15 @@ if ! npm run test:unit; then
 fi
 
 echo "✅ Unit tests passed!"
+
+# Run security review (can be skipped with SKIP_SECURITY=1)
+echo "🔒 Running security review..."
+if ! bash scripts/security-review.sh; then
+  echo "\n❌ Security review failed!"
+  echo "Please address security issues before pushing."
+  echo "To skip (not recommended): SKIP_SECURITY=1 git push"
+  exit 1
+fi
 
 # Optional: include integration tests when requested
 if [ "$RUN_INTEGRATION" = "true" ]; then

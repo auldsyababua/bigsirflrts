@@ -12,7 +12,7 @@
  * Run with: op run --env-file=tests/.env.test -- node --test tests/integration/performance-regression.test.ts
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
 
@@ -45,7 +45,7 @@ beforeAll(() => {
 /**
  * Utility function to measure request timing
  */
-async function measureRequest(url, options) {
+async function measureRequest(url: string, options: RequestInit) {
   const startTime = process.hrtime.bigint();
   const response = await fetch(url, options);
   const endTime = process.hrtime.bigint();
@@ -60,7 +60,7 @@ async function measureRequest(url, options) {
 /**
  * Calculate percentiles from an array of numbers
  */
-function calculatePercentiles(values) {
+function calculatePercentiles(values: number[]) {
   const sorted = [...values].sort((a, b) => a - b);
   const len = sorted.length;
 
@@ -87,7 +87,7 @@ describe('Edge Function Performance Regression Tests', () => {
       },
     };
 
-    const measurements = [];
+    const measurements: number[] = [];
 
     // Perform multiple requests to establish performance baseline
     for (let i = 0; i < LOAD_TEST_REQUESTS; i++) {
@@ -116,15 +116,9 @@ describe('Edge Function Performance Regression Tests', () => {
     });
 
     // Assert performance requirements
-    expect(
-      stats.p95 < PERFORMANCE_THRESHOLD_MS,
-      `95th percentile (${stats.p95}ms).toBeTruthy() exceeds threshold (${PERFORMANCE_THRESHOLD_MS}ms)`
-    );
+    expect(stats.p95 < PERFORMANCE_THRESHOLD_MS).toBe(true);
 
-    expect(
-      stats.max < PERFORMANCE_THRESHOLD_MS * 1.5,
-      `Maximum response time (${stats.max}ms).toBeTruthy() exceeds 150% of threshold (${PERFORMANCE_THRESHOLD_MS * 1.5}ms)`
-    );
+    expect(stats.max < PERFORMANCE_THRESHOLD_MS * 1.5).toBe(true);
 
     // Regression check against baseline (if this becomes a concern)
     if (stats.p95 > PERFORMANCE_BASELINE.edgeFunction.p95 * 1.3) {
@@ -147,7 +141,7 @@ describe('Edge Function Performance Regression Tests', () => {
     };
 
     // Simulate 2 small batches (realistic for 10-user team)
-    const batchResults = [];
+    const batchResults: number[] = [];
 
     for (let batch = 0; batch < 2; batch++) {
       const concurrentRequests = Array.from({ length: CONCURRENT_REQUEST_COUNT }, () =>
@@ -162,10 +156,7 @@ describe('Edge Function Performance Regression Tests', () => {
 
       // Validate all requests succeeded
       for (const { response, durationMs } of results) {
-        expect(
-          response.status === 200 || response.status === 202,
-          `Concurrent request failed with status ${response.status}`
-        ).toBeTruthy();
+        expect(response.status === 200 || response.status === 202).toBe(true);
         batchResults.push(durationMs);
       }
 
@@ -178,15 +169,9 @@ describe('Edge Function Performance Regression Tests', () => {
     console.log('Small Team Load Performance Stats:', concurrentStats);
 
     // Performance should easily handle small team load
-    expect(
-      concurrentStats.p95 < PERFORMANCE_THRESHOLD_MS,
-      `Small team load 95th percentile (${concurrentStats.p95}ms).toBeTruthy() should stay under threshold`
-    );
+    expect(concurrentStats.p95 < PERFORMANCE_THRESHOLD_MS).toBe(true);
 
-    expect(
-      concurrentStats.avg < PERFORMANCE_THRESHOLD_MS * 0.6,
-      `Average response time (${concurrentStats.avg}ms).toBeTruthy() should be well under threshold for small team`
-    );
+    expect(concurrentStats.avg < PERFORMANCE_THRESHOLD_MS * 0.6).toBe(true);
   });
 });
 
@@ -203,7 +188,7 @@ describe('n8n Webhook Performance Regression Tests', () => {
       },
     };
 
-    const measurements = [];
+    const measurements: number[] = [];
 
     for (let i = 0; i < LOAD_TEST_REQUESTS; i++) {
       const { response, durationMs } = await measureRequest(N8N_WEBHOOK_URL, {
@@ -212,10 +197,7 @@ describe('n8n Webhook Performance Regression Tests', () => {
         body: JSON.stringify(payload),
       });
 
-      expect(
-        response.status === 200 || response.status === 202,
-        `n8n webhook request ${i + 1} failed with status ${response.status}`
-      ).toBeTruthy();
+      expect(response.status === 200 || response.status === 202).toBe(true);
 
       measurements.push(durationMs);
 
@@ -231,15 +213,9 @@ describe('n8n Webhook Performance Regression Tests', () => {
     });
 
     // Assert n8n webhook performance requirements
-    expect(
-      stats.p95 < PERFORMANCE_THRESHOLD_MS,
-      `n8n webhook 95th percentile (${stats.p95}ms).toBeTruthy() exceeds threshold (${PERFORMANCE_THRESHOLD_MS}ms)`
-    );
+    expect(stats.p95 < PERFORMANCE_THRESHOLD_MS).toBe(true);
 
-    expect(
-      stats.avg < PERFORMANCE_THRESHOLD_MS * 0.6,
-      `n8n webhook average response (${stats.avg}ms).toBeTruthy() should be under 60% of threshold for normal operations`
-    );
+    expect(stats.avg < PERFORMANCE_THRESHOLD_MS * 0.6).toBe(true);
 
     // Check for regression
     if (stats.p95 > PERFORMANCE_BASELINE.n8nWebhook.p95 * 1.4) {
