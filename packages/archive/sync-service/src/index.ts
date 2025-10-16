@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
-import { getBackendConfig } from './config';
-// import { ERPNextClient } from './clients/erpnext'; // Currently unused
+import { getERPNextConfig } from './config';
+import { ERPNextClient } from './clients/erpnext';
 
 dotenv.config();
 dotenv.config({ path: '.env.local', override: true });
@@ -12,7 +12,7 @@ dotenv.config({ path: '.env.local', override: true });
 const app = express();
 app.use(express.json());
 
-// Initialize Supabase client
+// Initialize Supabase client (for logging/analytics - separate from primary backend)
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://thnwlykidzhrsagyjncc.supabase.co',
   process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!
@@ -24,24 +24,13 @@ if (process.env.NODE_ENV === 'development') {
   console.log('Service key present:', !!process.env.SUPABASE_SERVICE_KEY);
 }
 
-// Backend configuration and client factory (Phase 1: 10N-243)
-const backendConfig = getBackendConfig();
-
-// Phase 1: ERPNext mode blocks sync operations (Phase 2 will implement full client)
-if (backendConfig.backend === 'erpnext') {
-  console.warn(
-    '[sync-service] ERPNext backend mode enabled but Phase 2 implementation pending. ' +
-      'Sync operations will fail until Phase 2 complete. ' +
-      'Set USE_ERPNEXT=false to use OpenProject backend.'
-  );
-}
-
-// Legacy OpenProject config (only used when backend=openproject)
-// Phase 2 TODO: Remove these constants, use backendConfig everywhere
-const OPENPROJECT_URL = backendConfig.backend === 'openproject' ? backendConfig.apiUrl : '';
-const OPENPROJECT_API_KEY = backendConfig.backend === 'openproject' ? backendConfig.apiKey : '';
-const OPENPROJECT_PROJECT_ID =
-  backendConfig.backend === 'openproject' ? backendConfig.projectId! : 0;
+// ERPNext backend configuration (10N-339: Removed OpenProject fallback)
+const erpnextConfig = getERPNextConfig();
+const erpnextClient = new ERPNextClient(
+  erpnextConfig.apiUrl,
+  erpnextConfig.apiKey,
+  erpnextConfig.apiSecret
+);
 
 // Create axios instance for OpenProject
 const openprojectAPI = axios.create({
