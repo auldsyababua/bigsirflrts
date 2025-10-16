@@ -30,17 +30,30 @@ except ImportError:
         """Placeholder when summarizer is not available"""
         return None
 
-def send_event_to_server(event_data, server_url='http://localhost:4000/events'):
+# Environment variables for configuration
+SERVER_URL = os.getenv("OBSERVABILITY_SERVER_URL", "http://localhost:4000/events")
+AUTH_TOKEN = os.getenv("OBSERVABILITY_AUTH_TOKEN", "")
+ALLOWED_TRANSCRIPT_DIR = os.getenv("ALLOWED_TRANSCRIPT_DIR", os.path.expanduser("~/.config/claude"))
+
+def send_event_to_server(event_data, server_url=None):
     """Send event data to the observability server."""
     try:
+        # Use configured server URL if not provided
+        url = server_url if server_url else SERVER_URL
+
+        # Prepare headers
+        headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Claude-Code-Hook/1.0'
+        }
+        if AUTH_TOKEN:
+            headers['Authorization'] = f'Bearer {AUTH_TOKEN}'
+
         # Prepare the request
         req = urllib.request.Request(
-            server_url,
+            url,
             data=json.dumps(event_data).encode('utf-8'),
-            headers={
-                'Content-Type': 'application/json',
-                'User-Agent': 'Claude-Code-Hook/1.0'
-            }
+            headers=headers
         )
         
         # Send the request
@@ -74,7 +87,8 @@ def main():
         input_data = json.load(sys.stdin)
     except json.JSONDecodeError as e:
         print(f"Failed to parse JSON input: {e}", file=sys.stderr)
-        sys.exit(1)
+        input_data = {}  # Safe default
+        sys.exit(0)  # Exit cleanly per line 119 principle
     
     # Prepare event data for server
     event_data = {
@@ -88,11 +102,17 @@ def main():
     # Handle --add-chat option
     if args.add_chat and 'transcript_path' in input_data:
         transcript_path = input_data['transcript_path']
-        if os.path.exists(transcript_path):
-            # Read .jsonl file and convert to JSON array
-            chat_data = []
-            try:
-                with open(transcript_path, 'r') as f:
+        try:
+            # Validate path is within allowed directory
+            real_path = os.path.realpath(transcript_path)
+            allowed_dir = os.path.realpath(ALLOWED_TRANSCRIPT_DIR)
+
+            if not real_path.startswith(allowed_dir):
+                print(f"Transcript path outside allowed directory: {transcript_path}", file=sys.stderr)
+            else:
+                # Read .jsonl file and convert to JSON array
+                chat_data = []
+                with open(real_path, 'r') as f:
                     for line in f:
                         line = line.strip()
                         if line:
@@ -100,11 +120,11 @@ def main():
                                 chat_data.append(json.loads(line))
                             except json.JSONDecodeError:
                                 pass  # Skip invalid lines
-                
+
                 # Add chat to event data
                 event_data['chat'] = chat_data
-            except Exception as e:
-                print(f"Failed to read transcript: {e}", file=sys.stderr)
+        except (OSError, IOError) as e:
+            print(f"Failed to read transcript: {e}", file=sys.stderr)
     
     # Generate summary if requested
     if args.summarize:
