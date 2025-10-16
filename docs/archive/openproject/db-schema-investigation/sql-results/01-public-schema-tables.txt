@@ -1,0 +1,229 @@
+              table_name               | table_type 
+---------------------------------------+------------
+ accounting_customers                  | BASE TABLE
+ accounting_employees                  | BASE TABLE
+ announcements                         | BASE TABLE
+ ar_internal_metadata                  | BASE TABLE
+ asics                                 | BASE TABLE
+ asics_view                            | VIEW
+ attachable_journals                   | BASE TABLE
+ attachment_journals                   | BASE TABLE
+ attachments                           | BASE TABLE
+ attribute_help_texts                  | BASE TABLE
+ auth_providers                        | BASE TABLE
+ bcf_comments                          | BASE TABLE
+ bcf_issues                            | BASE TABLE
+ bcf_viewpoints                        | BASE TABLE
+ bot_logs                              | BASE TABLE
+ brain_bot_document_chunks             | BASE TABLE
+ brain_bot_documents                   | BASE TABLE
+ brain_bot_media_files                 | BASE TABLE
+ budget_journals                       | BASE TABLE
+ budgets                               | BASE TABLE
+ categories                            | BASE TABLE
+ changes                               | BASE TABLE
+ changeset_journals                    | BASE TABLE
+ changesets                            | BASE TABLE
+ changesets_work_packages              | BASE TABLE
+ chart_of_accounts                     | BASE TABLE
+ colors                                | BASE TABLE
+ comments                              | BASE TABLE
+ companies                             | BASE TABLE
+ cost_entries                          | BASE TABLE
+ cost_queries                          | BASE TABLE
+ cost_types                            | BASE TABLE
+ custom_actions                        | BASE TABLE
+ custom_actions_projects               | BASE TABLE
+ custom_actions_roles                  | BASE TABLE
+ custom_actions_statuses               | BASE TABLE
+ custom_actions_types                  | BASE TABLE
+ custom_field_sections                 | BASE TABLE
+ custom_fields                         | BASE TABLE
+ custom_fields_projects                | BASE TABLE
+ custom_fields_types                   | BASE TABLE
+ custom_options                        | BASE TABLE
+ custom_styles                         | BASE TABLE
+ custom_values                         | BASE TABLE
+ customizable_journals                 | BASE TABLE
+ deploy_status_checks                  | BASE TABLE
+ deploy_targets                        | BASE TABLE
+ design_colors                         | BASE TABLE
+ document_journals                     | BASE TABLE
+ documents                             | BASE TABLE
+ done_statuses_for_project             | BASE TABLE
+ enabled_modules                       | BASE TABLE
+ enterprise_tokens                     | BASE TABLE
+ enumerations                          | BASE TABLE
+ equipment                             | BASE TABLE
+ equipment_view                        | VIEW
+ exports                               | BASE TABLE
+ favorites                             | BASE TABLE
+ field_report_edits                    | BASE TABLE
+ field_report_edits_view               | VIEW
+ field_reports                         | BASE TABLE
+ field_reports_asics                   | BASE TABLE
+ field_reports_asics_view              | VIEW
+ field_reports_equipment               | BASE TABLE
+ field_reports_equipment_view          | VIEW
+ field_reports_view                    | VIEW
+ field_reports_with_details            | VIEW
+ file_links                            | BASE TABLE
+ financial_statement_snapshots         | BASE TABLE
+ flrts_users                           | BASE TABLE
+ flrts_users_view                      | VIEW
+ forums                                | BASE TABLE
+ general_ledger                        | BASE TABLE
+ github_check_runs                     | BASE TABLE
+ github_pull_requests                  | BASE TABLE
+ github_pull_requests_work_packages    | BASE TABLE
+ github_users                          | BASE TABLE
+ gitlab_issues                         | BASE TABLE
+ gitlab_issues_work_packages           | BASE TABLE
+ gitlab_merge_requests                 | BASE TABLE
+ gitlab_merge_requests_work_packages   | BASE TABLE
+ gitlab_pipelines                      | BASE TABLE
+ gitlab_users                          | BASE TABLE
+ good_job_batches                      | BASE TABLE
+ good_job_executions                   | BASE TABLE
+ good_job_processes                    | BASE TABLE
+ good_job_settings                     | BASE TABLE
+ good_jobs                             | BASE TABLE
+ grid_widgets                          | BASE TABLE
+ grids                                 | BASE TABLE
+ group_users                           | BASE TABLE
+ ical_token_query_assignments          | BASE TABLE
+ ifc_models                            | BASE TABLE
+ job_statuses                          | BASE TABLE
+ journal_entries                       | BASE TABLE
+ journal_entry_lines                   | BASE TABLE
+ journals                              | BASE TABLE
+ labor_budget_items                    | BASE TABLE
+ last_project_folders                  | BASE TABLE
+ ldap_auth_sources                     | BASE TABLE
+ ldap_groups_memberships               | BASE TABLE
+ ldap_groups_synchronized_filters      | BASE TABLE
+ ldap_groups_synchronized_groups       | BASE TABLE
+ licenses_agreements                   | BASE TABLE
+ licenses_agreements_partners          | BASE TABLE
+ licenses_agreements_partners_view     | VIEW
+ licenses_agreements_sites             | BASE TABLE
+ licenses_agreements_sites_view        | VIEW
+ licenses_agreements_vendors           | BASE TABLE
+ licenses_agreements_vendors_view      | VIEW
+ licenses_agreements_view              | VIEW
+ list_items                            | BASE TABLE
+ list_items_view                       | VIEW
+ lists                                 | BASE TABLE
+ lists_view                            | VIEW
+ lists_with_details                    | VIEW
+ markup_changes_log                    | BASE TABLE
+ markup_changes_log_view               | VIEW
+ material_budget_items                 | BASE TABLE
+ meeting_agenda_item_journals          | BASE TABLE
+ meeting_agenda_items                  | BASE TABLE
+ meeting_content_journals              | BASE TABLE
+ meeting_contents                      | BASE TABLE
+ meeting_journals                      | BASE TABLE
+ meeting_participants                  | BASE TABLE
+ meeting_sections                      | BASE TABLE
+ meetings                              | BASE TABLE
+ member_roles                          | BASE TABLE
+ members                               | BASE TABLE
+ menu_items                            | BASE TABLE
+ message_journals                      | BASE TABLE
+ messages                              | BASE TABLE
+ news                                  | BASE TABLE
+ news_journals                         | BASE TABLE
+ non_working_days                      | BASE TABLE
+ notification_settings                 | BASE TABLE
+ notifications                         | BASE TABLE
+ notifications_log                     | BASE TABLE
+ notifications_log_view                | VIEW
+ oauth_access_grants                   | BASE TABLE
+ oauth_access_tokens                   | BASE TABLE
+ oauth_applications                    | BASE TABLE
+ oauth_client_tokens                   | BASE TABLE
+ oauth_clients                         | BASE TABLE
+ oidc_user_session_links               | BASE TABLE
+ openproject_user_mapping              | BASE TABLE
+ operators                             | BASE TABLE
+ operators_view                        | VIEW
+ ordered_work_packages                 | BASE TABLE
+ outstanding_partner_billings          | VIEW
+ paper_trail_audits                    | BASE TABLE
+ parsing_logs                          | BASE TABLE
+ partner_billings                      | BASE TABLE
+ partner_billings_view                 | VIEW
+ partners                              | BASE TABLE
+ partners_view                         | VIEW
+ personnel                             | BASE TABLE
+ personnel_view                        | VIEW
+ project_custom_field_project_mappings | BASE TABLE
+ project_journals                      | BASE TABLE
+ project_queries                       | BASE TABLE
+ project_storages                      | BASE TABLE
+ projects                              | BASE TABLE
+ projects_types                        | BASE TABLE
+ queries                               | BASE TABLE
+ rates                                 | BASE TABLE
+ recaptcha_entries                     | BASE TABLE
+ recent_errors                         | VIEW
+ relations                             | BASE TABLE
+ reminders                             | BASE TABLE
+ reminders_view                        | VIEW
+ remote_identities                     | BASE TABLE
+ repositories                          | BASE TABLE
+ role_permissions                      | BASE TABLE
+ roles                                 | BASE TABLE
+ schema_migrations                     | BASE TABLE
+ sessions                              | BASE TABLE
+ settings                              | BASE TABLE
+ site_aliases                          | BASE TABLE
+ site_aliases_view                     | VIEW
+ site_partner_assignments              | BASE TABLE
+ site_partner_assignments_view         | VIEW
+ site_vendor_assignments               | BASE TABLE
+ site_vendor_assignments_view          | VIEW
+ sites                                 | BASE TABLE
+ sites_view                            | VIEW
+ slow_operations                       | VIEW
+ statuses                              | BASE TABLE
+ storages                              | BASE TABLE
+ storages_file_links_journals          | BASE TABLE
+ task_assignment_history               | BASE TABLE
+ tasks                                 | BASE TABLE
+ tasks_with_details                    | VIEW
+ time_entries                          | BASE TABLE
+ time_entry_activities_projects        | BASE TABLE
+ time_entry_journals                   | BASE TABLE
+ tokens                                | BASE TABLE
+ trial_balance_snapshots               | BASE TABLE
+ two_factor_authentication_devices     | BASE TABLE
+ types                                 | BASE TABLE
+ user_passwords                        | BASE TABLE
+ user_preferences                      | BASE TABLE
+ user_profiles                         | BASE TABLE
+ users                                 | BASE TABLE
+ vendor_invoices                       | BASE TABLE
+ vendor_invoices_view                  | VIEW
+ vendors                               | BASE TABLE
+ vendors_view                          | VIEW
+ version_settings                      | BASE TABLE
+ versions                              | BASE TABLE
+ views                                 | BASE TABLE
+ watchers                              | BASE TABLE
+ webhook_retry_jobs                    | BASE TABLE
+ webhooks_events                       | BASE TABLE
+ webhooks_logs                         | BASE TABLE
+ webhooks_projects                     | BASE TABLE
+ webhooks_webhooks                     | BASE TABLE
+ wiki_page_journals                    | BASE TABLE
+ wiki_pages                            | BASE TABLE
+ wiki_redirects                        | BASE TABLE
+ wikis                                 | BASE TABLE
+ work_package_hierarchies              | BASE TABLE
+ work_package_journals                 | BASE TABLE
+ work_packages                         | BASE TABLE
+ workflows                             | BASE TABLE
+(225 rows)
+

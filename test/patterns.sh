@@ -1,1 +1,0 @@
-../tests/integration/patterns.test.sh

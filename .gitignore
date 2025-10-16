@@ -153,3 +153,4 @@ infrastructure/github-runner/_work/
 *.pyc
 *.pyo
 *.pyd
+test-results/
