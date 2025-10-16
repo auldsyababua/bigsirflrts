@@ -1,1 +1,0 @@
-../infrastructure/scripts/deploy-monitoring-remote.sh
