@@ -433,14 +433,14 @@ describe('Integration: All Security Features Working Together', () => {
   });
 
   test('Performance: Security checks should add < 10ms latency', async () => {
-    const payload = JSON.stringify(createTelegramPayload());
-    const timestamp = Math.floor(Date.now() / 1000);
-    const signature = generateHmacSignature(payload, N8N_WEBHOOK_SECRET, timestamp);
-
     const times: number[] = [];
     for (let i = 0; i < 5; i++) {
+      const payload = JSON.stringify(createTelegramPayload());
+      const timestamp = Math.floor(Date.now() / 1000);
+      const signature = generateHmacSignature(payload, N8N_WEBHOOK_SECRET, timestamp);
+
       const start = Date.now();
-      await fetch(TELEGRAM_WEBHOOK_URL, {
+      const response = await fetch(TELEGRAM_WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -450,6 +450,10 @@ describe('Integration: All Security Features Working Together', () => {
         body: payload,
       });
       times.push(Date.now() - start);
+
+      // Ensure we are measuring successful requests
+      expect(response.status).toBe(200);
+
       await sleep(1000); // Avoid rate limit
     }
 
