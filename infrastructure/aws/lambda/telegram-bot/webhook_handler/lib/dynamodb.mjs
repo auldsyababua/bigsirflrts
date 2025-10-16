@@ -6,18 +6,18 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { randomUUID } from 'crypto';
-import AWSXRay from 'aws-xray-sdk-core';
+import { trace, SpanStatusCode } from '@opentelemetry/api';
 import { logError, logInfo } from './logging.mjs';
 
+const tracer = trace.getTracer('telegram-webhook');
+
 /**
- * Create DynamoDB client with X-Ray tracing
+ * Create DynamoDB client (tracing handled by ADOT layer)
  */
 function createDynamoDBClient() {
-  const client = new DynamoDBClient({
+  return new DynamoDBClient({
     region: process.env.AWS_REGION || 'us-east-1',
   });
-
-  return AWSXRay.captureAWSv3Client(client);
 }
 
 /**
@@ -55,7 +55,7 @@ export async function putConfirmation(item, options = {}) {
     expiresAt,
   };
 
-  const subsegment = AWSXRay.getSegment()?.addNewSubsegment('dynamodb-write');
+  const span = tracer.startSpan('dynamodb-write');
 
   try {
     const client = createDynamoDBClient();
@@ -83,10 +83,10 @@ export async function putConfirmation(item, options = {}) {
       expiresAt,
     });
 
-    subsegment?.addMetadata('confirmationId', confirmationId);
-    subsegment?.addMetadata('duration', duration);
-    subsegment?.addMetadata('tableName', tableName);
-    subsegment?.close();
+    span.setAttribute('confirmationId', confirmationId);
+    span.setAttribute('duration_ms', duration);
+    span.setAttribute('tableName', tableName);
+    span.setStatus({ code: SpanStatusCode.OK });
 
     return confirmationId;
   } catch (error) {
@@ -96,9 +96,11 @@ export async function putConfirmation(item, options = {}) {
       code: error.code,
     });
 
-    subsegment?.addError(error);
-    subsegment?.close();
+    span.recordException(error);
+    span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
 
     throw error;
+  } finally {
+    span.end();
   }
 }
