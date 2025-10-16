@@ -16,8 +16,7 @@ https://ops.10nz.tools/api/method/flrts_extensions.automations.telegram_api.hand
 ### Telegram Bot
 
 - **Bot Token**: Stored in `.env` as `TELEGRAM_BOT_TOKEN`
-- **Webhook Secret**: `wh_tg_flrts_1hx346bQ0w0qkzDQTA6ChGEB3Dj3TmuH` (stored in
-  `.env` as `TELEGRAM_WEBHOOK_SECRET`)
+- **Webhook Secret**: Stored in `.env` as `TELEGRAM_WEBHOOK_SECRET`
 - **Max Connections**: 40
 - **Allowed Updates**: `["message", "callback_query"]`
 - **IP Address**: 3.84.240.128 (Frappe Cloud)
