@@ -132,28 +132,92 @@ See [pull-based-workflow.md](reference_docs/pull-based-workflow.md) for full aut
   - Any red flags or follow-ups required
   - Clear verdict: "Ready to merge" or "Changes requested"
 
-## Handoff Protocol
+**Routing Decision**:
+- **QA → Action (FAIL)**: If issues found (critical, major, or blocking minor issues), write retry handoff per "Handoff Output" section and return to Action Agent for fixes
+- **QA → Planning (PASS)**: If all requirements met and no blocking issues, write PASS handoff per "Handoff Output" section and return control to Planning Agent for merge decision
 
-After review, write handoff to ONE of these locations:
-- **If issues found (retry required)**: `docs/.scratch/<issue>/handoffs/qa-to-action-retry.md`
-- **If validated (PASS)**: `docs/.scratch/<issue>/handoffs/qa-to-planning-pass.md`
+## Handoff Intake
 
-Follow the templates from [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md):
+When beginning QA review after Action Agent completion, read your intake handoff from: `docs/.scratch/<issue>/handoffs/action-to-qa-review-request.md`
 
-**QA→Action (retry)** includes:
-- Critical/major/minor issues with locations and specific fixes
-- Test failures with expected vs actual
-- Red flags observed (weakened tests, disabled tests, security suppressions)
-- Missing requirements against acceptance criteria
+This handoff contains:
+- Deliverables: Files changed with key modifications, commits, tests added/updated
+- Validation performed: Test results, type checks, security scan, linter output
+- External APIs: Validation method (curl/spec), auth format confirmation
+- Scratch artifacts: Research notes, prototype location, lessons draft
+- Acceptance criteria status: Which criteria met, which deferred
+- Known issues/follow-ups: Any limitations or related work
 
-**QA→Planning (PASS)** includes:
-- Verdict (ready to merge)
-- Verification summary (branch, diff, Claude MCP review, tests, security)
-- Standards compliance checklist
-- Deliverables verified with file/commit references
-- Recommendation for Planning Agent (merge or delegate to Tracking)
+**Error Handling**: If the expected handoff file is missing or malformed, follow the error handling protocols in [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md):
+- Check alternative locations (docs/.scratch/<issue>/ root, older naming conventions)
+- Report blocker to Planning Agent immediately with specific missing fields
+- DO NOT proceed without intake context
 
-See [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md) for scratch workspace organization.
+**Escalation Guidance**: When encountering blockers:
+- Document specific gaps (missing files, incomplete validation, unclear acceptance criteria)
+- Report to Planning Agent with file location, expected vs actual content
+- If critical information is present but incomplete, proceed with caution and note assumptions in QA report
+
+**File Operations**: When reading, creating, or archiving handoff files, follow the conventions in [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md) for proper scratch workspace organization.
+
+## Handoff Output
+
+After completing QA review, write handoff to ONE of these locations based on outcome:
+
+### Retry Path: QA → Action (Issues Found)
+
+**File**: `docs/.scratch/<issue>/handoffs/qa-to-action-retry.md`
+
+**When**: Issues found that require Action Agent fixes
+
+**Required Deliverables** (per agent-handoff-rules.md):
+- [ ] Critical/major/minor issues documented with specific locations and required fixes
+- [ ] Test failures listed with expected vs actual results
+- [ ] Red flags observed (weakened tests, disabled tests, security suppressions, mesa optimization patterns)
+- [ ] Missing requirements identified against Linear acceptance criteria
+- [ ] Specific fix instructions for each issue (not just "fix this")
+- [ ] Handoff formatted per template in agent-handoff-rules.md
+
+**Validation Summary Requirements**:
+- Document which validation steps passed/failed (tests, linter, security, type-check)
+- Include specific test counts, timing, and failure messages
+- Note any security script warnings (CRITICAL/HIGH) that must be addressed
+- Identify acceptance criteria gaps with Linear issue reference
+
+**Cross-References**:
+- Cite [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md) template for retry handoff structure
+- Follow [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md) for file organization
+
+### PASS Path: QA → Planning (Work Validated)
+
+**File**: `docs/.scratch/<issue>/handoffs/qa-to-planning-pass.md`
+
+**When**: All requirements met, work validated and ready to merge
+
+**Required Deliverables** (per agent-handoff-rules.md):
+- [ ] Clear verdict: "READY TO MERGE" with confidence level
+- [ ] Verification summary covering: branch scope, diff review, Claude MCP review, tests, security
+- [ ] Test results documented (counts, timing, ERPNext path status, feature flag validation)
+- [ ] Security review results (script output, .security-ignore justifications)
+- [ ] Standards compliance checklist: ERPNext naming, ADR-006 patterns, HTTP retry, secret masking, logging guards
+- [ ] Deliverables verified: files changed with line refs, commits with hashes, Linear updates confirmed
+- [ ] Lessons Learned present in Linear description (Issue → Impact → Fix format)
+- [ ] Recommendation for Planning Agent: merge directly or delegate to Tracking Agent
+- [ ] Follow-up actions (if any non-blocking items)
+- [ ] Handoff formatted per template in agent-handoff-rules.md
+
+**Validation Summary Requirements**:
+- All acceptance criteria met (document which criteria and evidence)
+- No red flags found (or all justified/addressed)
+- Standards compliance confirmed (naming conventions, architectural patterns, security policies)
+- Documentation verified (function-level refs, examples current, scratch artifacts complete)
+
+**Cross-References**:
+- Cite [agent-handoff-rules.md](reference_docs/agent-handoff-rules.md) template for PASS handoff structure
+- Follow [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md) for file organization
+- Reference Linear issue for acceptance criteria verification
+
+**Scratch Archival Expectations**: Before writing PASS handoff, remind Action Agent (via handoff note) that scratch workspace should follow [scratch-and-archiving-conventions.md](reference_docs/scratch-and-archiving-conventions.md). Do NOT archive until Planning Agent approval—archival happens after QA PASS and lessons learned posting.
 
 ## Red Flags (Mesa Optimization / Happy‑Pathing)
 
