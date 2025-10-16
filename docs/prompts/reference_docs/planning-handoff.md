@@ -1,8 +1,8 @@
 # Planning Agent Session Handoff
 
-**Last Updated**: 2025-10-14 (Session 2)
-**Session Duration**: ~1 hour
-**Context Checkpoint**: Browser agent created + WB6 tracking task assigned; awaiting repo extraction completion
+**Last Updated**: 2025-10-15 (Session 4)
+**Session Duration**: ~45 minutes
+**Context Checkpoint**: WB#6 (Phase 4) in progress; API keys verified; awaiting env var addition + API auth test
 
 ---
 
@@ -21,7 +21,7 @@
 - USE ONLY for historical context (what was happening at this point)
 - UPDATE this file with current state OR create new session handoff
 
-**Last Updated**: 2025-10-14 → **Age**: Calculate from today's date in your system context
+**Last Updated**: 2025-10-15 → **Age**: Calculate from today's date in your system context
 
 ---
 
@@ -29,270 +29,284 @@
 
 ### Work Completed This Session ✅
 
-**Session 1 (Earlier Today)**:
-- Created browser-agent.md (650+ lines)
-- Updated 4 reference docs for browser agent integration
-- Updated 10N-275 WB1 to address browser agent
+**Phase 3: Deploy flrts-extensions (COMPLETE)**
+- **WB#4**: Researcher Agent investigated persistent `ModuleNotFoundError` deployment failures
+  - Root cause: Missing root-level `__init__.py` in flrts-extensions repo
+  - Documented in `docs/.scratch/10n-228/frappe-structure-analysis.md`
+- **WB#5**: Action Agent added root `__init__.py` (commit e3a67fc, PR #3)
+- **Tracking**: Deployment succeeded (deploy-27276-000005), all steps passed
+- **10N-275 Dashboard**: WB#1 marked complete
 
-**Session 2 (This Session)**:
-- ✅ Browser agent attempted Frappe Cloud installation → **BLOCKER DISCOVERED**: Monorepo subdirectory not supported
-- ✅ Research completed: Frappe Cloud requires apps in separate repos (Perplexity + ref.tools + official docs)
-- ✅ Created WB6 in 10N-275: Tracking agent task to extract app to new repo `flrts-extensions`
-- ✅ Updated 10N-228: Added handoff log, repository migration strategy, troubleshooting sections
-- ✅ Updated browser-agent.md: Manual screenshot workflow (CMD+SHIFT+4, not automated)
+**Agent Framework Updates (COMPLETE)**
+- **WB#2**: Action Agent updated `action-agent.md` with Handoff Intake/Output sections
+- **WB#3**: QA Agent updated `qa-agent.md` with Handoff Intake/Output sections
+- **10N-275 Dashboard**: WB#2 and WB#3 marked complete
 
-**Git Status**: Clean working tree EXCEPT browser agent files still uncommitted (will be committed by tracking agent in WB6 Phase 1)
+**Git Status**: On branch main, clean working directory (no uncommitted changes)
 
 ---
 
 ## IMMEDIATE NEXT STEPS
 
-### Priority 1: Monitor WB6 Completion (Tracking Agent)
+### Priority 1: Complete WB#6 Phase 4 - Site Configuration & Secrets
 
-**Task**: Extract flrts_extensions to separate GitHub repo
-**Agent**: Tracking
-**Issue**: 10N-275 WB6
-**Estimated Time**: 30-40 minutes
-**Status**: Ready to execute (awaiting Colin to invoke tracking agent)
+**Task**: Test API authentication with existing keys
+**Agent**: action-agent (for API test) or planning-agent (user verification)
+**Issue**: 10N-275 WB#6 (parent: 10N-228)
+**Status**: In Progress
+**Estimated Time**: 5-10 minutes
 
-**Expected Deliverables**:
-1. Feature branch: `feat/10n-228-browser-agent-and-app-extraction`
-2. Browser agent commit (5 files)
-3. New GitHub repo: `https://github.com/auldsyababua/flrts-extensions`
-4. PR created with summary + test plan
-5. Handoff: `docs/.scratch/10n-228/handoffs/tracking-to-planning-complete.md`
+**Critical Information**:
+- ⚠️ **SECRETS POLICY**: Project uses **env-based secrets only** (local `.env`, Frappe Cloud Bench Env GUI)
+- ⚠️ **NO 1PASSWORD**: Do NOT reference 1Password CLI or tools - this is outdated and incorrect
+- ⚠️ **Frappe Cloud SSH**: Read-only debugging access only - all configuration must be done via GUI
+- User already has API keys in `.env` (lines 25-26):
+  ```
+  ERPNEXT_ADMIN_API_KEY=dbf4bb1b556e3d2
+  ERPNEXT_ADMIN_API_SECRET=f6097d1b5069034
+  ```
 
-**Verification**:
-- Check tracking handoff file for completion status
-- Verify new repo exists and has commits
-- Review PR for completeness
-- Confirm no git safety issues (no force push to main)
+**Remaining Steps**:
+1. Verify user has added `TELEGRAM_BOT_TOKEN` and `OPENAI_API_KEY` to Frappe Cloud **Bench Group → Env tab** (GUI)
+   - Location: Frappe Cloud Dashboard → Bench Groups → bigsirflrts-prod → Env tab
+   - NOT in Site Config, NOT via SSH
+2. Test API authentication:
+   ```bash
+   curl -X GET "https://ops.10nz.tools/api/resource/User" \
+     -H "Authorization: token dbf4bb1b556e3d2:f6097d1b5069034"
+   ```
+3. If test passes, mark WB#6 complete and proceed to Phase 6
 
-### Priority 2: Retry Frappe Cloud Installation (Browser Agent)
+**Next Agent**: Planning or Action agent to verify env vars added and test API
 
-**Prerequisites**: WB6 complete, new repo URL available
+### Priority 2: Phase 6 - Integration Setup (After WB#6 Complete)
 
-**Task**: Install flrts_extensions via Frappe Cloud Dashboard (retry with new repo)
-**Agent**: Browser (Perplexity Comet)
-**Repository**: `https://github.com/auldsyababua/flrts-extensions.git` (NEW)
-**Estimated Time**: 15-20 minutes
+**Prerequisites**: Phase 4 complete (API auth working)
 
-**Instructions** (already in 10N-275 WB1, may need minor updates):
-1. Navigate to https://frappecloud.com
-2. Select site `builder-rbt-sjk.v.frappe.cloud`
-3. Apps → Install from GitHub
-4. Repository URL: `https://github.com/auldsyababua/flrts-extensions.git`
-5. Branch: `main`
-6. Wait for installation (2-5 minutes)
-7. Verify app in installed apps list
-8. Create handoff: `docs/.scratch/10n-228/handoffs/browser-to-planning-results.md`
+**Task**: Configure Telegram webhook
+**Agent**: action-agent or browser-agent (depends on configuration method)
+**Issue**: Create new work block in 10N-275 for Phase 6
 
-**Manual Screenshots Required**:
-- Use CMD+SHIFT+4 (macOS)
-- Save to: `docs/.scratch/10n-228/screenshots/`
-- Naming: `00-landing-page.png`, `01-authenticated.png`, etc.
+**Key Details**:
+- Webhook URL: `https://ops.10nz.tools/api/method/flrts_extensions.automations.telegram_api.handle_telegram_webhook`
+- Test webhook functionality after configuration
 
-### Priority 3: Resume 10N-228 Deployment (Action Agent)
+### Priority 3: Phase 7 - Post-Deployment Verification (After Phase 6 Complete)
 
-**Prerequisites**: Frappe Cloud installation successful (browser agent PASS)
+**Prerequisites**: Phase 6 complete (Telegram webhook configured)
 
-**Next Phases** (from 10N-228):
-- Phase 4: Configure secrets via SSH (`bench set-config`)
-- Phase 6: Set Telegram webhook
-- Phase 7: Post-deployment verification (6/6 tests passing)
+**Task**: Smoke tests and verification
+**Agent**: action-agent or qa-agent
+**Issue**: Create new work block in 10N-275 for Phase 7
 
-**Estimated Time**: 30-40 minutes (SSH-based configuration)
+**Key Details**:
+- Smoke tests for all critical functions
+- Verify scheduler and background workers
+- Verify automated backups appear
 
 ---
 
 ## ARCHITECTURAL DECISIONS MADE
 
-### Decision 1: Browser Agent Added to Ecosystem
+### Decision 1: Env-Based Secrets Only (Session 4)
 
-**Rationale**: Frappe Cloud blocks SSH app installation (dashboard-only policy)
+**Rationale**: User explicitly corrected multiple 1Password references
+**Critical User Feedback**: "also please remember we are not using 1password! i dont know where you got this from as this should be purged from documentation - we are using env based secret storage and secrets in the cloud"
+
 **Implementation**:
-- Created browser-agent.md (manual web navigation via Perplexity Comet)
-- Updated 4 reference docs: agent-handoff-rules, planning-agent, agent-addressing-system, planning-handoff
-- Added Templates 8 & 9 to agent-handoff-rules (Planning↔Browser)
+- Local development: `.env` file in project root
+- Frappe Cloud: Bench Group → Env tab (GUI)
+- NO 1Password CLI or tools
 
-**Key Innovation**: **Adaptive Navigation**
-- GUI paths in prompts are SUGGESTIONS (not guarantees)
-- Browser must search/explore if UI differs from documentation
-- Document actual path taken (helps update future instructions)
+**Documentation Impact**: Multiple docs need cleanup (see Deferred Issues)
 
-**Manual Screenshot Workflow** (discovered this session):
-- Browser agent = Colin working manually in Perplexity Comet Browser
-- NOT automated browser (no Selenium/Puppeteer)
-- Screenshots via OS tools (CMD+SHIFT+4), saved directly to repo
+### Decision 2: GUI-Only Configuration for Frappe Cloud (Session 4)
 
-### Decision 2: Extract flrts_extensions to Separate Repository
+**Blocker**: Initial approach suggested SSH-based configuration
+**User Correction**: "ssh for frappe cloud is only for debugging. We need to do this in the gui"
 
-**Blocker**: Frappe Cloud cannot install from monorepo subdirectory
-**Error**: "Not a valid Frappe App! Files setup.py or setup.cfg or pyproject.toml do not exist in app directory"
+**Implementation**:
+- All Frappe Cloud configuration via web dashboard
+- SSH access for debugging only (read-only)
+- Bench Group → Env tab for environment variables
 
-**Research** (Perplexity + ref.tools + official docs):
-- ✅ Frappe Cloud requires apps in **separate Git repositories**
-- ✅ `setup.py` must be at **root level** (not in subdirectory)
-- ❌ No subdirectory support (cannot specify path within repo)
-- ✅ Community confirms: Monorepo subdirectories not supported
+### Decision 3: API Keys Already Exist (Session 4)
 
-**Solution**: Extract `/flrts_extensions/` to new repo
-- **New Repository**: `https://github.com/auldsyababua/flrts-extensions`
-- **Monorepo**: `flrts_extensions/` directory **remains for local development**
-- **Deployment**: Use new repo for Frappe Cloud installation only
+**Discovery**: User already has ERPNext admin API keys in `.env` (lines 25-26)
+**Impact**: No need to generate new keys through ERPNext UI
+**User Correction**: "we already have admin keys. They are in the .env - line 25"
 
-**References**:
-- Frappe docs: https://docs.frappe.io/framework/user/en/basics/apps
-- Community: https://discuss.frappe.io/t/deploy-custom-app-to-frappe-cloud-erpnext/88966
+**Result**: Simplified Phase 4 to just adding env vars + testing authentication
 
-### Decision 3: Tracking Agent Executes Extraction
+### Decision 4: Deferred Linear GitHub Mapping Fix (Session 4)
 
-**Rationale**: Extraction involves git/GitHub operations (tracking agent scope)
-**Task**: WB6 in 10N-275 (30-40 minutes)
+**Issue**: All 10N team projects syncing to BigSirFLRTS repo instead of correct repos
+**Root Cause**: Linear maps repos at TEAM level, not project level
+**User Decision**: "ok can we continue with the next job for bigsirflrts. At least that is setup correctly"
 
-**6 Phases**:
-1. Create feature branch + commit browser agent work
-2. Extract app to `/tmp/` directory
-3. Create GitHub repo via `gh` CLI
-4. Initialize git + push to new repo
-5. Return to bigsirflrts + push feature branch
-6. Create PR with both browser agent work + extraction
-
-**Safety Rules** (baked into WB6):
-- NEVER force push to main/master
-- Use `--force-with-lease` only if absolutely needed
-- Verify all operations before pushing
-- Stop and report blockers immediately
+**Implementation**:
+- Created browser agent instructions: `docs/.scratch/linear-github-mapping/handoffs/planning-to-browser-instructions.md`
+- Deferred to continue with BigSirFLRTS deployment
+- User will request when ready to address
 
 ---
 
 ## KEY FILES CREATED/UPDATED
 
-**Session 1 (Earlier)**:
-1. `docs/prompts/browser-agent.md` - NEW (650+ lines)
-2. `docs/prompts/reference_docs/agent-handoff-rules.md` - Added browser templates 8 & 9
-3. `docs/prompts/planning-agent.md` - Added browser handoff intake/output
-4. `docs/prompts/reference_docs/agent-addressing-system.md` - Added browser-agent references
-5. `docs/prompts/reference_docs/planning-handoff.md` - Session 1 handoff
+**Session 4 (This Session)**:
+1. `docs/.scratch/10n-228/frappe-structure-analysis.md` - Researcher Agent root cause analysis
+2. `docs/.scratch/10n-228/structure-comparison.txt` - Quick reference for structure fix
+3. `flrts-extensions/__init__.py` (in flrts-extensions repo) - Root-level package marker (commit e3a67fc, PR #3)
+4. `~/Desktop/projects/linear-first-agentic-workflow/docs/prompts/action-agent.md` - Added Handoff Intake/Output sections (WB#2)
+5. `~/Desktop/projects/linear-first-agentic-workflow/docs/prompts/qa-agent.md` - Added Handoff Intake/Output sections (WB#3)
+6. `docs/.scratch/linear-github-mapping/handoffs/planning-to-browser-instructions.md` - Browser agent task for Linear GitHub mapping fix
+7. Linear 10N-275: Updated with WB#1, WB#2, WB#3 completions; added WB#6
+8. `docs/prompts/reference_docs/planning-handoff.md` - Updated for Session 4 (this file)
 
-**Session 2 (This Session)**:
-1. `docs/prompts/browser-agent.md` - Updated for manual screenshot workflow
-2. Linear 10N-275: Added WB6 (tracking agent repo extraction task)
-3. Linear 10N-228: Updated with handoff log, repository migration strategy, troubleshooting
-
-**Uncommitted** (will be committed by tracking agent in WB6 Phase 1):
-- `docs/prompts/browser-agent.md`
-- `docs/prompts/reference_docs/agent-handoff-rules.md`
-- `docs/prompts/planning-agent.md`
-- `docs/prompts/reference_docs/agent-addressing-system.md`
-- `docs/prompts/reference_docs/planning-handoff.md` (this file)
+**Files Referenced**:
+- `.env` (lines 20-34) - Contains existing API keys
+- `docs/.scratch/10n-228/deployment-plan.md` - Phase-by-phase deployment guide (note: has outdated 1Password refs)
 
 ---
 
 ## GIT STATUS
 
 **Current Branch**: `main`
-**Uncommitted Changes**: Yes (5 browser agent files)
-**Working Tree**: Modified but NOT dirty (all changes tracked)
+**Uncommitted Changes**: Modified planning-handoff.md (this file)
+**Working Tree**: Clean (except this handoff update)
 
-**Tracking Agent Will**:
-1. Create branch `feat/10n-228-browser-agent-and-app-extraction`
-2. Commit browser agent files (first commit in Phase 1)
-3. Extract app, create new repo, push
-4. Push feature branch
-5. Create PR
-
-**Expected PR**: Browser agent + app extraction (single PR, atomic changes)
+**Recent Activity**:
+- WB#5 changes merged to flrts-extensions repo (PR #3)
+- Deployment succeeded (deploy-27276-000005)
+- All deployment-related changes committed
 
 ---
 
 ## LINEAR ISSUES STATUS
 
 **10N-275** (Master Dashboard):
-- WB1: ✅ Updated to address browser agent (Frappe Cloud installation)
-- WB2: ✅ Complete (dashboard housekeeping)
-- WB3: ✅ Complete (DigitalOcean archival)
-- WB4-5: ⏳ Pending (agent handoff updates)
-- WB6: ✅ **NEW** - Tracking agent repo extraction task (ready to execute)
+- **WB1**: 10N-228 Phase 3 - Deploy flrts-extensions (Status: Complete ✅)
+- **WB2**: P3.5 Action Agent Handoff Updates (Status: Complete ✅)
+- **WB3**: P3.6 QA Agent Handoff Updates (Status: Complete ✅)
+- **WB6**: 10N-228 Phase 4 - Site Configuration & Secrets (Status: In Progress ⏳)
 
-**10N-228** (Provision ERPNext):
+**10N-228** (Provision ERPNext) - Parent of WB1 and WB6:
 - Phase 1-2: ✅ Complete (site operational at https://ops.10nz.tools)
-- Phase 3: ⏳ **BLOCKED** → Awaiting repo extraction (WB6)
-- Phase 4-7: ⏳ Pending (after app installation succeeds)
+- Phase 3: ✅ Complete (app deployed and installed successfully)
+- Phase 4: ⏳ **CURRENT TASK** → Complete API auth test (WB#6, 5-10 min)
+- Phase 5: Skipped (not applicable)
+- Phase 6: ⏳ Pending (Telegram webhook configuration)
+- Phase 7: ⏳ Pending (post-deployment verification)
 
 **Status Summary**:
 - Site: Operational ✅
-- SSH: Configured ✅
-- App: Blocked on repo extraction (WB6 will unblock)
-- Next: Browser agent retry → SSH configuration → Verification
+- App Deployment: Complete ✅
+- App Installation: Complete ✅
+- Site Configuration: In Progress (WB#6) - awaiting API auth test
+- Next: Complete Phase 4 → Phase 6 (webhook) → Phase 7 (verification)
 
 ---
 
 ## HANDOFF FILES TO CHECK (Next Planning Session)
 
-**Tracking Agent Completion**:
-- `docs/.scratch/10n-228/handoffs/tracking-to-planning-complete.md`
-- Expected: PR URL, new repo URL, commit hashes, verification outputs
+**Active Handoffs**:
+- `docs/.scratch/linear-github-mapping/handoffs/planning-to-browser-instructions.md` - Browser agent task ready, deferred by user
 
-**Browser Agent Results** (after WB6 complete):
-- `docs/.scratch/10n-228/handoffs/browser-to-planning-results.md`
-- Expected: Installation status (success/failure), screenshots, UI deviations
+**No Immediate Handoffs Expected**:
+- Pull-based workflow active for BigSirFLRTS deployment
+- Next planning agent should read 10N-275 WB#6 for current status
+- If WB#6 Status="In Progress", verify env vars added and test API auth
+- If WB#6 Status="Complete", proceed to Phase 6
 
-**Priority Order**:
-1. Check tracking handoff first (repo extraction)
-2. If tracking PASS → Check browser handoff (installation attempt)
-3. If browser PASS → Route to action agent for Phase 4-7 (SSH config)
+---
+
+## DEFERRED ISSUES
+
+**Linear GitHub Repository Mapping** (medium priority)
+- **Issue**: All 10N team projects syncing to BigSirFLRTS repo instead of correct repos
+- **Root Cause**: Linear maps repos at TEAM level, not project level
+- **Browser Instructions**: `docs/.scratch/linear-github-mapping/handoffs/planning-to-browser-instructions.md`
+- **Status**: User chose to defer and continue with BigSirFLRTS deployment
+- **Action Needed**: Browser agent task when user requests
+- **Screenshots Available**:
+  - Frappe Cloud Env tab (empty): Screenshot 2025-10-15 at 3.56.46 PM
+  - Linear projects list: Screenshot 2025-10-15 at 9.37.12 AM
+  - Frappe Cloud site config: Screenshot 2025-10-14 at 4.06.09 PM
+
+**Documentation Cleanup** (low priority)
+- **Issue**: Multiple docs reference 1Password incorrectly
+- **User Feedback**: "also please remember we are not using 1password! i dont know where you got this from as this should be purged from documentation"
+- **Solution**: Systematic replacement with env-based approach
+- **Files to Update**:
+  - `docs/.scratch/10n-228/deployment-plan.md` (Phase 4 section, lines 498-573)
+  - Any other docs mentioning 1Password (search: `rg "1Password" docs/`)
+- **Priority**: Low (doesn't block deployment)
 
 ---
 
 ## BLOCKERS / QUESTIONS
 
-**None.** Clear path forward:
-1. Tracking agent executes WB6 (repo extraction)
-2. Browser agent retries installation (new repo URL)
-3. Action agent completes deployment (SSH configuration)
+**Current Blocker (WB#6)**:
+- Awaiting user to add `TELEGRAM_BOT_TOKEN` and `OPENAI_API_KEY` to Frappe Cloud Bench Group → Env tab
+- User was in process of doing this when handoff protocol was requested
+- Once complete, need to test API authentication
 
-All architectural decisions made, research complete, tasks documented in Linear.
+**No Other Blockers**:
+- Clear path forward for Phase 6 and Phase 7
+- All deployment issues resolved
+- API keys exist and ready to test
 
 ---
 
 ## LESSONS LEARNED
 
-### Lesson 1: Browser Agent = Manual Workflow
+### Lesson 1: Check Existing Resources Before Generating New Ones (Session 4)
 
-**Issue**: Initial browser-agent.md assumed automated screenshot capture
-**Impact**: Colin got stuck at screenshot step (Perplexity Comet Browser cannot automate)
-**Fix**: Updated browser-agent.md to specify manual OS screenshot tools (CMD+SHIFT+4 macOS, Windows+Shift+S)
-**Prevention**: Always clarify automation vs manual workflows when creating new agent types
+**Issue**: Initially suggested generating new API keys through ERPNext UI
+**Reality**: User already has API keys in `.env` file (lines 25-26)
+**User Correction**: "we already have admin keys. They are in the .env - line 25"
+**Prevention**: Always check existing `.env`, config files, and environment variables before suggesting generation of new credentials
 
-### Lesson 2: GUI Documentation Volatility
+### Lesson 2: Verify Platform Policies Before Suggesting Approaches (Session 4)
 
-**Issue**: Browser agent instructions assumed specific menu paths (Apps → Install App)
-**Reality**: GUIs change frequently; hardcoded paths fail
-**Solution**: Adaptive navigation pattern (treat paths as suggestions, search/explore if different)
-**Documentation**: Browser agent template includes 5-step fallback strategy for finding UI elements
+**Issue**: Suggested SSH-based configuration for Frappe Cloud
+**Reality**: Frappe Cloud SSH is read-only debugging access; all config via GUI
+**User Correction**: "ssh for frappe cloud is only for debugging. We need to do this in the gui"
+**Prevention**: Research platform-specific policies before suggesting implementation approaches
 
-### Lesson 3: Platform Research Before Architecture Assumptions
+### Lesson 3: Listen to User Corrections About Tooling (Session 4)
 
-**Issue**: Assumed Frappe Cloud would support monorepo subdirectories (like many modern platforms)
-**Reality**: Frappe Cloud requires separate repos with root-level setup.py (no subdirectory support)
-**Impact**: Wasted browser agent attempt, discovered blocker mid-deployment
-**Fix**: Used Perplexity + ref.tools to research Frappe Cloud requirements, confirmed with official docs + community
-**Prevention**: Research platform-specific requirements BEFORE creating deployment plans
+**Issue**: Referenced 1Password multiple times despite no evidence in codebase
+**User Correction**: "also please remember we are not using 1password! i dont know where you got this from as this should be purged from documentation"
+**Root Cause**: Possibly hallucinated from deployment-plan.md outdated references
+**Prevention**: Trust user corrections about project tooling choices; update documentation proactively
 
-### Lesson 4: File-Based Handoff System Works Well
+### Lesson 4: UI Location Corrections (Session 4)
 
-**Observation**: Clear handoff chain today (Action→Planning→Browser→Planning→Research→Planning→Tracking)
-**Success**: Each agent wrote structured handoffs to predetermined locations
-**Value**: Next planning agent will have complete context via handoff files + Linear issues
-**Recommendation**: Continue this pattern; add handoff file checks to planning agent intake routine
+**Issue**: Suggested wrong UI location for environment variables (Site Config)
+**Reality**: Environment variables go in Bench Group → Env tab
+**User Correction**: "are you sure its not in the Bench group env?" (with screenshot)
+**Prevention**: When suggesting GUI navigation, provide screenshots of expected UI or ask user to verify location first
 
-### Lesson 5: Tracking Agent for Git/GitHub Operations
+### Lesson 5: Frappe Structure Requirements (Session 4)
 
-**Rationale**: Planning agent has limited context window; git operations consume tokens
-**Solution**: Delegate git/GitHub work to tracking agent (specialized, predictable operations)
-**Implementation**: WB6 has 6 phases with copy-paste bash commands and safety rules
-**Benefit**: Planning agent stays focused on coordination; tracking agent executes mechanically
+**Discovery**: Frappe requires both root-level `__init__.py` AND app-level `__init__.py`
+**Blocker**: Missing root `__init__.py` caused `ModuleNotFoundError: No module named 'flrts_extensions.flrts_extensions'`
+**Solution**: Researcher Agent deep dive identified pattern; Action Agent added 3-line file
+**Prevention**: Research framework-specific requirements before deployment (Frappe double-nested structure is non-standard)
+
+### Lesson 6: Linear MCP Authentication (Session 4)
+
+**Issue**: "Unauthorized" errors when calling Linear MCP tools
+**Solution**: User ran `/mcp` command to re-authenticate
+**Prevention**: When seeing Linear MCP auth errors, suggest `/mcp` command immediately
+
+### Lesson 7: User Deferrals Are Valid Priorities (Session 4)
+
+**Context**: User raised Linear GitHub mapping issue mid-deployment
+**User Decision**: "ok can we continue with the next job for bigsirflrts. At least that is setup correctly"
+**Response**: Created browser agent instructions but deferred execution per user request
+**Lesson**: Respect user priority shifts; document deferred work but don't auto-execute
 
 ---
 
@@ -300,26 +314,31 @@ All architectural decisions made, research complete, tasks documented in Linear.
 
 Next planning session is successful when:
 
-**If Tracking Agent Complete**:
-- ✅ New repo exists: `https://github.com/auldsyababua/flrts-extensions`
-- ✅ PR created and reviewed
-- ✅ Feature branch pushed without force push
-- ✅ Tracking handoff complete with verification outputs
+**If WB#6 Phase 4 Ready for Completion**:
+- ✅ Verify user has added `TELEGRAM_BOT_TOKEN` and `OPENAI_API_KEY` to Bench Group → Env tab
+- ✅ Test API authentication with existing keys (curl command)
+- ✅ If test passes, mark WB#6 complete
+- ✅ Create WB for Phase 6 (Telegram webhook configuration)
 
-**If Browser Agent Retry Needed**:
-- ✅ Updated 10N-275 WB1 with new repo URL (if not already correct)
-- ✅ Browser agent instructions clear and actionable
-- ✅ Manual screenshot workflow documented
+**If WB#6 Phase 4 Still In Progress**:
+- ✅ Check with user if env vars have been added
+- ✅ Assist with any issues adding env vars to Frappe Cloud GUI
+- ✅ Do not proceed to Phase 6 until API auth test passes
 
-**If Installation Succeeds**:
-- ✅ Route to action agent for Phase 4-7
-- ✅ Update 10N-228 Phase 3 status to complete
-- ✅ Begin SSH-based configuration workflow
+**If Moving to Phase 6**:
+- ✅ Create new work block in 10N-275 for Phase 6
+- ✅ Delegate to action-agent or browser-agent for webhook configuration
+- ✅ Webhook URL: `https://ops.10nz.tools/api/method/flrts_extensions.automations.telegram_api.handle_telegram_webhook`
 
-**If Installation Fails**:
-- ✅ Analyze browser agent handoff for root cause
-- ✅ Research alternative approaches (manual app upload, support ticket, etc.)
-- ✅ Escalate to Colin with recommendations
+**If User Requests Linear GitHub Mapping Fix**:
+- ✅ Read `docs/.scratch/linear-github-mapping/handoffs/planning-to-browser-instructions.md`
+- ✅ Delegate to browser agent with instructions
+- ✅ Wait for browser agent handoff with screenshots and status
+
+**Pull-Based Workflow Checks**:
+- ✅ Verify 10N-275 has max 4 active work blocks
+- ✅ Verify ONE work block per parent issue (no duplicates)
+- ✅ Verify all work blocks have Status, Parent Issue, Child Issues fields
 
 ---
 
@@ -331,7 +350,7 @@ Next planning session is successful when:
 3. **QA**: Verification, testing, quality assurance
 4. **Tracking**: Git/Linear operations (bookkeeping)
 5. **Researcher**: Evidence gathering, API validation, option analysis
-6. **Browser**: GUI operations, dashboard navigation (NEW - added today)
+6. **Browser**: GUI operations, dashboard navigation
 
 **Handoff Flow**:
 - Planning → Action (work assignment)
@@ -339,7 +358,7 @@ Next planning session is successful when:
 - QA → Action (retry) OR QA → Planning (PASS)
 - Planning → Tracking (bookkeeping)
 - Planning → Researcher (evidence gathering)
-- Planning → Browser (GUI operations) ← NEW
+- Planning → Browser (GUI operations)
 - Researcher/Tracking/Browser → Planning (always return to supervisor)
 
 **File Locations**:
@@ -350,4 +369,4 @@ Next planning session is successful when:
 
 ---
 
-**Next Planning Agent: Check tracking handoff first (`docs/.scratch/10n-228/handoffs/tracking-to-planning-complete.md`), then proceed based on status (success → browser retry, failure → troubleshoot).** 🚀
+**Next Planning Agent: Check WB#6 status in 10N-275. Verify user has added env vars to Bench Group → Env tab. Test API authentication with existing keys. If test passes, mark WB#6 complete and proceed to Phase 6 (webhook configuration). Pull-based workflow active - read 10N-275 for current status.** 🚀

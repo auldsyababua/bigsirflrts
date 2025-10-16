@@ -30,7 +30,7 @@ describe('Supabase Sync Service', () => {
       }
 
       // Try a simple query to test connection
-      const { data, error } = await supabase.from('tasks').select('id, task_title').limit(1);
+      const { error } = await supabase.from('tasks').select('id, task_title').limit(1);
 
       // If table doesn't exist, that's okay - we're just testing connection
       if (error) {

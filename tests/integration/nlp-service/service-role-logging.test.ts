@@ -53,7 +53,7 @@ describe('10N-176: Service Role Key for Logging', () => {
       });
 
       // Verify client works
-      const { data, error } = await adminClient.from('parsing_logs').select('count').limit(1);
+      const { error } = await adminClient.from('parsing_logs').select('count').limit(1);
 
       expect(error).toBeNull();
     });

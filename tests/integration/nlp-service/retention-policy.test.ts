@@ -163,12 +163,8 @@ describe('10N-174: Data Retention and Secret Detection', () => {
       // Note: In real tests, this might need manual trigger or longer wait
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Verify log was deleted by retention policy
-      const { data: deletedLog } = await supabaseAdmin
-        .from('parsing_logs')
-        .select('*')
-        .eq('request_id', testRequestId)
-        .single();
+      // Verify log was deleted by retention policy (query executes to test policy)
+      await supabaseAdmin.from('parsing_logs').select('*').eq('request_id', testRequestId).single();
 
       // Log should be deleted (or will be deleted on next policy run)
       // This test validates the policy exists, not immediate execution
@@ -192,7 +188,7 @@ describe('10N-174: Data Retention and Secret Detection', () => {
   describe('RLS Policy Verification', () => {
     it('should prevent anonymous users from reading all logs @P0', async () => {
       // Try to read logs with anon key
-      const { data, error } = await supabaseAnon.from('parsing_logs').select('*').limit(10);
+      const { data } = await supabaseAnon.from('parsing_logs').select('*').limit(10);
 
       // Should either fail or return no data (depending on RLS config)
       if (data) {
