@@ -154,3 +154,4 @@ infrastructure/github-runner/_work/
 *.pyo
 *.pyd
 test-results/
+flrts_extensions/
