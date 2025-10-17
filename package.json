@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "FLRTS project with NLP service",
+  "description": "FLRTS project",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "!packages/archive"
   ],
   "scripts": {
     "test:mvp": "npm run test:unit && npm run test:integration && npm run test:e2e",
