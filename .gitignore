@@ -157,7 +157,6 @@ infrastructure/github-runner/_work/
 *.pyo
 *.pyd
 test-results/
-flrts_extensions/
 
 # Temporary files
 tmp-*.log
