@@ -31,7 +31,7 @@ npm run test:erpnext-smoke
 
 ### **Configuration**
 
-The smoke tests use environment variables (see tests/config/test-config.ts):
+The smoke tests use environment variables:
 
 - `ERPNEXT_API_URL` - ERPNext site URL (default: <http://localhost:8000>)
 - `ERPNEXT_ADMIN_API_KEY` - ERPNext Admin user API key (preferred)

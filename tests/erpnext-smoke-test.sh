@@ -45,6 +45,13 @@ log_info() {
   echo -e "  ${NC}$1"
 }
 
+# Parse HTTP response with code on last line, body on preceding lines
+parse_http_response() {
+  local response="$1"
+  HTTP_CODE=$(echo "$response" | tail -n1)
+  BODY=$(echo "$response" | sed '$d')
+}
+
 # Check prerequisites
 check_prerequisites() {
   log_test "Checking prerequisites"
@@ -69,7 +76,8 @@ test_api_health() {
 
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${ERPNEXT_API_URL}" || echo "000")
 
-  if [[ "$HTTP_CODE" =~ ^(200|301|302|403)$ ]]; then
+  # Only 2xx and 3xx indicate a healthy API
+  if [[ "$HTTP_CODE" =~ ^(200|301|302)$ ]]; then
     log_pass "ERPNext API is responding (HTTP ${HTTP_CODE})"
   else
     log_fail "ERPNext API not responding (HTTP ${HTTP_CODE})"
@@ -90,15 +98,17 @@ test_api_authentication() {
     -H "Accept: application/json" \
     "${ERPNEXT_API_URL}/api/method/frappe.auth.get_logged_user" || echo -e "\n000")
 
-  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-  BODY=$(echo "$RESPONSE" | sed '$d')
+  parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     log_pass "API authentication successful"
-    log_info "Response: $(echo "$BODY" | jq -c '.')"
+    USERNAME=$(echo "$BODY" | jq -r '.message // "unknown"')
+    log_info "Authenticated as: ${USERNAME}"
   else
     log_fail "API authentication failed (HTTP ${HTTP_CODE})"
-    log_info "Response: $BODY"
+    # Only log error type, not full response to avoid leaking sensitive info
+    ERROR_TYPE=$(echo "$BODY" | jq -r '.exc_type // "Unknown error"' 2>/dev/null || echo "Unknown error")
+    log_info "Error type: ${ERROR_TYPE}"
   fi
 }
 
@@ -116,8 +126,7 @@ test_installed_apps() {
     -H "Accept: application/json" \
     "${ERPNEXT_API_URL}/api/method/frappe.utils.change_log.get_versions" || echo -e "\n000")
 
-  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-  BODY=$(echo "$RESPONSE" | sed '$d')
+  parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     # Check if flrts_extensions is in the response
@@ -153,13 +162,17 @@ test_telegram_webhook() {
     -d '{}' \
     "${WEBHOOK_URL}" || echo -e "\n000")
 
-  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+  parse_http_response "$RESPONSE"
 
-  if [[ "$HTTP_CODE" =~ ^(200|400|405)$ ]]; then
-    # 200 = success, 400 = method exists but bad payload, 405 = method exists but wrong HTTP method
+  # Only HTTP 200 indicates successful webhook access
+  # Note: 400/405/417 are errors that indicate validation or method issues
+  if [[ "$HTTP_CODE" == "200" ]]; then
     log_pass "Telegram webhook endpoint is accessible (HTTP ${HTTP_CODE})"
   else
     log_fail "Telegram webhook endpoint not accessible (HTTP ${HTTP_CODE})"
+    if [[ "$HTTP_CODE" == "417" ]]; then
+      log_info "Note: HTTP 417 likely means webhook rejected empty test payload (expected behavior)"
+    fi
   fi
 }
 
@@ -178,8 +191,7 @@ test_task_doctype() {
     -H "Accept: application/json" \
     "${ERPNEXT_API_URL}/api/resource/Task?limit_page_length=1" || echo -e "\n000")
 
-  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-  BODY=$(echo "$RESPONSE" | sed '$d')
+  parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     log_pass "Task DocType is accessible"
@@ -187,7 +199,9 @@ test_task_doctype() {
     log_info "Retrieved ${TASK_COUNT} task(s) from API"
   else
     log_fail "Task DocType access failed (HTTP ${HTTP_CODE})"
-    log_info "Response: $BODY"
+    # Only log error type, not full response to avoid leaking sensitive info
+    ERROR_TYPE=$(echo "$BODY" | jq -r '.exc_type // "Unknown error"' 2>/dev/null || echo "Unknown error")
+    log_info "Error type: ${ERROR_TYPE}"
   fi
 }
 
@@ -205,8 +219,7 @@ test_site_info() {
     -H "Accept: application/json" \
     "${ERPNEXT_API_URL}/api/method/frappe.utils.change_log.get_versions" || echo -e "\n000")
 
-  HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-  BODY=$(echo "$RESPONSE" | sed '$d')
+  parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     log_pass "Site information retrieved"
