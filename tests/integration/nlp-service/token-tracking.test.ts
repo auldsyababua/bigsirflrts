@@ -304,7 +304,7 @@ describe('10N-173: Token Usage and Cost Tracking', () => {
       expect(error).toBeNull();
 
       if (data && data.length > 0) {
-        const totalCost = data.reduce((sum, log) => sum + log.cost, 0);
+        const totalCost = data.reduce((sum: number, log: { cost: number }) => sum + log.cost, 0);
         expect(totalCost).toBeGreaterThan(0);
       }
     });

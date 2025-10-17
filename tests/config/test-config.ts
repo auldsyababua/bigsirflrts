@@ -8,12 +8,22 @@
  */
 
 interface TestConfig {
+  // DEPRECATED: Supabase config retained for archived tests only
+  // Per ADR-006, migrated to ERPNext on Frappe Cloud
   supabase: {
     projectId: string | undefined;
     url: string | undefined;
     anonKey: string | undefined;
     serviceRoleKey: string | undefined;
   };
+  // ERPNext Configuration (Current Stack)
+  erpnext: {
+    apiUrl: string | undefined;
+    apiKey: string | undefined;
+    apiSecret: string | undefined;
+  };
+  // DEPRECATED: Supabase edge function endpoints
+  // Replaced by ERPNext custom app endpoints (flrts_extensions)
   endpoints: {
     parseRequest: string;
     telegramWebhook: string;
@@ -50,7 +60,7 @@ interface TestConfig {
 }
 
 export const testConfig: TestConfig = {
-  // Supabase Configuration
+  // DEPRECATED: Supabase Configuration (archived tests only)
   supabase: {
     projectId: process.env.SUPABASE_PROJECT_ID,
     url: process.env.SUPABASE_URL,
@@ -58,7 +68,14 @@ export const testConfig: TestConfig = {
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   },
 
-  // API Endpoints
+  // ERPNext Configuration (Current Stack - Frappe Cloud)
+  erpnext: {
+    apiUrl: process.env.ERPNEXT_API_URL || 'http://localhost:8000',
+    apiKey: process.env.ERPNEXT_API_KEY,
+    apiSecret: process.env.ERPNEXT_API_SECRET,
+  },
+
+  // DEPRECATED: Supabase Edge Function Endpoints (archived tests only)
   endpoints: {
     parseRequest: `${process.env.SUPABASE_URL}/functions/v1/parse-request`,
     telegramWebhook: `${process.env.SUPABASE_URL}/functions/v1/telegram-webhook`,
@@ -108,18 +125,35 @@ export const testConfig: TestConfig = {
 };
 
 /**
- * Validates that all required environment variables are present
+ * Validates that required environment variables are present for current stack (ERPNext)
+ * Note: Supabase vars only required for archived tests
  * @throws {Error} If required environment variables are missing
  */
 export function validateTestConfig(): void {
-  const required = ['SUPABASE_PROJECT_ID', 'SUPABASE_URL', 'SUPABASE_ANON_KEY'];
+  // ERPNext is now the primary stack
+  const erpnextRequired = ['ERPNEXT_API_KEY', 'ERPNEXT_API_SECRET'];
+  const missing = erpnextRequired.filter((key) => !process.env[key]);
 
+  if (missing.length > 0) {
+    console.warn(
+      `Missing ERPNext environment variables: ${missing.join(', ')}\n` +
+        'ERPNext tests will be skipped. Configure via .env.test for full test suite.'
+    );
+  }
+}
+
+/**
+ * DEPRECATED: Validates Supabase config (archived tests only)
+ * @throws {Error} If required Supabase environment variables are missing
+ */
+export function validateSupabaseTestConfig(): void {
+  const required = ['SUPABASE_PROJECT_ID', 'SUPABASE_URL', 'SUPABASE_ANON_KEY'];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}\n` +
-        'Make sure to run tests with: op run --env-file=tests/.env.test -- npm run test:integration'
+      `Missing required Supabase environment variables: ${missing.join(', ')}\n` +
+        'Note: Supabase is deprecated. This function is for archived tests only.'
     );
   }
 }

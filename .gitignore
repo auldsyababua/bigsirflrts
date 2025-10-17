@@ -147,9 +147,22 @@ infrastructure/github-runner/work/
 infrastructure/github-runner/_work/
 
 # === ARCHIVE ALLOWLIST ===
-# Keep archived docs tracked for reference (intentional override)
+# Keep archived docs and tests tracked for reference (intentional override)
 !docs/archive/
-!docs/archive/**__pycache__/
+!docs/archive/**/__pycache__/
+!docs/archive/**
+!tests/archive/
+!tests/archive/**
 *.pyc
 *.pyo
 *.pyd
+test-results/
+
+# Temporary files
+tmp-*.log
+
+# Generated security reports
+security-findings.json
+
+# Custom ERPNext app (external repo)
+/flrts_extensions

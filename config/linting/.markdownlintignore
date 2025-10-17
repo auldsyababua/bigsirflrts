@@ -1,9 +1,0 @@
-node_modules/
-docs/archive/
-ARCHIVE(DEPRECATED)/
-*.min.js
-coverage/
-.git/
-package-lock.json
-docs/.scratch
-docs/prompts/
