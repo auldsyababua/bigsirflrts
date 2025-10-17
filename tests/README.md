@@ -2,7 +2,62 @@
 
 This directory contains multiple test suites for the FLRTS project:
 
-## 🔐 **Secure API Testing Infrastructure** (New)
+## 🏥 **ERPNext Smoke Tests (Phase 7)** (New)
+
+**Status: ✅ WORKING** - Comprehensive smoke tests for ERPNext on Frappe Cloud
+infrastructure.
+
+### **Quick Start**
+
+```bash
+# Run ERPNext smoke tests
+npm run test:erpnext-smoke
+
+# With environment variables
+ERPNEXT_API_URL=https://ops.10nz.tools \
+ERPNEXT_API_KEY=your_key \
+ERPNEXT_API_SECRET=your_secret \
+npm run test:erpnext-smoke
+```
+
+### **What's Tested**
+
+- ✅ **ERPNext API Health** - Verifies ops.10nz.tools is accessible
+- ✅ **API Authentication** - Validates API key/secret credentials
+- ✅ **Site Information** - Checks Frappe and ERPNext versions
+- ✅ **Custom Apps** - Verifies flrts_extensions is installed
+- ✅ **Telegram Webhook** - Tests webhook endpoint accessibility
+- ✅ **Task DocType** - Validates Task CRUD API access
+
+### **Configuration**
+
+The smoke tests use environment variables (see tests/config/test-config.ts):
+
+- `ERPNEXT_API_URL` - ERPNext site URL (default: <http://localhost:8000>)
+- `ERPNEXT_API_KEY` - API key for authentication
+- `ERPNEXT_API_SECRET` - API secret for authentication
+
+### **Output**
+
+Tests provide color-coded results:
+
+- 🟢 **PASS** - Test succeeded
+- 🔴 **FAIL** - Test failed with details
+- 🟡 **SKIP** - Test skipped (missing prerequisites)
+
+Final summary shows counts: Passed, Failed, Skipped
+
+### **Notes**
+
+- Tests use 10-second timeout per API call
+- Requires `curl` and `jq` commands
+- macOS and Linux compatible
+- Detailed error output includes full API responses
+- Exit code 0 on success, 1 on failure
+
+---
+
+## 🔐 **Secure API Testing Infrastructure**
 
 **Status: ✅ WORKING** - Complete testing infrastructure with 1Password Service
 Account integration and Node.js native test runner.
