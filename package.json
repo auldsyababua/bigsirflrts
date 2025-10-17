@@ -21,7 +21,7 @@
     "test:performance": "node tests/run-integration-tests.js --suite=performance-regression",
     "test:integration:all": "node tests/run-integration-tests.js",
     "test:resilience": "vitest run tests/integration/n8n-operational-resilience.test.ts",
-    "test:resilience:shell": "bash infrastructure/scripts/run-resilience-tests.sh",
+    "test:resilience:shell": "bash scripts/run-resilience-tests.sh",
     "test:coverage": "vitest run --coverage",
     "lint": "npm run lint:js && npm run lint:md && npm run lint:shell",
     "lint:js": "eslint . --ext .js,.jsx,.ts,.tsx",
