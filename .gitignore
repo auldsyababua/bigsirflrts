@@ -166,3 +166,4 @@ security-findings.json
 
 # Custom ERPNext app (external repo)
 /flrts_extensions
+docs/archive/infrastructure/digitalocean-monitoring/production-monitoring/node_modules/
