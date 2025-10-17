@@ -16,9 +16,15 @@ Per ADR-006, BigSirFLRTS migrated from self-hosted Supabase (PostgreSQL) to ERPN
 
 - **`sync-service-supabase.test.ts`** - Integration tests for sync-service connecting to Supabase PostgreSQL. Replaced by ERPNext API integration.
 
+- **`edge-function-n8n-webhook.test.ts`** - Tests Supabase Edge Function webhooks for n8n automation integration. ERPNext uses custom Frappe app endpoints instead of Edge Functions.
+
+- **`edge-functions.test.ts`** - Tests Supabase Edge Functions deployment, invocation, and error handling. Replaced by ERPNext server-side scripts and custom app methods.
+
 ### PostgreSQL-Specific Tests
 
 - **`database-monitoring.test.ts`** - Tests PostgreSQL monitoring views (pg_stat_statements). ERPNext uses MariaDB, not PostgreSQL.
+
+- **`performance-regression.test.ts`** - Tests PostgreSQL query performance benchmarks and regression detection. MariaDB performance characteristics differ significantly.
 
 ## Replacement
 
@@ -44,8 +50,8 @@ Updating would require complete rewrites. Better to archive for historical refer
 ## Impact on Test Suite
 
 **Before Archival:** 56% of tests (14 files) referenced deprecated stack
-**After Archival:** 3 files archived (critical Supabase tests removed)
-**Remaining:** 11 files still need review/update (see 10N-338 audit report)
+**After Archival:** 6 files archived (Supabase/PostgreSQL-specific tests removed)
+**Remaining:** 8 files still need review/update (see 10N-338 audit report)
 
 ## Related Work
 

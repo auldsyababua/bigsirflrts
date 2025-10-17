@@ -1,4 +1,16 @@
 /**
+ * ⚠️ NON-FUNCTIONAL TEST - HISTORICAL REFERENCE ONLY
+ *
+ * This archived test contains broken import paths to deprecated
+ * infrastructure. Test will not run.
+ *
+ * Preserved for historical reference only.
+ *
+ * Last Active: 2025-10-13
+ * Archived: 2025-10-16
+ */
+
+/**
  * Config layer tests - backend switching and env var resolution
  * Phase 1: 10N-243
  */

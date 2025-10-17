@@ -1,3 +1,15 @@
+/**
+ * ⚠️ NON-FUNCTIONAL CODE - HISTORICAL REFERENCE ONLY
+ *
+ * This archived sync-service contains broken references to deprecated
+ * OpenProject infrastructure (ADR-006). Code will not execute.
+ *
+ * Preserved for historical reference only.
+ *
+ * Last Active: 2025-10-13
+ * Archived: 2025-10-16
+ */
+
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
