@@ -1,6 +1,6 @@
 # Architecture Decision Record: ERPNext as Backend Platform
 
-## ADR-006: ERPNext FSM Backend vs OpenProject vs Custom Schema
+## ADR-008: ERPNext FSM Backend vs OpenProject vs Custom Schema
 
 **Status:** Proposed **Date:** 2025-09-30 **Decision Makers:** Technical
 Architecture Team, Product Owner
