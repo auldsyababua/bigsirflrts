@@ -152,3 +152,47 @@ See current deployment procedures:
 
 **Last Updated:** 2025-10-16
 **Migration Reference:** docs/.scratch/deep-audit/migration-mapping.md
+
+## Maintenance Scripts
+
+**Archived Date:** 2025-10-17
+**Original Location:** /scripts/maintenance/
+
+### cleanup.sh
+
+Context cleanup script - removes archive node_modules and large binaries.
+
+- Size: 2061 bytes
+- Last Modified: Sep 24 (no git history)
+- Not in package.json
+- Purpose: One-time cleanup of archive directories and duplicate node_modules
+
+### fix-node-modules.sh
+
+npm workspaces setup script.
+
+- Size: 2931 bytes
+- Last Modified: Sep 24 (no git history)
+- Not in package.json
+- Purpose: One-time migration to npm workspaces (already complete)
+
+### Why Archived
+
+- One-time operations already completed
+- Not referenced in package.json scripts
+- No git history (created before repo tracking)
+- npm workspaces already configured
+- Archive cleanup no longer needed
+
+### Recovery
+
+```bash
+git log --all -- scripts/maintenance/cleanup.sh
+git log --all -- scripts/maintenance/fix-node-modules.sh
+git checkout <commit-hash> -- scripts/maintenance/<script-name>
+```
+
+### Breadcrumbs
+
+- EVAL-004: scripts/maintenance/cleanup.sh
+- EVAL-005: scripts/maintenance/fix-node-modules.sh
