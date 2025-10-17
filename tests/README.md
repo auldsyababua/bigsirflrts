@@ -34,8 +34,14 @@ npm run test:erpnext-smoke
 The smoke tests use environment variables (see tests/config/test-config.ts):
 
 - `ERPNEXT_API_URL` - ERPNext site URL (default: <http://localhost:8000>)
-- `ERPNEXT_API_KEY` - API key for authentication
-- `ERPNEXT_API_SECRET` - API secret for authentication
+- `ERPNEXT_ADMIN_API_KEY` - ERPNext Admin user API key (preferred)
+- `ERPNEXT_ADMIN_API_SECRET` - ERPNext Admin user API secret (preferred)
+- `ERPNEXT_API_KEY` - Fallback API key (legacy naming)
+- `ERPNEXT_API_SECRET` - Fallback API secret (legacy naming)
+
+**Note**: Use `ERPNEXT_ADMIN_API_*` keys generated from ERPNext (User →
+Administrator → Settings → API Access), not the Frappe Cloud infrastructure API
+keys.
 
 ### **Output**
 
