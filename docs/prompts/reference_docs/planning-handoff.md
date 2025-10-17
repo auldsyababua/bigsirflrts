@@ -1,350 +1,283 @@
 # Planning Agent Session Handoff
 
-**From**: Directory Cleanup Planning Session (2025-10-16)
+**From**: Repository Reorganization Planning Session (2025-10-16)
 **To**: Next Planning Agent
-**Context**: Deep repository reorganization - merciless hygiene enforcement
+**Context**: Full repository cleanup ready for execution
 
 ---
 
 ## What Was Completed This Session
 
-### PR #153 Created (Ready for Merge)
-- **Branch**: `chore/directory-cleanup`
-- **Status**: Approved for merge
-- **Archived**: `/supabase`, `/scratch`, `infrastructure/monitoring/`
-- **Deleted**: `/monitoring` symlink, `/prompts`, `/test`, `/test-results`
-- **Result**: -6 top-level directories (52 → 46 items at root)
+### PR #153 Safety Review & Fixes ✅
 
-### Analysis Documents Created
+**Commits**: 62dcc31, 5b1e7f7
 
-1. **docs/.scratch/directory-audit/directory-audit-report.md**
-   - Initial /docs directory analysis (15 directories analyzed)
-   - Found single-file directories and overlaps
+1. **Reviewed ALL PR #153 comments** (CodeRabbit AI)
+   - Used Tracking Agent to pull all comments from GitHub
+   - Analysis: `docs/.scratch/pr-153-review/all-comments.md`
+   - Found 3 "critical" issues (acceptable - archived code is reference-only)
 
-2. **docs/.scratch/directory-audit/docs-reorganization-proposal.md**
-   - Proposed /docs reorganization using Diátaxis framework
-   - Philosophy: Purpose over technology (NOT /docs/erpnext/, but /docs/research/erpnext/)
+2. **Fixed Documentation Accuracy**
+   - Updated `tests/archive/deprecated-stack/ARCHIVE-README.md`
+   - Changed "3 files" → "6 files archived"
+   - Documented 3 missing test files with rationale
 
-3. **docs/.scratch/directory-audit/full-repo-reorganization-proposal.md**
-   - Full repository analysis (23 root items)
-   - Industry best practices research
-   - Identified immediate wins and long-term plan
+3. **Added Non-Functional Warnings**
+   - `packages/archive/sync-service/src/index.ts` - warning header
+   - `packages/archive/sync-service/src/__tests__/config.test.ts` - warning header
+   - Clear messaging: archived code contains broken references, won't execute
 
----
+4. **Removed Duplicate flrts_extensions/**
+   - 20 files removed from monorepo
+   - External repo location documented in .project-context.md:
+     - Local: `/Users/colinaulds/Desktop/flrts-extensions`
+     - GitHub: `auldsyababua/flrts-extensions`
+   - Added to .gitignore
 
-## Critical User Directive: Go Deeper
-
-User wants **merciless hygiene** with full traceability:
-
-> "I think we need to be really diligent and merciless in our hygiene. Obviously we REALLY don't want to delete anything important, but by archiving and documenting all these moves and deletions (we should actually do this ahead of time so when action does it, they have a clear directive) and then we can just add the mapping doc into the project-context.md file as a ref so that if we do accidentally move something important, its easy to get it back and we know where it is."
-
-### Key Requirements
-
-1. **Deep forensic audit** - Not just top-level, go into subdirectories
-2. **Document BEFORE executing** - Create migration mapping document first
-3. **Full traceability** - Document original paths for all archived files
-4. **Archive breadcrumbs** - Every archived item gets metadata (original path, date, reason)
-5. **Add mapping to .project-context.md** - Reference document for recovery
-6. **Merciless but safe** - Archive aggressively, but with recovery path
+**Decision**: App never shipped, no production users. Archived code = historical reference only per .project-context.md.
 
 ---
 
-## Findings So Far (Partial Audit)
+### Full Repository Reorganization Planning ✅
 
-### scripts/ Directory (18 files + 3 subdirs)
+**Commit**: 96a318d
 
-**One-off migration scripts** (Last touched Sept 2025, likely obsolete):
-- `migrate-to-linear.js` (413 lines) - OpenProject → Linear migration
-- `migrate-to-linear-simple.js` (5633 bytes) - Simpler migration variant
-- `push-docs-to-linear.js` - One-time doc migration
+**Completed Work Blocks:**
 
-**Cloudflare scripts** (Last touched Sept 13, obsolete after DigitalOcean shutdown):
-- `cf-wrangler` - Cloudflare CLI wrapper
-- `check-cf-dns` - DNS check script
+#### WB1: Deep Forensic Audit (Research Agent)
+- Analyzed all 23 root items + deep subdirectory analysis
+- Classification: Active/Obsolete/One-Off/Misplaced
+- Git history analysis for every file
+- Dependency checks (imports, package.json references)
+- **Output**: `docs/.scratch/deep-audit/forensic-audit-report.md`
 
-**Linear setup scripts** (One-time setup, probably obsolete):
-- `setup-linear.js` - Initial Linear workspace setup
-- `setup-linear-cycles.js` - Cycle configuration
-- `linear-cli.js` - Linear CLI wrapper
-- `linear-webhook.js` - Webhook setup
+**Key Findings:**
+- 25+ obsolete files (migration scripts, deprecated infrastructure)
+- 10 one-off migration scripts
+- 15 misplaced files
+- 2 temporary files tracked in git (should be gitignored)
 
-**Still active**:
-- `security-review.sh` (25KB) - Active security scanning
-- `ssh-frappe-bench.sh` - Active Frappe Cloud operations
-- `bmad-qa-gate.sh` - CI gate (check if still used)
-- `check-port-bindings.sh` - Port conflict detection
-- `pre-commit-ci-check.sh` - Git hook
-- `test-like-github.sh` - CI simulation
-- `validate-test-env.sh` - Test env validation
-- `setup-test-env.sh` - Test env setup
+#### WB2: Migration Mapping Document (Action Agent)
+- 45 items catalogued with breadcrumb IDs (ARCH-001 through ARCH-015)
+- Complete traceability: original path → new path → reason
+- 12 execution phases with exact bash commands
+- Recovery instructions for every item
+- **Output**: `docs/.scratch/deep-audit/migration-mapping.md`
 
-**Subdirectories**:
-- `scripts/dev/` - 1 file: `preview-globs.sh`
-- `scripts/maintenance/` - 2 files: `cleanup.sh`, `fix-node-modules.sh`
-- `scripts/setup/` - 1 file: `setup-smart-search.sh`
+**Breadcrumb System:**
+- ARCH-001 through ARCH-015: Primary archives
+- Sub-items: ARCH-001a through ARCH-001g (Supabase migrations)
+- DEL-001, DEL-002: Deletions
+- CONS-001 through CONS-006: Consolidations
+- REORG-001 through REORG-004: Reorganizations
+- EVAL-001 through EVAL-005: Items pending decision
 
-### infrastructure/ Directory
+#### WB3: Archive Breadcrumbs (Action Agent)
+- 4 NEW archive READMEs created
+- 2 EXISTING archive READMEs updated
+- Every archived directory has metadata, file inventory, recovery instructions
 
-**Obsolete (local dev only)**:
-- `docker/` - Docker Compose for local n8n/Postgres (production uses Frappe Cloud)
-- `cloudflare/setup-r2.sh` - R2 setup (obsolete)
-- `tests/` - Load tests for old infrastructure
-- `qa-evidence/` - Old container naming reports (historical)
+**Archive READMEs Created:**
+1. `docs/archive/supabase-migrations/ARCHIVE-README.md` (ARCH-001)
+2. `docs/archive/scripts/linear-migration/ARCHIVE-README.md` (ARCH-002 through ARCH-006)
+3. `docs/archive/scripts/cloudflare/ARCHIVE-README.md` (ARCH-007 through ARCH-009)
+4. `docs/archive/scripts/infrastructure/ARCHIVE-README.md` (ARCH-010 through ARCH-012)
+5. `docs/archive/scripts/ARCHIVE-README.md` (updated with ARCH-013, ARCH-014)
+6. `packages/archive/ARCHIVE-README.md` (updated with flrts-extension ARCH-015)
 
-**Possibly active**:
-- `scripts/` - Various deployment/health check scripts (need audit)
-- `github-runner/` - GitHub runner config (check if used)
-
-### Other Root Items (Not Yet Audited)
-
-- `/config` - Just linting (1 subdir)
-- `/database` - Obsolete Supabase migrations
-- `/erpnext-admin-map` - One-time research screenshots (Oct 7)
-- `/flrts_extensions` - ERPNext custom app (duplicate of external repo?)
-- `/lib` - 1 file: linear-integration.js
-- `/packages` - nlp-service + archived packages
+#### WB4: Update .project-context.md
+- Added "Repository Reorganization" section
+- Documented planning completion status
+- Included recovery instructions reference
+- Cross-referenced to planning documents
 
 ---
 
-## Your Mission (Next Planning Agent)
+## Current Git State
 
-### Philosophy (User-Approved)
+**Branch**: `chore/directory-cleanup`
+**Remote**: Pushed to origin
+**Last Commit**: 96a318d
 
-**Organize by PURPOSE, not technology**:
-- ✅ `docs/research/erpnext/schema-philosophy.md` (research about ERPNext)
-- ❌ `docs/erpnext/research/schema-philosophy.md` (ERPNext gets own folder)
+**Recent Commits**:
+- 96a318d: docs: complete deep repository reorganization planning
+- 5b1e7f7: chore: remove local flrts_extensions directory
+- 62dcc31: docs: fix archive documentation and add non-functional warnings
+- 133b143: docs: add deep repository reorganization planning documents
+- 36f8b74: chore: archive obsolete infrastructure and cleanup directories
 
-**Merciless hygiene**:
-- One-off scripts → archive with breadcrumbs
-- Obsolete infrastructure → archive with breadcrumbs
-- Single-file directories → consolidate
-- Technology-specific root folders → reorganize by purpose
-
-**Traceability**:
-- Document original path for every move
-- Create migration mapping document
-- Add reference to .project-context.md
-- ARCHIVE-README.md for every archived directory
+**Clean Working Directory**: No uncommitted changes
 
 ---
 
-## Work Blocks for You to Execute
+## Ready for Execution: Full Repository Reorganization
 
-### Work Block 1: Deep Forensic Audit
+### Planning Documents
 
-**DO NOT DO THIS YOURSELF** - Spawn Research Agent to preserve your context.
+**All documents committed and pushed:**
 
-**Delegate to Research Agent**:
-```
-You are the Research Agent. Your task is to conduct a deep forensic audit of the BigSirFLRTS repository to identify obsolete, one-off, and misplaced files for archival.
+1. **Forensic Audit Report**
+   - Path: `docs/.scratch/deep-audit/forensic-audit-report.md`
+   - Contents: Complete analysis of 23 root items, classification, git history
+   - Size: Comprehensive (covers all files)
 
-**Your Task**: Create comprehensive audit report with categorization.
+2. **Migration Mapping**
+   - Path: `docs/.scratch/deep-audit/migration-mapping.md`
+   - Contents: 45 items mapped, 12 execution phases, breadcrumb lookup table
+   - Ready to execute: All bash commands included
 
-**Directories to Audit** (go DEEP, check subdirectories):
-1. scripts/ - Check git history, file headers, identify one-off vs active
-2. infrastructure/ - Identify obsolete Docker/Cloudflare/test configs
-3. config/ - Assess if needed or consolidate to root
-4. database/ - Confirm obsolete (Supabase migrations)
-5. erpnext-admin-map/ - Confirm one-time research
-6. flrts_extensions/ - Check if duplicate of external repo
-7. lib/ - Assess if single file should be consolidated
-8. packages/ - Audit each package for active use
+3. **Archive READMEs**
+   - Locations: docs/archive/* and packages/archive/*
+   - Contents: Metadata, file inventories, recovery instructions
+   - Breadcrumbs: ARCH-001 through ARCH-015 fully documented
 
-**For Each File/Directory, Document**:
-- Original path
-- Purpose (from file headers, git history, README)
-- Last modified date (git log)
-- Last meaningful commit (not just linting)
-- Active vs obsolete classification
-- Recommendation: Keep, Archive, Consolidate, Delete
+### Execution Plan Summary
 
-**Output**: docs/.scratch/deep-audit/forensic-audit-report.md
+**Impact:**
+- Root directory: 23 → ~17 items (~26% reduction)
+- Archives: 25+ files
+- Deletions: 2 temporary files
+- Consolidations: 6 items
+- Reorganizations: 4 items
 
-**Tools to Use**:
-- git log --all --format="%ai" --name-only -- <file>
-- head -20 <file> (check headers/comments)
-- Read any README files in directories
-- Check .gitignore to see what's already ignored
+**Phases (12 total):**
 
-**DO NOT** make assumptions - investigate each file.
-**DO NOT** execute any moves - just document findings.
-```
+**Low Risk (Safe to Execute):**
+- Phase 1: Delete temporary files (tmp-sec.log, security-findings.json)
+- Phase 2: Update .gitignore patterns
+- Phases 3-9: Archive obsolete code (Supabase migrations, Linear scripts, Cloudflare, infrastructure, browser extension)
+- Phase 12: Final .gitignore cleanup
 
-### Work Block 2: Create Migration Mapping Document
+**Medium Risk (Requires Testing):**
+- Phases 10-11: Consolidations (lib/, infrastructure/scripts/, config/linting/)
+  - Need to update package.json references
+  - Run tests after each consolidation
 
-**After Research Agent completes audit**, spawn Action Agent:
+**High Risk (Pending Decision):**
+- EVAL-001 through EVAL-005: Items requiring Planning Agent approval
+  - packages/nlp-service/ (uses deprecated OpenProject/Supabase - refactor or archive?)
+  - scripts/linear-cli.js, linear-webhook.js (still used?)
+  - scripts/maintenance/ scripts (still used?)
 
-```
-You are the Action Agent. Your task is to create a comprehensive migration mapping document based on the forensic audit.
+### Files to Reference
 
-**Input**: docs/.scratch/deep-audit/forensic-audit-report.md
+**Planning Documents:**
+- `docs/.scratch/deep-audit/forensic-audit-report.md` - Full analysis
+- `docs/.scratch/deep-audit/migration-mapping.md` - Execution guide
+- `.project-context.md` - Updated with recovery instructions
 
-**Your Task**: Create migration plan with full traceability.
+**Archive Documentation:**
+- 6 ARCHIVE-README.md files with full metadata
+- Every archive has breadcrumb ID for traceability
 
-**Output**: docs/.scratch/deep-audit/migration-mapping.md
-
-**Required Format**:
-
-## Migration Mapping Document
-
-### Archives (Moving to docs/archive/ or other archive locations)
-
-| Original Path | New Path | Reason | Last Active | Breadcrumb ID |
-|---------------|----------|--------|-------------|---------------|
-| scripts/migrate-to-linear.js | docs/archive/scripts/migrate-to-linear.js | One-off OpenProject migration | 2025-09-29 | ARCH-001 |
-| ... | ... | ... | ... | ... |
-
-### Consolidations (Merging single-file directories)
-
-| Original Path | New Path | Reason |
-|---------------|----------|--------|
-| lib/linear-integration.js | scripts/integrations/linear.js | Single-file dir consolidation |
-| ... | ... | ... |
-
-### Deletions (Removing duplicates/generated files)
-
-| Original Path | Reason | Backup Location |
-|---------------|--------|-----------------|
-| tmp-sec.log | Log file (should be gitignored) | N/A - add to .gitignore |
-| ... | ... | ... |
-
-### Reorganizations (Purpose-based moves)
-
-| Original Path | New Path | Reason |
-|---------------|----------|--------|
-| docs/erpnext/research/schema.md | docs/research/erpnext/schema.md | Purpose over technology |
-| ... | ... | ... |
-
-**Also Create**: Breadcrumb lookup table (ARCH-001 → full details)
-```
-
-### Work Block 3: Create Archive Breadcrumbs
-
-**Spawn Action Agent**:
-
-```
-You are the Action Agent. Your task is to create ARCHIVE-README.md files for every directory that will be archived, with full breadcrumb metadata.
-
-**Input**: docs/.scratch/deep-audit/migration-mapping.md
-
-**Your Task**: For each archived directory, create ARCHIVE-README.md with:
-
-**Template**:
-```markdown
-# [Directory Name] Archive
-
-**Archived**: 2025-10-16
-**Original Path**: `[exact original path]`
-**Breadcrumb ID**: ARCH-XXX
-**Reason**: [specific reason for archival]
-
-## What Was Here
-
-[List of files with original paths and purposes]
-
-## Why Archived
-
-[Detailed explanation of obsolescence]
-
-## Related
-
-- [Links to ADRs, PRs, Linear issues]
-- Migration mapping: docs/.scratch/deep-audit/migration-mapping.md
-
-## Last Active
-
-Last modified: [date from git log]
-Last meaningful change: [date and commit]
-
-## Recovery
-
-If you need to restore these files:
-1. Check migration-mapping.md for breadcrumb ARCH-XXX
-2. Original location documented above
-3. Git history available: git log --all -- "[original path]"
-```
-
-**Output**: Create all ARCHIVE-README.md files (don't execute moves yet)
-```
-
-### Work Block 4: Update .project-context.md
-
-**Spawn Action Agent**:
-
-```
-You are the Action Agent. Your task is to add reference to migration mapping document in .project-context.md.
-
-**Add to .project-context.md** under "Known Issues/Blockers" or new "File Migration History" section:
-
-```markdown
-## File Migration History
-
-**Repository Reorganization** (2025-10-16):
-- Deep cleanup following merciless hygiene standards
-- Full migration mapping: docs/.scratch/deep-audit/migration-mapping.md
-- All archived items documented with breadcrumb IDs
-- Original paths preserved for recovery
-
-**Key Archives**:
-- scripts/ - One-off migration scripts archived
-- infrastructure/ - Obsolete DigitalOcean/Docker configs archived
-- database/ - Supabase migrations archived
-
-**Recovery**: See migration-mapping.md for breadcrumb lookup table.
-```
-```
-
-### Work Block 5: Execute Cleanup (After User Approval)
-
-**ONLY after user reviews and approves migration-mapping.md**, spawn Action Agent to execute.
-
-**DO NOT execute without explicit user approval.**
+**PR Context:**
+- `docs/.scratch/pr-153-review/all-comments.md` - CodeRabbit review analysis
 
 ---
 
-## Estimated Timeline
+## Next Steps for Next Planning Agent
 
-- **WB1** (Research audit): 30-45 minutes (Research Agent)
-- **WB2** (Migration mapping): 15-20 minutes (Action Agent)
-- **WB3** (Breadcrumbs): 20-30 minutes (Action Agent)
-- **WB4** (Update context): 5 minutes (Action Agent)
-- **WB5** (Execution): 30 minutes (Action Agent, after approval)
+### Option A: Execute Full Reorganization
 
-**Total**: ~2 hours (mostly agent time, not your context)
+**Recommended Approach:**
+1. Spawn Action Agent with Phase 1 (deletions)
+2. Test, commit
+3. Spawn Action Agent with Phases 2-9 (archives)
+4. Test, commit
+5. Spawn Action Agent with Phases 10-11 (consolidations)
+6. Update package.json, run tests, commit
+7. Evaluate EVAL-001 through EVAL-005 with user
+
+**Estimated Time**: 30-45 minutes (mostly Action Agent execution)
+
+### Option B: Phased Review
+
+Execute low-risk phases first, review results, then proceed with medium-risk phases.
+
+### Option C: User Review First
+
+Present migration-mapping.md to user for approval of specific phases before execution.
 
 ---
 
-## Critical Instructions
+## Critical Context
 
-1. **DO NOT execute cleanup yourself** - You'll run out of context
-2. **Spawn agents for each work block** - Preserve your context for coordination
-3. **Wait for user approval** before WB5 execution
-4. **Present migration-mapping.md to user** for review before any moves
-5. **Update Linear 10N-275 dashboard** after each work block completes
+### App Status (from .project-context.md)
+
+**Key Fact**: App has **never shipped**, no production users, no active usage.
+
+**Deprecated Technologies** (all archived):
+- OpenProject (hosting shut down Sep 30, 2025)
+- Supabase as primary backend (migrated to ERPNext)
+- sync-service (no longer needed)
+- DigitalOcean infrastructure
+- AWS X-Ray SDK (replaced with OpenTelemetry)
+
+**Archived code = historical reference only**
+
+### Recovery System
+
+If anything goes wrong during execution:
+1. Check `docs/.scratch/deep-audit/migration-mapping.md` for breadcrumb ID
+2. Every archive has ARCHIVE-README.md with original path
+3. Git history fully preserved
+4. Rollback: `git checkout <commit> -- <original-path>`
+
+### Testing Requirements
+
+After each consolidation phase:
+- Run unit tests: `npm run test:unit`
+- Run integration tests: `npm run test:integration` (if services available)
+- Run security review: `scripts/security-review.sh`
+- Check imports: Verify no broken references
 
 ---
 
-## Files to Reference
+## Known Issues/Blockers
 
-- `docs/.scratch/directory-audit/directory-audit-report.md` - Initial /docs audit
-- `docs/.scratch/directory-audit/docs-reorganization-proposal.md` - /docs philosophy
-- `docs/.scratch/directory-audit/full-repo-reorganization-proposal.md` - Full repo analysis
+**None** - All planning complete, ready for execution.
+
+**Pending Decisions (EVAL items):**
+- nlp-service package (refactor for ERPNext or archive?)
+- Linear integration scripts (still needed?)
+- Maintenance scripts (still used?)
+
+**User approval required**: Final decision on execution approach (Option A, B, or C)
 
 ---
 
 ## Success Criteria
 
-- [ ] Forensic audit complete (all files categorized)
-- [ ] Migration mapping document created
-- [ ] User approves migration plan
-- [ ] All ARCHIVE-README.md files created
-- [ ] .project-context.md updated with recovery reference
-- [ ] Cleanup executed successfully
-- [ ] Repository reduced to essential, well-organized structure
-- [ ] Full traceability for all moves
+**Planning Phase (COMPLETE ✅)**:
+- [x] Forensic audit complete (all files categorized)
+- [x] Migration mapping document created
+- [x] User context provided (app never shipped)
+- [x] All ARCHIVE-README.md files created
+- [x] .project-context.md updated with recovery reference
+- [x] All planning artifacts committed and pushed
+
+**Execution Phase (PENDING USER APPROVAL)**:
+- [ ] Phase 1: Deletions executed
+- [ ] Phases 2-9: Archives executed
+- [ ] Phases 10-11: Consolidations executed (with tests)
+- [ ] Phase 12: .gitignore updated
+- [ ] EVAL items decided
+- [ ] Repository reduced to ~17 root items
+- [ ] Full traceability maintained
 
 ---
 
-**Next Planning Agent**: Start with Work Block 1 (spawn Research Agent for deep audit). Report findings to user before proceeding.
+## Token Budget
 
-**Token Budget Warning**: You have full context budget - use agents to preserve it.
+**Session Usage**: ~118K tokens (out of 200K budget)
+**Remaining**: ~82K tokens available for execution
+
+**Next Planning Agent**: Full context budget available - can execute all 12 phases if needed.
+
+---
+
+**Status**: Planning complete, all artifacts committed and pushed to `chore/directory-cleanup`. Ready for user approval and execution.
+
+**Last Updated**: 2025-10-16T18:29:00-07:00
+**Session ID**: Repository Reorganization Planning
+**Git HEAD**: 96a318d

@@ -70,7 +70,7 @@ export const testConfig: TestConfig = {
 
   // ERPNext Configuration (Current Stack - Frappe Cloud)
   erpnext: {
-    apiUrl: process.env.ERPNEXT_API_URL || 'https://ops.10nz.tools',
+    apiUrl: process.env.ERPNEXT_API_URL || 'http://localhost:8000',
     apiKey: process.env.ERPNEXT_API_KEY,
     apiSecret: process.env.ERPNEXT_API_SECRET,
   },
