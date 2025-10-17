@@ -1,4 +1,9 @@
 /**
+ * ⚠️ ARCHIVED - NON-FUNCTIONAL CODE ⚠️
+ * This file is archived and may not work correctly.
+ * It is preserved for historical reference only.
+ * Do not use in production or rely on for testing.
+ *
  * FLRTS Supabase Webhook Retry and Backoff Testing
  *
  * Tests the advanced retry system with exponential backoff mentioned in Story 1.5.
@@ -16,7 +21,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
+import { testConfig, validateTestConfig, getSupabaseHeaders } from '../../config/test-config';
 
 // Test configuration for retry scenarios
 const RETRY_TEST_CONFIG = {

@@ -1,4 +1,9 @@
 /**
+ * ⚠️ ARCHIVED - NON-FUNCTIONAL CODE ⚠️
+ * This file is archived and may not work correctly.
+ * It is preserved for historical reference only.
+ * Do not use in production or rely on for testing.
+ *
  * FLRTS Edge Functions API Tests
  *
  * Tests Supabase Edge Functions using Node.js native test runner.
@@ -9,7 +14,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-import { testConfig, validateTestConfig, getSupabaseHeaders } from '../config/test-config';
+import { testConfig, validateTestConfig, getSupabaseHeaders } from '../../config/test-config';
 
 // Validate configuration before running tests
 beforeAll(() => {

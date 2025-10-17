@@ -43,8 +43,13 @@
     "prepare": "husky"
   },
   "devDependencies": {
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.206.0",
     "@opentelemetry/resources": "^2.1.0",
+    "@opentelemetry/sdk-node": "^0.206.0",
+    "@opentelemetry/sdk-trace-base": "^2.1.0",
+    "@opentelemetry/sdk-trace-node": "^2.1.0",
     "@playwright/test": "^1.46.0",
+    "@supabase/supabase-js": "^2.75.1",
     "@types/cors": "^2.8.19",
     "@types/deno": "^2.3.0",
     "@types/express": "^5.0.3",
