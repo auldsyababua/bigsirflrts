@@ -155,3 +155,12 @@ infrastructure/github-runner/_work/
 *.pyd
 test-results/
 flrts_extensions/
+
+# Temporary files
+tmp-*.log
+
+# Generated security reports
+security-findings.json
+
+# Custom ERPNext app (external repo)
+/flrts_extensions
