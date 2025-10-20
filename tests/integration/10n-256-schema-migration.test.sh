@@ -256,15 +256,16 @@ test_contractor_type_options() {
 test_maintenance_visit_custom_fields() {
   log_test "Maintenance Visit Custom Fields"
 
+  # Use getdoctype endpoint to get merged schema with custom fields
   RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 10 \
     -H "Authorization: token ${ERPNEXT_API_KEY}:${ERPNEXT_API_SECRET}" \
     -H "Accept: application/json" \
-    "${ERPNEXT_API_URL}/api/resource/DocType/Maintenance%20Visit" || echo -e "\n000")
+    "${ERPNEXT_API_URL}/api/method/frappe.desk.form.load.getdoctype?doctype=Maintenance%20Visit" || echo -e "\n000")
 
   parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
-    FIELDS=$(echo "$BODY" | jq -r '.data.fields[] | .fieldname')
+    FIELDS=$(echo "$BODY" | jq -r '.docs[0].fields[] | .fieldname')
 
     # 7 custom fields from maintenance_visit_fields.json
     CUSTOM_FIELDS=("supabase_task_id" "flrts_owner" "flrts_priority" "flrts_site" "flrts_contractor" "flrts_metadata" "custom_synced_at")
@@ -291,19 +292,20 @@ test_maintenance_visit_custom_fields() {
 test_custom_field_types() {
   log_test "Maintenance Visit Custom Field Types"
 
+  # Use getdoctype endpoint to get merged schema with custom fields
   RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 10 \
     -H "Authorization: token ${ERPNEXT_API_KEY}:${ERPNEXT_API_SECRET}" \
     -H "Accept: application/json" \
-    "${ERPNEXT_API_URL}/api/resource/DocType/Maintenance%20Visit" || echo -e "\n000")
+    "${ERPNEXT_API_URL}/api/method/frappe.desk.form.load.getdoctype?doctype=Maintenance%20Visit" || echo -e "\n000")
 
   parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     # Validate specific field types
-    SUPABASE_TASK_ID_TYPE=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="supabase_task_id") | .fieldtype')
-    FLRTS_PRIORITY_TYPE=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_priority") | .fieldtype')
-    FLRTS_SITE_TYPE=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_site") | .fieldtype')
-    FLRTS_METADATA_TYPE=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_metadata") | .fieldtype')
+    SUPABASE_TASK_ID_TYPE=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="supabase_task_id") | .fieldtype')
+    FLRTS_PRIORITY_TYPE=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_priority") | .fieldtype')
+    FLRTS_SITE_TYPE=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_site") | .fieldtype')
+    FLRTS_METADATA_TYPE=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_metadata") | .fieldtype')
 
     local ALL_VALID=true
 
@@ -339,17 +341,18 @@ test_custom_field_types() {
 test_link_field_options() {
   log_test "Link Field Options (Foreign Key References)"
 
+  # Use getdoctype endpoint to get merged schema with custom fields
   RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 10 \
     -H "Authorization: token ${ERPNEXT_API_KEY}:${ERPNEXT_API_SECRET}" \
     -H "Accept: application/json" \
-    "${ERPNEXT_API_URL}/api/resource/DocType/Maintenance%20Visit" || echo -e "\n000")
+    "${ERPNEXT_API_URL}/api/method/frappe.desk.form.load.getdoctype?doctype=Maintenance%20Visit" || echo -e "\n000")
 
   parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
-    FLRTS_OWNER_OPTIONS=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_owner") | .options')
-    FLRTS_SITE_OPTIONS=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_site") | .options')
-    FLRTS_CONTRACTOR_OPTIONS=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_contractor") | .options')
+    FLRTS_OWNER_OPTIONS=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_owner") | .options')
+    FLRTS_SITE_OPTIONS=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_site") | .options')
+    FLRTS_CONTRACTOR_OPTIONS=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_contractor") | .options')
 
     local ALL_VALID=true
 
@@ -380,20 +383,21 @@ test_link_field_options() {
 test_field_constraints() {
   log_test "Custom Field Constraints"
 
+  # Use getdoctype endpoint to get merged schema with custom fields
   RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 10 \
     -H "Authorization: token ${ERPNEXT_API_KEY}:${ERPNEXT_API_SECRET}" \
     -H "Accept: application/json" \
-    "${ERPNEXT_API_URL}/api/resource/DocType/Maintenance%20Visit" || echo -e "\n000")
+    "${ERPNEXT_API_URL}/api/method/frappe.desk.form.load.getdoctype?doctype=Maintenance%20Visit" || echo -e "\n000")
 
   parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     # Check supabase_task_id is unique and read_only
-    SUPABASE_UNIQUE=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="supabase_task_id") | .unique')
-    SUPABASE_READONLY=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="supabase_task_id") | .read_only')
+    SUPABASE_UNIQUE=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="supabase_task_id") | .unique')
+    SUPABASE_READONLY=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="supabase_task_id") | .read_only')
 
     # Check custom_synced_at is read_only
-    SYNCED_READONLY=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="custom_synced_at") | .read_only')
+    SYNCED_READONLY=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="custom_synced_at") | .read_only')
 
     local ALL_VALID=true
 
@@ -424,16 +428,17 @@ test_field_constraints() {
 test_priority_options() {
   log_test "Priority Field Options (1-5 scale)"
 
+  # Use getdoctype endpoint to get merged schema with custom fields
   RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 10 \
     -H "Authorization: token ${ERPNEXT_API_KEY}:${ERPNEXT_API_SECRET}" \
     -H "Accept: application/json" \
-    "${ERPNEXT_API_URL}/api/resource/DocType/Maintenance%20Visit" || echo -e "\n000")
+    "${ERPNEXT_API_URL}/api/method/frappe.desk.form.load.getdoctype?doctype=Maintenance%20Visit" || echo -e "\n000")
 
   parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
-    PRIORITY_OPTIONS=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_priority") | .options')
-    PRIORITY_DEFAULT=$(echo "$BODY" | jq -r '.data.fields[] | select(.fieldname=="flrts_priority") | .default')
+    PRIORITY_OPTIONS=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_priority") | .options')
+    PRIORITY_DEFAULT=$(echo "$BODY" | jq -r '.docs[0].fields[] | select(.fieldname=="flrts_priority") | .default')
 
     # Should have options "1\n2\n3\n4\n5"
     local ALL_VALID=true

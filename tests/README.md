@@ -4,7 +4,8 @@ This directory contains multiple test suites for the FLRTS project:
 
 ## 🧪 **Schema Migration Tests (10N-256)** (New - TDD)
 
-**Status: 🔴 RED PHASE** - Test-driven development for ERPNext schema migration.
+**Status: ✅ GREEN PHASE** - All schema migration tests passing on Frappe Cloud
+production.
 
 ### **Quick Start**
 
@@ -51,9 +52,31 @@ ERPNEXT_API_SECRET=your_secret \
 
 This is a **Test-Driven Development** suite:
 
-- **RED Phase** (Current): Tests FAIL because schema is not deployed
-- **GREEN Phase** (Target): Tests PASS after schema migration deployed
-- **REFACTOR Phase**: Optimize schema/tests as needed
+- ~~**RED Phase**: Tests FAIL because schema is not deployed~~
+- **GREEN Phase** (Current): ✅ All tests PASS - schema migration deployed
+  successfully
+- **REFACTOR Phase**: Available for optimization as needed
+
+**Test Results**: 15/15 passing (0 failures, 0 skipped)
+
+### **Important: API Endpoint for Custom Fields**
+
+Custom fields in ERPNext/Frappe are stored separately and must be queried via
+the correct endpoint:
+
+✅ **Correct**:
+`/api/method/frappe.desk.form.load.getdoctype?doctype=Maintenance Visit`
+
+- Returns merged schema with custom fields
+- Response path: `.docs[0].fields[]`
+
+❌ **Wrong**: `/api/resource/DocType/Maintenance Visit`
+
+- Returns only base DocType schema (no custom fields)
+- Response path: `.data.fields[]`
+
+**Diagnosis**: See `/docs/.scratch/10n-256/api-visibility-diagnosis.md` for
+detailed explanation of the API endpoint issue and resolution.
 
 ### **Documentation**
 
