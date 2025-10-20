@@ -1,283 +1,152 @@
 # Planning Agent Session Handoff
 
-**From**: Repository Reorganization Planning Session (2025-10-16)
+**From**: Schema Migration Completion Session (2025-10-20)
 **To**: Next Planning Agent
-**Context**: Full repository cleanup ready for execution
+**Context**: 10N-256 complete, pytest migration planned but not created in Linear
 
 ---
 
 ## What Was Completed This Session
 
-### PR #153 Safety Review & Fixes ✅
+### 10N-256: Schema Migration Strategy & Prototype ✅ COMPLETE
 
-**Commits**: 62dcc31, 5b1e7f7
+**Final Status**:
+- ✅ QA Approved (15/15 tests passing - GREEN phase)
+- ✅ PR #155 Created: https://github.com/auldsyababua/bigsirflrts/pull/155
+- ✅ Linear Status: "Done"
+- ✅ Deployed to Frappe Cloud production (ops.10nz.tools)
 
-1. **Reviewed ALL PR #153 comments** (CodeRabbit AI)
-   - Used Tracking Agent to pull all comments from GitHub
-   - Analysis: `docs/.scratch/pr-153-review/all-comments.md`
-   - Found 3 "critical" issues (acceptable - archived code is reference-only)
+**Deliverables**:
+- Mining Site DocType (4 fields)
+- Contractor DocType (5 fields)
+- Maintenance Visit custom fields (7 fields)
+- Automated test suite (15 tests) in `tests/integration/10n-256-schema-migration.test.sh`
 
-2. **Fixed Documentation Accuracy**
-   - Updated `tests/archive/deprecated-stack/ARCHIVE-README.md`
-   - Changed "3 files" → "6 files archived"
-   - Documented 3 missing test files with rationale
+**Key Learning**:
+- ERPNext custom fields require `/api/method/frappe.desk.form.load.getdoctype` endpoint (merged schema)
+- NOT `/api/resource/DocType/X` (base schema only - missing custom fields)
 
-3. **Added Non-Functional Warnings**
-   - `packages/archive/sync-service/src/index.ts` - warning header
-   - `packages/archive/sync-service/src/__tests__/config.test.ts` - warning header
-   - Clear messaging: archived code contains broken references, won't execute
-
-4. **Removed Duplicate flrts_extensions/**
-   - 20 files removed from monorepo
-   - External repo location documented in .project-context.md:
-     - Local: `/Users/colinaulds/Desktop/flrts-extensions`
-     - GitHub: `auldsyababua/flrts-extensions`
-   - Added to .gitignore
-
-**Decision**: App never shipped, no production users. Archived code = historical reference only per .project-context.md.
+**Git State**:
+- Branch: `feat/10n-233-10n-256-schema-migration`
+- Commits: 2 (RED phase, GREEN phase)
+- Status: Clean, pushed to origin
+- PR: Ready for review/merge
 
 ---
 
-### Full Repository Reorganization Planning ✅
+## Work Started But Not Completed
 
-**Commit**: 96a318d
+### Pytest Migration Work Block
 
-**Completed Work Blocks:**
+**Status**: Structure prepared but Linear issues NOT created (Research Agent interrupted)
 
-#### WB1: Deep Forensic Audit (Research Agent)
-- Analyzed all 23 root items + deep subdirectory analysis
-- Classification: Active/Obsolete/One-Off/Misplaced
-- Git history analysis for every file
-- Dependency checks (imports, package.json references)
-- **Output**: `docs/.scratch/deep-audit/forensic-audit-report.md`
+**What Exists**:
+- ✅ Pytest prototype complete: `docs/.scratch/10n-256/pytest-prototype/`
+  - 14 tests ported (100% parity with bash)
+  - 10 files: tests, fixtures, config, documentation
+  - Production-ready
+- ✅ Linear issue structure prepared: `docs/.scratch/10n-256/linear-issue-structure.md`
+  - Parent issue description ready
+  - 4 child issues structured (review, setup, port, deprecate)
+  - Master Dashboard entry ready
 
-**Key Findings:**
-- 25+ obsolete files (migration scripts, deprecated infrastructure)
-- 10 one-off migration scripts
-- 15 misplaced files
-- 2 temporary files tracked in git (should be gitignored)
+**What's Missing**:
+- ❌ Parent Linear issue not created
+- ❌ Child issues not created
+- ❌ Master Dashboard (10N-275) not updated with new Work Block
 
-#### WB2: Migration Mapping Document (Action Agent)
-- 45 items catalogued with breadcrumb IDs (ARCH-001 through ARCH-015)
-- Complete traceability: original path → new path → reason
-- 12 execution phases with exact bash commands
-- Recovery instructions for every item
-- **Output**: `docs/.scratch/deep-audit/migration-mapping.md`
+**Next Steps**:
+1. Retry Research Agent task to create pytest migration Linear issues
+2. Add Work Block to Master Dashboard 10N-275
+3. Start Job 1: Review prototype and approve strategy
 
-**Breadcrumb System:**
-- ARCH-001 through ARCH-015: Primary archives
-- Sub-items: ARCH-001a through ARCH-001g (Supabase migrations)
-- DEL-001, DEL-002: Deletions
-- CONS-001 through CONS-006: Consolidations
-- REORG-001 through REORG-004: Reorganizations
-- EVAL-001 through EVAL-005: Items pending decision
+---
 
-#### WB3: Archive Breadcrumbs (Action Agent)
-- 4 NEW archive READMEs created
-- 2 EXISTING archive READMEs updated
-- Every archived directory has metadata, file inventory, recovery instructions
+## Master Dashboard Update Required
 
-**Archive READMEs Created:**
-1. `docs/archive/supabase-migrations/ARCHIVE-README.md` (ARCH-001)
-2. `docs/archive/scripts/linear-migration/ARCHIVE-README.md` (ARCH-002 through ARCH-006)
-3. `docs/archive/scripts/cloudflare/ARCHIVE-README.md` (ARCH-007 through ARCH-009)
-4. `docs/archive/scripts/infrastructure/ARCHIVE-README.md` (ARCH-010 through ARCH-012)
-5. `docs/archive/scripts/ARCHIVE-README.md` (updated with ARCH-013, ARCH-014)
-6. `packages/archive/ARCHIVE-README.md` (updated with flrts-extension ARCH-015)
+**Issue**: 10N-275 (Master Dashboard)
 
-#### WB4: Update .project-context.md
-- Added "Repository Reorganization" section
-- Documented planning completion status
-- Included recovery instructions reference
-- Cross-referenced to planning documents
+**Required Updates** (Planning Agent responsibility):
+1. ⏸️ Check off 10N-256 in Job List (if present - need to verify dashboard state)
+2. ⏸️ Update Current Job marquee to next job
+3. ⏸️ Add pytest migration Work Block (after Research creates parent/child issues)
+
+**Note**: Linear API was intermittent during session (HTTP 500/502). Last successful update was 10N-256 status to "Done". Dashboard updates were not attempted.
 
 ---
 
 ## Current Git State
 
-**Branch**: `chore/directory-cleanup`
-**Remote**: Pushed to origin
-**Last Commit**: 96a318d
+**Branch**: `feat/10n-233-10n-256-schema-migration`
+**Status**: Clean (no uncommitted changes)
+**Remote**: Fully synced with origin
 
 **Recent Commits**:
-- 96a318d: docs: complete deep repository reorganization planning
-- 5b1e7f7: chore: remove local flrts_extensions directory
-- 62dcc31: docs: fix archive documentation and add non-functional warnings
-- 133b143: docs: add deep repository reorganization planning documents
-- 36f8b74: chore: archive obsolete infrastructure and cleanup directories
+- `faccf7f`: GREEN phase - all 15 schema migration tests passing
+- `994312a`: RED phase - TDD tests created
 
-**Clean Working Directory**: No uncommitted changes
-
----
-
-## Ready for Execution: Full Repository Reorganization
-
-### Planning Documents
-
-**All documents committed and pushed:**
-
-1. **Forensic Audit Report**
-   - Path: `docs/.scratch/deep-audit/forensic-audit-report.md`
-   - Contents: Complete analysis of 23 root items, classification, git history
-   - Size: Comprehensive (covers all files)
-
-2. **Migration Mapping**
-   - Path: `docs/.scratch/deep-audit/migration-mapping.md`
-   - Contents: 45 items mapped, 12 execution phases, breadcrumb lookup table
-   - Ready to execute: All bash commands included
-
-3. **Archive READMEs**
-   - Locations: docs/archive/* and packages/archive/*
-   - Contents: Metadata, file inventories, recovery instructions
-   - Breadcrumbs: ARCH-001 through ARCH-015 fully documented
-
-### Execution Plan Summary
-
-**Impact:**
-- Root directory: 23 → ~17 items (~26% reduction)
-- Archives: 25+ files
-- Deletions: 2 temporary files
-- Consolidations: 6 items
-- Reorganizations: 4 items
-
-**Phases (12 total):**
-
-**Low Risk (Safe to Execute):**
-- Phase 1: Delete temporary files (tmp-sec.log, security-findings.json)
-- Phase 2: Update .gitignore patterns
-- Phases 3-9: Archive obsolete code (Supabase migrations, Linear scripts, Cloudflare, infrastructure, browser extension)
-- Phase 12: Final .gitignore cleanup
-
-**Medium Risk (Requires Testing):**
-- Phases 10-11: Consolidations (lib/, infrastructure/scripts/, config/linting/)
-  - Need to update package.json references
-  - Run tests after each consolidation
-
-**High Risk (Pending Decision):**
-- EVAL-001 through EVAL-005: Items requiring Planning Agent approval
-  - packages/nlp-service/ (uses deprecated OpenProject/Supabase - refactor or archive?)
-  - scripts/linear-cli.js, linear-webhook.js (still used?)
-  - scripts/maintenance/ scripts (still used?)
-
-### Files to Reference
-
-**Planning Documents:**
-- `docs/.scratch/deep-audit/forensic-audit-report.md` - Full analysis
-- `docs/.scratch/deep-audit/migration-mapping.md` - Execution guide
-- `.project-context.md` - Updated with recovery instructions
-
-**Archive Documentation:**
-- 6 ARCHIVE-README.md files with full metadata
-- Every archive has breadcrumb ID for traceability
-
-**PR Context:**
-- `docs/.scratch/pr-153-review/all-comments.md` - CodeRabbit review analysis
-
----
-
-## Next Steps for Next Planning Agent
-
-### Option A: Execute Full Reorganization
-
-**Recommended Approach:**
-1. Spawn Action Agent with Phase 1 (deletions)
-2. Test, commit
-3. Spawn Action Agent with Phases 2-9 (archives)
-4. Test, commit
-5. Spawn Action Agent with Phases 10-11 (consolidations)
-6. Update package.json, run tests, commit
-7. Evaluate EVAL-001 through EVAL-005 with user
-
-**Estimated Time**: 30-45 minutes (mostly Action Agent execution)
-
-### Option B: Phased Review
-
-Execute low-risk phases first, review results, then proceed with medium-risk phases.
-
-### Option C: User Review First
-
-Present migration-mapping.md to user for approval of specific phases before execution.
+**PR Status**: #155 open, ready for review
 
 ---
 
 ## Critical Context
 
-### App Status (from .project-context.md)
+### Linear API Stability
+Linear API experienced intermittent failures during session:
+- HTTP 500/502 errors when creating issues
+- Recovered after wait
+- May affect issue creation/updates
 
-**Key Fact**: App has **never shipped**, no production users, no active usage.
+**Workaround**: Retry failed operations after brief wait
 
-**Deprecated Technologies** (all archived):
-- OpenProject (hosting shut down Sep 30, 2025)
-- Supabase as primary backend (migrated to ERPNext)
-- sync-service (no longer needed)
-- DigitalOcean infrastructure
-- AWS X-Ray SDK (replaced with OpenTelemetry)
+### Pytest Migration Priority
+Code review feedback (PR #155) identified bash-to-pytest migration as:
+- **Impact**: High
+- **Priority**: High
+- Prototype is production-ready and waiting for approval
 
-**Archived code = historical reference only**
+---
 
-### Recovery System
+## Next Session Priorities
 
-If anything goes wrong during execution:
-1. Check `docs/.scratch/deep-audit/migration-mapping.md` for breadcrumb ID
-2. Every archive has ARCHIVE-README.md with original path
-3. Git history fully preserved
-4. Rollback: `git checkout <commit> -- <original-path>`
+**Immediate**:
+1. Review PR #155 for merge approval
+2. Create pytest migration Linear issues (retry Research Agent task)
+3. Update Master Dashboard with new Work Block
 
-### Testing Requirements
-
-After each consolidation phase:
-- Run unit tests: `npm run test:unit`
-- Run integration tests: `npm run test:integration` (if services available)
-- Run security review: `scripts/security-review.sh`
-- Check imports: Verify no broken references
+**Follow-up**:
+4. User reviews pytest prototype
+5. Proceed with pytest migration (Jobs 1-4)
 
 ---
 
 ## Known Issues/Blockers
 
-**None** - All planning complete, ready for execution.
-
-**Pending Decisions (EVAL items):**
-- nlp-service package (refactor for ERPNext or archive?)
-- Linear integration scripts (still needed?)
-- Maintenance scripts (still used?)
-
-**User approval required**: Final decision on execution approach (Option A, B, or C)
+**None** - All blockers resolved:
+- ✅ SSH certificate renewed (was expiring)
+- ✅ Custom field API visibility fixed
+- ✅ Linear API recovered (was HTTP 500/502)
 
 ---
 
-## Success Criteria
+## Files to Reference
 
-**Planning Phase (COMPLETE ✅)**:
-- [x] Forensic audit complete (all files categorized)
-- [x] Migration mapping document created
-- [x] User context provided (app never shipped)
-- [x] All ARCHIVE-README.md files created
-- [x] .project-context.md updated with recovery reference
-- [x] All planning artifacts committed and pushed
+**Planning Documents**:
+- `docs/.scratch/10n-256/linear-issue-structure.md` - Pytest migration issue structure
+- `docs/.scratch/10n-256/pytest-prototype/` - Production-ready pytest implementation
 
-**Execution Phase (PENDING USER APPROVAL)**:
-- [ ] Phase 1: Deletions executed
-- [ ] Phases 2-9: Archives executed
-- [ ] Phases 10-11: Consolidations executed (with tests)
-- [ ] Phase 12: .gitignore updated
-- [ ] EVAL items decided
-- [ ] Repository reduced to ~17 root items
-- [ ] Full traceability maintained
+**Completed Work**:
+- PR #155: https://github.com/auldsyababua/bigsirflrts/pull/155
+- Tests: `tests/integration/10n-256-schema-migration.test.sh`
+
+**Research/Diagnosis**:
+- `docs/.scratch/10n-256/api-visibility-diagnosis.md` - API endpoint investigation
+- `docs/.scratch/10n-256/custom-field-visibility-research.md` - Cache/fixture research
 
 ---
 
-## Token Budget
+**Status**: 10N-256 complete, pytest migration queued for Linear issue creation
 
-**Session Usage**: ~118K tokens (out of 200K budget)
-**Remaining**: ~82K tokens available for execution
-
-**Next Planning Agent**: Full context budget available - can execute all 12 phases if needed.
-
----
-
-**Status**: Planning complete, all artifacts committed and pushed to `chore/directory-cleanup`. Ready for user approval and execution.
-
-**Last Updated**: 2025-10-16T18:29:00-07:00
-**Session ID**: Repository Reorganization Planning
-**Git HEAD**: 96a318d
+**Last Updated**: 2025-10-20T20:35:00-07:00
+**Session ID**: Schema Migration Completion & Pytest Planning
+**Git HEAD**: faccf7f (feat/10n-233-10n-256-schema-migration branch)
