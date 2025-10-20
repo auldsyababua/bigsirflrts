@@ -11,8 +11,8 @@ style, and commands used across this repo.
   (e.g., `qa-gate.md`, `test-design.md`).
 - Document changes per sharded docs: `docs/architecture/` and `docs/stories/`
   (ADRs under `docs/architecture/adr/`).
-- For architecture-affecting work, reference and align with `ADR-001` (n8n
-  single-instance) and `ADR-002` (OpenProject → Supabase migration).
+- For architecture-affecting work, reference and align with `ADR-006` (ERPNext
+  Frappe Cloud migration) and `ADR-001` (n8n single-instance).
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ style, and commands used across this repo.
 - Install: `npm ci`
 - Env: never commit secrets. For tests, copy `tests/.env.template` to
   `tests/.env` and fill required values. For services, create a local `.env`
-  with Supabase/OpenAI/etc.
+  with ERPNext/OpenAI/AWS credentials.
 - Smoke check: `npm run lint && npm run format:check && npm run test:mvp`
 
 ## Run & Develop

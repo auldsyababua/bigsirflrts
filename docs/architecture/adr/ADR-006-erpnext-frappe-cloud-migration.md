@@ -152,6 +152,37 @@ Users → DNS (Cloudflare “DNS only”) → Frappe Cloud ingress
 - **Rejected:** Long-term maintenance burden, diverges from upstream, high risk
   of incompatibility with future ERPNext updates.
 
+## Deprecated Documentation
+
+Following this migration (September 2025), the following Supabase-era documents
+have been archived to `docs/archive/supabase-era/`:
+
+**Architecture Decision Records:**
+
+- ADR-003: Supabase Connection Pooling (superseded by Frappe Cloud managed
+  MariaDB)
+
+**Test Files (archived to `tests/archive/supabase-era/`):**
+
+- retention-policy.test.ts - 10N-174: Data retention and secret detection
+  (Supabase-specific)
+- service-role-logging.test.ts - 10N-176: Service role key logging
+  (Supabase-specific)
+- token-tracking.test.ts - 10N-173: Token usage and cost tracking
+  (Supabase-specific)
+- sentry-edge-function.test.ts - Edge Function Sentry integration (Edge
+  Functions deprecated)
+
+**Current Architecture Documentation:**
+
+- [Current Frappe Cloud Architecture](../current-frappe-cloud-architecture.md) -
+  Canonical reference
+- [Migration Guide](../../MIGRATION-SUPABASE-TO-FRAPPE.md) - Developer
+  onboarding for post-migration team members
+- [Updated Tech Stack](../tech-stack.md) - Frappe Cloud technology list
+- [Updated PRD](../../prd/prd.md) - Product requirements with Frappe Cloud
+  architecture
+
 ## References
 
 - Frappe Cloud pricing & Private Bench requirements
@@ -159,3 +190,5 @@ Users → DNS (Cloudflare “DNS only”) → Frappe Cloud ingress
 - Observed failures running ERPNext on Supabase (missing `tabDocType`, unable to
   create DB)
 - Internal research on observability and automation
+- Post-migration cleanup completed October 2025 (47 markdown files updated, 4
+  test files archived)

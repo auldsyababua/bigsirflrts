@@ -1,6 +1,13 @@
+---
+**STATUS: SUPERSEDED BY ADR-006**
+**ARCHIVED: October 2025**
+
+This ADR describes Supabase PostgreSQL connection pooling. Following ADR-006 (Frappe Cloud migration), the project now uses Frappe Cloud managed MariaDB. This document is retained for historical reference only.
+---
+
 # ADR-003: Supabase Direct Connection with IPv4 Add-on
 
-**Date**: 2025-09-18 **Status**: Adopted
+**Date**: 2025-09-18 **Status**: Adopted (Superseded by ADR-006)
 
 ## Context
 

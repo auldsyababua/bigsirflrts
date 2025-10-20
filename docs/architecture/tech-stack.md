@@ -48,21 +48,19 @@
 
 #### Databases
 
-- **Supabase PostgreSQL 15.8** - Single database instance shared by all services
-  - OpenProject connects directly via DATABASE_URL (Session Mode, port 5432)
-  - FLRTS stores metadata only (conversations, preferences)
-  - Business data in separate schema (openproject schema)
-  - **NO SYNCHRONIZATION NEEDED** - Single source of truth
-  - Uses Supavisor connection pooling for optimal performance
+- **Frappe Cloud MariaDB 10.6+** - Managed database for ERPNext
+  - Automated backups with point-in-time recovery
+  - Connection pooling managed by Frappe Cloud
+  - Business data stored in ERPNext DocTypes
+  - **NO DIRECT ACCESS** - All operations through ERPNext REST API
 - **Redis 7** - Queue management for n8n and session caching (containerized)
 - **SQLite 3** - Local development only
 
 #### ORMs & Query Builders
 
-- **Prisma 5** - Type-safe database client (FLRTS metadata)
+- **Frappe ORM** (Python) - ERPNext's built-in ORM for DocTypes
+- **Prisma 5** - Type-safe database client (FLRTS metadata, if needed)
 - **Drizzle ORM** (alternative) - Lightweight TypeScript ORM
-- **Knex.js** - SQL query builder for migrations
-- **OpenProject ORM** - Rails ActiveRecord (internal to OpenProject)
 
 ### Validation & Schemas
 
@@ -72,13 +70,12 @@
 
 ### External APIs
 
-- **OpenProject REST API v3** - FLRTS interacts via API, not database
+- **ERPNext REST API** - Primary backend API for all business data operations
 - **OpenAI GPT-4o API** - Natural language processing for FLRTS
 - **Google Cloud APIs** - Speech services (future)
 - **Telegram Bot API** - Messaging interface
-- **Supabase REST API** - FLRTS metadata operations only
 - **n8n v1.105.2 API** - Workflow automation in queue mode with Redis
-- **Supabase Edge Functions** - Low-latency operations (<100ms response)
+- **AWS Lambda** - Low-latency webhook handler (<100ms response)
 
 ### Infrastructure
 
@@ -89,9 +86,9 @@
 
 #### Networking & Security
 
-- **Cloudflare Tunnel** - Zero-trust secure access (no open ports)
-- **Nginx 1.25** - Internal reverse proxy and static serving
-- **Docker Networks** - Container-to-container communication
+- **Cloudflare DNS** - DNS routing to Frappe Cloud (DNS-only mode)
+- **Frappe Cloud** - Managed SSL/TLS certificates and reverse proxy
+- **Docker Networks** - Container-to-container communication (n8n only)
 
 #### Message Queue
 
@@ -184,23 +181,24 @@
 
 ## Technology Decision Matrix
 
-| Category               | Primary Choice           | Rationale                                                       | Alternatives                        |
-| ---------------------- | ------------------------ | --------------------------------------------------------------- | ----------------------------------- |
-| Runtime                | Node.js 22 LTS           | Native TypeScript support, stability, ecosystem                 | Bun 1.1 (speed), Deno 2 (security)  |
-| Web Framework          | Express.js               | Maturity, middleware ecosystem                                  | Fastify (performance), Koa (modern) |
-| Database               | Supabase PostgreSQL 15.8 | Single instance, no sync complexity, direct OpenProject support | Self-hosted PostgreSQL              |
-| Connection Pooling     | Supavisor                | Session mode for persistent, transaction mode for serverless    | PgBouncer                           |
-| Object Storage         | Cloudflare R2            | S3-compatible, cost-effective                                   | AWS S3, MinIO                       |
-| Cache                  | Redis 7                  | n8n queue mode, pub/sub support                                 | Memcached, KeyDB                    |
-| Queue                  | n8n Queue Mode           | Native n8n integration, Redis-based                             | Bull, BullMQ, RabbitMQ              |
-| Workflow Orchestration | n8n v1.105.2             | Visual workflow builder, extensive integrations                 | Temporal, Apache Airflow            |
-| Edge Functions         | Supabase Edge Functions  | Low-latency, TypeScript-first                                   | Cloudflare Workers, Vercel Edge     |
-| AI/NLP                 | OpenAI GPT-4o            | Quality, ease of integration                                    | Local LLMs, Azure OpenAI            |
-| Frontend               | Next.js 14               | App Router, RSC, performance                                    | Remix, Astro                        |
-| CSS                    | Tailwind CSS             | Rapid development, consistency                                  | CSS Modules, styled-components      |
-| Testing                | Jest 29                  | Comprehensive, wide support                                     | Vitest, Mocha                       |
-| Container              | Docker 24                | Industry standard                                               | Podman, containerd                  |
-| Monitoring             | Prometheus + Grafana     | Open source, powerful                                           | DataDog, New Relic                  |
+| Category               | Primary Choice         | Rationale                                                | Alternatives                        |
+| ---------------------- | ---------------------- | -------------------------------------------------------- | ----------------------------------- |
+| Runtime                | Node.js 22 LTS         | Native TypeScript support, stability, ecosystem          | Bun 1.1 (speed), Deno 2 (security)  |
+| Web Framework          | Express.js             | Maturity, middleware ecosystem                           | Fastify (performance), Koa (modern) |
+| Backend Platform       | ERPNext (Frappe Cloud) | Managed MariaDB, built-in workflows, field service focus | Self-hosted ERPNext, custom backend |
+| Database               | MariaDB 10.6+          | Frappe Cloud managed, PITR backups, automated scaling    | PostgreSQL, MySQL                   |
+| Connection Pooling     | Frappe Cloud Managed   | Built-in connection management                           | PgBouncer, ProxySQL                 |
+| Object Storage         | ERPNext Attachments    | Native integration, optional R2 via marketplace app      | AWS S3, Cloudflare R2, MinIO        |
+| Cache                  | Redis 7                | n8n queue mode, pub/sub support                          | Memcached, KeyDB                    |
+| Queue                  | n8n Queue Mode         | Native n8n integration, Redis-based                      | Bull, BullMQ, RabbitMQ              |
+| Workflow Orchestration | n8n v1.105.2           | Visual workflow builder, extensive integrations          | Temporal, Apache Airflow            |
+| Serverless Functions   | AWS Lambda             | Low-latency, mature ecosystem, Telegram webhook handler  | Cloudflare Workers, Vercel Edge     |
+| AI/NLP                 | OpenAI GPT-4o          | Quality, ease of integration                             | Local LLMs, Azure OpenAI            |
+| Frontend               | Next.js 14             | App Router, RSC, performance                             | Remix, Astro                        |
+| CSS                    | Tailwind CSS           | Rapid development, consistency                           | CSS Modules, styled-components      |
+| Testing                | Jest 29                | Comprehensive, wide support                              | Vitest, Mocha                       |
+| Container              | Docker 24              | Industry standard                                        | Podman, containerd                  |
+| Monitoring             | Prometheus + Grafana   | Open source, powerful                                    | DataDog, New Relic                  |
 
 ## Version Management Strategy
 
@@ -245,17 +243,18 @@ All dependencies are compatible with MIT license:
 
 ### Monthly Operating Costs (Estimated)
 
-| Service                 | Usage                              | Cost             |
-| ----------------------- | ---------------------------------- | ---------------- |
-| OpenAI GPT-4o           | 50 tasks/day × 500 tokens          | $5-10            |
-| Google Speech API       | 100 minutes/month (future)         | $2-5             |
-| Digital Ocean VM        | s-4vcpu-8gb (4GB RAM minimum)      | $48              |
-| Supabase PostgreSQL     | Pro tier (single instance for all) | $25              |
-| Supabase Edge Functions | 150,000 invocations/month          | Included in Pro  |
-| n8n Cloud (optional)    | Self-hosted on VM                  | $0               |
-| Cloudflare R2           | 100GB storage + bandwidth          | $5               |
-| Redis (containerized)   | Included in VM                     | $0               |
-| **Total**               |                                    | **$85-93/month** |
+| Service               | Usage                      | Cost               |
+| --------------------- | -------------------------- | ------------------ |
+| OpenAI GPT-4o         | 50 tasks/day × 500 tokens  | $5-10              |
+| Google Speech API     | 100 minutes/month (future) | $2-5               |
+| Frappe Cloud          | Private Bench (managed)    | ~$200              |
+| AWS Lambda            | 150,000 invocations/month  | ~$1                |
+| n8n (self-hosted)     | DigitalOcean droplet (2GB) | $18                |
+| Redis (containerized) | Included in n8n droplet    | $0                 |
+| **Total**             |                            | **$226-234/month** |
+
+**Note:** Migration from Supabase (ADR-006) increased base infrastructure costs
+but provides managed MariaDB, automated backups, and field service capabilities.
 
 ### Development Costs
 

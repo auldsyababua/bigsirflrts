@@ -17,25 +17,23 @@ accuracy
 
 The FLRTS NLP Task Management Service addresses critical operational friction at
 a distributed bitcoin mining company where team members across PST, CST, and EST
-zones need rapid task coordination. The current manual form-based task entry in
-OpenProject creates significant delays and dropped tasks due to timezone
-confusion and workflow interruption. By leveraging a simplified single-database
-architecture where OpenProject connects directly to Supabase PostgreSQL, FLRTS
-provides a natural language enhancement layer that converts conversational
-commands like "Hey Taylor, Colin needs the server logs by 1pm his time" into
-properly structured API calls to OpenProject.
+zones need rapid task coordination. The current manual form-based task entry
+creates significant delays and dropped tasks due to timezone confusion and
+workflow interruption. FLRTS provides a natural language enhancement layer that
+converts conversational commands like "Hey Taylor, Colin needs the server logs
+by 1pm his time" into properly structured API calls to ERPNext.
 
 **Critical Architecture Rule:** FLRTS implements a "Reflex and Brain" hybrid
 architecture:
 
-- **Reflex Layer (Edge Functions)**: Handles immediate responses (<100ms) for
+- **Reflex Layer (AWS Lambda)**: Handles immediate responses (<100ms) for
   Telegram acknowledgments and simple queries
 - **Brain Layer (n8n Workflows)**: Orchestrates complex business logic,
   multi-step operations, and all ERPNext API interactions
-- **Data Flow**: User → Telegram → Edge Function (instant ACK) → n8n Workflow →
+- **Data Flow**: User → Telegram → AWS Lambda (instant ACK) → n8n Workflow →
   ERPNext REST API → Frappe Cloud MariaDB
-- **Performance Rule**: Operations requiring <500ms response use Edge Functions;
-  all others use n8n workflows
+- **Performance Rule**: Operations requiring <500ms response use AWS Lambda; all
+  others use n8n workflows
 - **Database Rule**: FLRTS never writes to the database directly - all writes go
   through ERPNext REST API
 
@@ -115,23 +113,19 @@ for MVP) • **NFR2:** The system shall support 10 active users with
 single-instance n8n deployment (100+ webhooks/hour capacity) • **NFR3:** The
 system shall achieve 95% parse accuracy on the 100-example synthetic test
 dataset • **NFR4:** The system shall achieve 100% mathematical accuracy for
-timezone conversions • **NFR5:** The system shall use Supavisor Session Mode
-(port 5432) for all database connections to prevent transaction mode
-incompatibilities • **NFR6:** The system shall use PostgreSQL version 15.8 for
-optimal Supabase compatibility and extension support • **NFR7:** [OPTIONAL] If
-using R2 storage, set OPENPROJECT_DIRECT\_\_UPLOADS=false (local volume
-acceptable for MVP) • **NFR8:** VM deployment should be in same region/provider
-family as Supabase (best effort) • **NFR9:** [ASPIRATIONAL] Target 99.9%
-availability (not guaranteed for MVP) • **NFR10:** The system shall use SSL/TLS
-encryption for all database connections (sslmode=require) • **NFR11:** The
-system shall implement container isolation between services using Docker Compose
-• **NFR12:** The system shall use Cloudflare Tunnel for zero-trust external
-access • **NFR13:** [REVISED] n8n shall use single-instance mode for 10-user
-scale (queue mode preserved for future 50+ users) • **NFR14:** Edge Functions
-handle all operations requiring <500ms response time • **NFR15:** n8n
+timezone conversions • **NFR5:** The system shall use Frappe Cloud managed
+MariaDB with automated connection pooling • **NFR6:** [REMOVED - Superseded by
+Frappe Cloud] • **NFR7:** The system shall use native ERPNext attachments for
+file storage (optional R2 integration via marketplace app) • **NFR8:** Frappe
+Cloud handles regional deployment and availability • **NFR9:** [ASPIRATIONAL]
+Target 99.9% availability (Frappe Cloud managed) • **NFR10:** The system shall
+use SSL/TLS encryption for all API connections • **NFR11:** [REMOVED - Frappe
+Cloud managed] • **NFR12:** The system shall use Cloudflare DNS for routing to
+Frappe Cloud • **NFR13:** [REVISED] n8n shall use single-instance mode for
+10-user scale (queue mode preserved for future 50+ users) • **NFR14:** AWS
+Lambda handles all operations requiring <500ms response time • **NFR15:** n8n
 concurrency optimized for single-instance mode (10-20 concurrent executions) •
-**NFR16:** PostgreSQL connection pool size set to 4 minimum
-(DB_POSTGRESDB_POOL_SIZE=4)
+**NFR16:** Database connection pool managed by Frappe Cloud
 
 ## User Interface Design Goals
 
@@ -177,14 +171,13 @@ No custom branding required - uses standard Telegram bot interface
 
 **Hybrid "Reflex and Brain" Model:**
 
-- **Reflex Layer**: Supabase Edge Functions for immediate responses (<100ms
-  latency)
+- **Reflex Layer**: AWS Lambda for immediate responses (<100ms latency)
 - **Brain Layer**: n8n workflows in single-instance mode for 10-user scale
   (queue mode available for 50+ users)
-- **Infrastructure**: VM-based deployment using Docker Compose with OpenProject
-  and n8n
-- **Integration Pattern**: Edge Functions acknowledge users instantly, then
-  trigger n8n workflows asynchronously
+- **Infrastructure**: Frappe Cloud managed ERPNext with custom flrts_extensions
+  app
+- **Integration Pattern**: AWS Lambda acknowledges users instantly, then
+  triggers n8n workflows asynchronously to interact with ERPNext REST API
 
 #### n8n Deployment Architecture
 
@@ -287,12 +280,18 @@ Ocean, so that we have our core project management platform running.
 
 **Status:** ✅ COMPLETED - Running at <https://ops.10nz.tools>
 
-### Story 1.2: PostgreSQL 15.8 Validation
+### Story 1.2: [DEPRECATED - SUPERSEDED BY ADR-006] PostgreSQL 15.8 Validation
+
+**Status:** ❌ DEPRECATED - No longer applicable after Frappe Cloud migration
 
 As a system administrator, I want to ensure the Supabase database meets version
 requirements, so that OpenProject runs without compatibility issues.
 
-**Acceptance Criteria:**
+**Deprecation Note:** Following the Frappe Cloud migration (ADR-006), database
+version management is handled by Frappe Cloud's managed MariaDB. This story is
+retained for historical reference only.
+
+**Original Acceptance Criteria:**
 
 1. Verify PostgreSQL version is 15.8 (Supabase default)
 2. Confirm OpenProject compatibility with 15.8
@@ -317,12 +316,19 @@ that we have optimal performance without unnecessary complexity.
 **Status:** ✅ COMPLETED - Decision made for single-instance based on actual
 scale requirements
 
-### Story 1.4: Supabase Edge Functions Setup
+### Story 1.4: [DEPRECATED - SUPERSEDED BY ADR-006] Supabase Edge Functions Setup
+
+**Status:** ❌ DEPRECATED - Replaced by AWS Lambda in September 2025
 
 As a backend developer, I want Edge Functions deployed for low-latency
 operations, so that Telegram webhooks respond instantly.
 
-**Acceptance Criteria:**
+**Deprecation Note:** Following the Frappe Cloud migration (ADR-006), this story
+was superseded by AWS Lambda deployment. See
+[ADR-006](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
+migration rationale.
+
+**Original Acceptance Criteria:**
 
 1. Edge Functions deployed for Telegram webhook receiver
 2. Edge Function responds in <100ms with acknowledgment
@@ -331,12 +337,19 @@ operations, so that Telegram webhooks respond instantly.
 5. Error handling returns graceful messages
 6. Monitoring for function execution times
 
-### Story 1.5: Supabase Webhooks Configuration
+### Story 1.5: [DEPRECATED - SUPERSEDED BY ADR-006] Supabase Webhooks Configuration
+
+**Status:** ❌ DEPRECATED - Replaced by ERPNext webhooks in September 2025
 
 As a backend developer, I want Supabase webhooks configured, so that database
 changes trigger n8n workflows.
 
-**Acceptance Criteria:**
+**Deprecation Note:** Following the Frappe Cloud migration (ADR-006), this story
+was superseded by ERPNext webhook functionality. See
+[ADR-006](../architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
+migration rationale.
+
+**Original Acceptance Criteria:**
 
 1. Database webhooks configured for task table changes
 2. Webhook endpoints point to n8n workflows
@@ -681,11 +694,12 @@ informed about shared work.
 
 ### ✅ Completed Infrastructure (Epic 1)
 
-1. **DB:** Supabase PostgreSQL 15.8 configured and running
-2. **App:** OpenProject deployed at <https://ops.10nz.tools>
-3. **Storage:** Cloudflare R2 configured for file storage
-4. **Edge:** Cloudflare Tunnel active with zero-trust access
+1. **Platform:** ERPNext on Frappe Cloud (<https://ops.10nz.tools>)
+2. **Database:** MariaDB managed by Frappe Cloud
+3. **Storage:** Native ERPNext attachments
+4. **DNS:** Cloudflare DNS routing to Frappe Cloud
 5. **n8n:** Single-instance mode deployed and operational
+6. **Lambda:** AWS Lambda for Telegram webhook handling
 
 ### 🚧 MVP Implementation (5-Day Sprint)
 
