@@ -2,7 +2,100 @@
 
 This directory contains multiple test suites for the FLRTS project:
 
-## 🏥 **ERPNext Smoke Tests (Phase 7)** (New)
+## 🧪 **Schema Migration Tests (10N-256)** (New - TDD)
+
+**Status: ✅ GREEN PHASE** - All schema migration tests passing on Frappe Cloud
+production.
+
+### **Quick Start**
+
+```bash
+# Run schema migration tests (will FAIL until migration deployed)
+./tests/integration/10n-256-schema-migration.test.sh
+
+# With environment variables
+ERPNEXT_API_URL=https://ops.10nz.tools \
+ERPNEXT_API_KEY=your_key \
+ERPNEXT_API_SECRET=your_secret \
+./tests/integration/10n-256-schema-migration.test.sh
+```
+
+### **What's Tested**
+
+**Custom DocTypes:**
+
+- ✅ Mining Site DocType (4 fields: site_name, location, site_code, is_active)
+- ✅ Contractor DocType (5 fields: contractor_name, contractor_type,
+  contact_email, contact_phone, is_active)
+
+**Custom Fields (Maintenance Visit):**
+
+- ✅ supabase_task_id (Data, unique, read_only)
+- ✅ flrts_owner (Link: User)
+- ✅ flrts_priority (Select: 1-5, default 3)
+- ✅ flrts_site (Link: Mining Site)
+- ✅ flrts_contractor (Link: Contractor)
+- ✅ flrts_metadata (JSON)
+- ✅ custom_synced_at (Datetime, read_only)
+
+**Validation Tests:**
+
+- ✅ Field types match specification
+- ✅ Link field references correct DocTypes
+- ✅ Unique and read_only constraints
+- ✅ Select field options (priority 1-5, contractor types)
+- ✅ CRUD operations on Mining Site and Contractor
+
+**Total**: 14 automated tests covering all acceptance criteria
+
+### **TDD Status**
+
+This is a **Test-Driven Development** suite:
+
+- ~~**RED Phase**: Tests FAIL because schema is not deployed~~
+- **GREEN Phase** (Current): ✅ All tests PASS - schema migration deployed
+  successfully
+- **REFACTOR Phase**: Available for optimization as needed
+
+**Test Results**: 15/15 passing (0 failures, 0 skipped)
+
+### **Important: API Endpoint for Custom Fields**
+
+Custom fields in ERPNext/Frappe are stored separately and must be queried via
+the correct endpoint:
+
+✅ **Correct**:
+`/api/method/frappe.desk.form.load.getdoctype?doctype=Maintenance Visit`
+
+- Returns merged schema with custom fields
+- Response path: `.docs[0].fields[]`
+
+❌ **Wrong**: `/api/resource/DocType/Maintenance Visit`
+
+- Returns only base DocType schema (no custom fields)
+- Response path: `.data.fields[]`
+
+**Diagnosis**: See `/docs/.scratch/10n-256/api-visibility-diagnosis.md` for
+detailed explanation of the API endpoint issue and resolution.
+
+### **Documentation**
+
+- 📖 **[Complete Test Plan](../docs/.scratch/10n-256/TEST-PLAN.md)** - Full test
+  strategy, debugging guide
+- 📦 **[Prototype Fixtures](../docs/.scratch/10n-256/prototype/)** - JSON
+  DocType/field definitions
+
+### **Notes**
+
+- Tests expect to FAIL initially (TDD red phase)
+- Deploy schema migration to make tests pass (green phase)
+- Same environment variables as ERPNext smoke tests
+- Cleans up test data automatically (CRUD tests)
+- Exit code 0 when all pass, 1 when failures (expected until deployment)
+
+---
+
+## 🏥 **ERPNext Smoke Tests (Phase 7)**
 
 **Status: ✅ WORKING** - Comprehensive smoke tests for ERPNext on Frappe Cloud
 infrastructure.
