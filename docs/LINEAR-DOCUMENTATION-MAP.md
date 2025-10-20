@@ -64,13 +64,13 @@ Phase 1 execution.
 
 ### OpenProject Documentation (Archived Context)
 
-| Document                                                                                                                    | Purpose                        | Notes                             | Status        |
-| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | --------------------------------- | ------------- |
-| [docs/architecture/adr/ADR-002-openproject-migration-pattern.md](architecture/adr/ADR-002-openproject-migration-pattern.md) | OpenProject migration decision | Superseded by ADR-006             | 📦 Historical |
-| [docs/architecture/adr/ADR-003-supabase-connection-pooling.md](architecture/adr/ADR-003-supabase-connection-pooling.md)     | Supabase connection patterns   | Still applies to ERPNext          | ✅ Active     |
-| [docs/architecture/openproject-integration-strategy.md](architecture/openproject-integration-strategy.md)                   | OpenProject integration guide  | Superseded by ERPNext workflow    | 📦 Historical |
-| [docs/archive/openproject/OPENPROJECT_DEPLOYMENT.md](archive/openproject/OPENPROJECT_DEPLOYMENT.md)                         | OpenProject deployment guide   | **ARCHIVED 2025-10-02** (10N-238) | 📦 Archived   |
-| [docs/archive/openproject/openproject.md](archive/openproject/openproject.md)                                               | OpenProject setup instructions | **ARCHIVED 2025-10-02** (10N-238) | 📦 Archived   |
+| Document                                                                                                                                | Purpose                        | Notes                                | Status        |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------ | ------------- |
+| [docs/architecture/adr/ADR-002-openproject-migration-pattern.md](architecture/adr/ADR-002-openproject-migration-pattern.md)             | OpenProject migration decision | Superseded by ADR-006                | 📦 Historical |
+| [docs/archive/supabase-era/adr/ADR-003-supabase-connection-pooling.md](archive/supabase-era/adr/ADR-003-supabase-connection-pooling.md) | Supabase connection patterns   | Superseded by ADR-006 (Frappe Cloud) | 📦 Archived   |
+| [docs/architecture/openproject-integration-strategy.md](architecture/openproject-integration-strategy.md)                               | OpenProject integration guide  | Superseded by ERPNext workflow       | 📦 Historical |
+| [docs/archive/openproject/OPENPROJECT_DEPLOYMENT.md](archive/openproject/OPENPROJECT_DEPLOYMENT.md)                                     | OpenProject deployment guide   | **ARCHIVED 2025-10-02** (10N-238)    | 📦 Archived   |
+| [docs/archive/openproject/openproject.md](archive/openproject/openproject.md)                                                           | OpenProject setup instructions | **ARCHIVED 2025-10-02** (10N-238)    | 📦 Archived   |
 
 ### OpenProject Stories (Historical)
 
@@ -115,12 +115,20 @@ Phase 1 execution.
 
 ### Setup & Integration
 
-| Document                                                                              | Purpose               | Related Linear Issues | Status    |
-| ------------------------------------------------------------------------------------- | --------------------- | --------------------- | --------- |
-| [docs/setup/linear-integration.md](setup/linear-integration.md)                       | Linear setup guide    | DevOps/setup          | ✅ Active |
-| [docs/setup/telegram-bot.md](setup/telegram-bot.md)                                   | Telegram bot setup    | Telegram stories      | ✅ Active |
-| [docs/setup/webhook-integration.md](setup/webhook-integration.md)                     | Webhook configuration | Integration stories   | ✅ Active |
-| [docs/monitoring/webhook-monitoring-setup.md](monitoring/webhook-monitoring-setup.md) | Monitoring webhooks   | Monitoring/DevOps     | ✅ Active |
+| Document                                                                                | Purpose             | Related Linear Issues | Status    |
+| --------------------------------------------------------------------------------------- | ------------------- | --------------------- | --------- |
+| [docs/setup/linear-integration.md](setup/linear-integration.md)                         | Linear setup guide  | DevOps/setup          | ✅ Active |
+| [docs/setup/frappe-cloud-site.md](setup/frappe-cloud-site.md)                           | Frappe Cloud setup  | 10N-238               | ✅ Active |
+| [docs/setup/telegram-webhook-configuration.md](setup/telegram-webhook-configuration.md) | Telegram webhook    | Telegram stories      | ✅ Active |
+| [docs/monitoring/webhook-monitoring-setup.md](monitoring/webhook-monitoring-setup.md)   | Monitoring webhooks | Monitoring/DevOps     | ✅ Active |
+
+### Archived Setup Documentation (Supabase Era)
+
+| Document                                                                                                    | Purpose               | Notes                             | Status      |
+| ----------------------------------------------------------------------------------------------------------- | --------------------- | --------------------------------- | ----------- |
+| [docs/archive/supabase-era/setup/README.md](archive/supabase-era/setup/README.md)                           | Supabase architecture | **ARCHIVED 2025-10-20** (10N-233) | 📦 Archived |
+| [docs/archive/supabase-era/setup/telegram-bot.md](archive/supabase-era/setup/telegram-bot.md)               | Telegram bot setup    | **ARCHIVED 2025-10-20** (10N-233) | 📦 Archived |
+| [docs/archive/supabase-era/setup/webhook-integration.md](archive/supabase-era/setup/webhook-integration.md) | Webhook configuration | **ARCHIVED 2025-10-20** (10N-233) | 📦 Archived |
 
 ### QA & Testing
 

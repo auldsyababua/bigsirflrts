@@ -4,6 +4,10 @@
 
 PROPOSED
 
+**Note:** Following ADR-006 (Frappe Cloud migration, September 2025),
+"OpenProject" references in this ADR now refer to ERPNext. The CREATE-only scope
+decision remains valid.
+
 ## Context
 
 The FLRTS project needs to deliver a demonstrable NLP task management capability
@@ -41,7 +45,7 @@ Reduce the MVP scope to CREATE operations only:
 ### Before (Full CRUD)
 
 ```
-User → Telegram Bot → Edge Function → n8n Workflows → OpenProject API ← → Supabase
+User → Telegram Bot → AWS Lambda → n8n Workflows → ERPNext API ← → Frappe Cloud MariaDB
                   ↑                          ↓
                   └──────── Bidirectional Sync ────────┘
 ```
@@ -49,18 +53,18 @@ User → Telegram Bot → Edge Function → n8n Workflows → OpenProject API �
 ### After (CREATE Only)
 
 ```
-User → Telegram Bot → Edge Function → n8n Workflow → OpenProject API → Supabase
+User → Telegram Bot → AWS Lambda → n8n Workflow → ERPNext API → Frappe Cloud MariaDB
                                             ↓
                                    Simple Confirmation
 ```
 
 ### Simplified Component Interactions
 
-1. **Telegram Bot**: Receives message, sends to Edge Function
-2. **Edge Function**: Quick ACK, triggers n8n workflow
+1. **Telegram Bot**: Receives message, sends to AWS Lambda
+2. **AWS Lambda**: Quick ACK, triggers n8n workflow
 3. **n8n Workflow**:
    - Calls OpenAI to parse NLP
-   - Calls OpenProject API to create task/list
+   - Calls ERPNext REST API to create task/service call
    - Returns simple confirmation to user
 4. **No Return Path**: No webhooks, no sync, no state management
 
