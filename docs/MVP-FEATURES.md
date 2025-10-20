@@ -3,6 +3,11 @@
 This document tracks features that MUST be implemented for the MVP launch. These
 are non-negotiable requirements for a functional minimum viable product.
 
+**Architecture Note:** Following the Frappe Cloud migration (ADR-006, September
+2025), all data storage uses ERPNext DocTypes instead of direct SQL tables. See
+[ADR-006](./architecture/adr/ADR-006-erpnext-frappe-cloud-migration.md) for
+migration rationale.
+
 ## OpenAI Parser Audit Log
 
 **Priority:** CRITICAL (MVP Required) **Status:** Not Yet Implemented
@@ -25,9 +30,20 @@ for debugging, prompt engineering, and understanding model behavior.
 
 ---
 
-### Database Schema
+### ERPNext DocType Specification
 
-Create `openai_parser_logs` table in Supabase:
+**Migration Note:** The SQL schemas in this document are from the Supabase era
+(pre-ADR-006). Following the Frappe Cloud migration in September 2025, all
+database operations now use ERPNext DocTypes created through the Frappe
+Framework. The SQL below is retained for historical reference and will be
+converted to ERPNext DocType JSON definitions.
+
+**Current Implementation:** Create `OpenAI Parser Log` DocType via ERPNext UI or
+JSON schema file in flrts_extensions app. Refer to
+[ERPNext schema philosophy](./research/erpnext-schema-philosophy.md) for DocType
+design patterns.
+
+**Legacy SQL Schema (Pre-ADR-006):**
 
 ```sql
 CREATE TABLE openai_parser_logs (

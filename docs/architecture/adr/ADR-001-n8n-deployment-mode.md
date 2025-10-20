@@ -5,6 +5,11 @@
 **Status:** Accepted **Date:** 2025-09-15 **Decision Makers:** Engineering Team,
 Product Management
 
+**Note:** This ADR describes n8n deployment architecture. Following ADR-006
+(Frappe Cloud migration, September 2025), n8n now integrates with ERPNext REST
+API instead of direct database access. The single-instance decision remains
+valid.
+
 ## Context
 
 Initial architecture plans specified n8n queue mode with Redis for handling
@@ -82,7 +87,7 @@ services:
     cpus: 1.0
     environment:
       - N8N_CONCURRENCY=10
-      - DB_POSTGRESDB_POOL_SIZE=4
+      - DB_POOL_SIZE=4
 ```
 
 ### Future Queue Mode Config

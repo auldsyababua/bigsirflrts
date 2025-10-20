@@ -117,7 +117,7 @@ docker-compose -f docker-compose.supabase.yml build
 - ADRs
   - [ADR-001: n8n Deployment Mode](./adr/ADR-001-n8n-deployment-mode.md)
   - [ADR-002: OpenProject Migration Pattern](./adr/ADR-002-openproject-migration-pattern.md)
-  - [ADR-003: Supabase Connection Pooling](./adr/ADR-003-supabase-connection-pooling.md)
+  - [ADR-003: Supabase Connection Pooling (archived - superseded by ADR-006)](../archive/supabase-era/adr/ADR-003-supabase-connection-pooling.md)
   - [ADR-005: MVP Scope Reduction](./adr/ADR-005-mvp-scope-reduction.md)
 - [System Connections & Health](./system-connections.md)
 

@@ -292,22 +292,25 @@ function useParser() {
 
 ## Database Patterns
 
-### Connection Management (Supabase)
+### Connection Management (ERPNext/Frappe Cloud)
 
 ```typescript
-// ✅ GOOD: Use Supavisor pooling appropriately
-// For serverless/edge functions - Transaction mode (port 6543)
-const DATABASE_URL =
-  'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true';
+// ✅ GOOD: Use ERPNext REST API for all operations
+import { createClient } from '@frappe/client';
 
-// For persistent servers - Session mode (port 5432)
-const DATABASE_URL =
-  'postgres://user.project:[password]@aws-0-region.pooler.supabase.com:5432/postgres';
+const client = createClient({
+  url: process.env.ERPNEXT_URL, // e.g., 'https://ops.10nz.tools'
+  api_key: process.env.ERPNEXT_API_KEY,
+  api_secret: process.env.ERPNEXT_API_SECRET,
+});
 
-// ❌ BAD: Direct connection from serverless
-const DATABASE_URL =
-  'postgresql://postgres:[password]@db.project.supabase.co:5432/postgres';
+// ❌ BAD: Direct database access
+// ERPNext manages its own database - use the REST API instead
+const DATABASE_URL = 'postgresql://...'; // Don't do this!
 ```
+
+**Note:** Previous Supabase direct database patterns have been deprecated.
+ERPNext/Frappe Cloud uses a REST API-first architecture.
 
 ### Query Patterns
 
