@@ -47,6 +47,11 @@ Parameters:
     Default: arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-nodejs-x86_64-ver-1-18-1:5
     Description: ARN for AWS Distro for OpenTelemetry (Node.js) Lambda layer
 
+  AlertEmail:
+    Type: String
+    Default: dev-team@10nz.tools
+    Description: Email address to receive CloudWatch alarm notifications
+
 Globals:
   Function:
     Runtime: nodejs22.x
@@ -150,6 +155,27 @@ Resources:
 
   # Pure Lambda MVP uses single handler - no separate approval function or log group
 
+  # SNS Topic for Alarm Notifications
+  AlertNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub telegram-bot-alerts-${Environment}
+      DisplayName: Telegram Bot Alerts
+      Subscriptions:
+        - Endpoint: !Ref AlertEmail
+          Protocol: email
+
+  # CloudWatch Logs Metric Filter for OpenAI Quota Exceeded
+  OpenAIQuotaExceededMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref WebhookHandlerLogGroup
+      FilterPattern: '{ $.event = "openai_quota_exceeded" }'
+      MetricTransformations:
+        - MetricName: OpenAIQuotaExceeded
+          MetricNamespace: BigSirFLRTS/TelegramBot
+          MetricValue: "1"
+
   # CloudWatch Alarms for Monitoring
   WebhookHandlerErrorAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -167,6 +193,8 @@ Resources:
         - Name: FunctionName
           Value: !Ref WebhookHandlerFunction
       TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertNotificationTopic
 
   ProvisionedConcurrencySpilloverAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -184,6 +212,63 @@ Resources:
         - Name: FunctionName
           Value: !Ref WebhookHandlerFunction
       TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+
+  WebhookHandlerTimeoutAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub telegram-webhook-handler-timeout-${Environment}
+      AlarmDescription: Alert when webhook handler approaches timeout (>14 seconds duration)
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 14000
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref WebhookHandlerFunction
+      TreatMissingData: notBreaching
+      Unit: Milliseconds
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+
+  WebhookHandlerThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub telegram-webhook-handler-throttles-${Environment}
+      AlarmDescription: Alert when webhook handler is throttled (concurrent execution limit reached)
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref WebhookHandlerFunction
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertNotificationTopic
+
+  OpenAIQuotaExceededAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub telegram-webhook-openai-quota-${Environment}
+      AlarmDescription: Alert when OpenAI quota is exceeded
+      MetricName: OpenAIQuotaExceeded
+      Namespace: BigSirFLRTS/TelegramBot
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertNotificationTopic
 
 Outputs:
   WebhookHandlerFunctionUrl:

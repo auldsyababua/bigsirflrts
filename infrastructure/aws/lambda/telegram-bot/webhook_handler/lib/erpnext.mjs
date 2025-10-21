@@ -16,6 +16,16 @@ let contextCache = {
   ttlMs: 5 * 60 * 1000  // 5 minutes
 };
 
+/**
+ * Reset context cache (for testing)
+ * @returns {void}
+ */
+export function resetContextCache() {
+  contextCache.users = null;
+  contextCache.sites = null;
+  contextCache.lastFetchTimestamp = null;
+}
+
 // Fallback data from PRD
 const FALLBACK_USERS = [
   {

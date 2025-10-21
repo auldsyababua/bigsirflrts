@@ -6,12 +6,14 @@
   "main": "index.mjs",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:unit": "vitest run --exclude tests/integration.test.js",
-    "test:erpnext": "vitest run tests/erpnext.test.js --reporter=verbose",
+    "test:unit": "vitest run tests/*.test.js --exclude tests/integration.test.js --exclude tests/e2e-complete-flow.test.js --reporter=verbose",
     "test:integration": "vitest run tests/integration.test.js --reporter=verbose",
-    "test:all": "vitest run --reporter=verbose"
+    "test:e2e": "vitest run tests/e2e-complete-flow.test.js --reporter=verbose",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:smoke": "./tests/smoke-test.sh",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "test:e2e:watch": "vitest watch tests/e2e-complete-flow.test.js"
   },
   "keywords": [
     "telegram",
