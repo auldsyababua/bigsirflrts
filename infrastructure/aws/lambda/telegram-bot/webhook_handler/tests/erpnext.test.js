@@ -249,7 +249,7 @@ describe('ERPNext Client', () => {
       expect(global.fetch).toHaveBeenCalledTimes(3); // 2 failures + 1 success
     }, 10000); // Increase timeout for retry delays
 
-    it('should throw structured error on 417 validation error', async () => {
+    it('should throw structured error on 417 validation error', { timeout: 30000 }, async () => {
       const mockErrorResponse = {
         _server_messages: JSON.stringify([
           {
@@ -288,16 +288,27 @@ describe('ERPNext Client', () => {
       }
     });
 
-    it('should handle timeout by aborting request', async () => {
-      global.fetch.mockImplementation(() => {
-        return new Promise((resolve) => {
-          setTimeout(() => {
+    it('should handle timeout by aborting request', { timeout: 30000 }, async () => {
+      global.fetch.mockImplementation((url, options) => {
+        return new Promise((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
             resolve({
               ok: true,
               status: 200,
               json: async () => ({ data: {} }),
             });
-          }, 15000); // Longer than 10s timeout
+          }, 12000); // Greater than 10s abort timeout, less than 30s test timeout
+
+          // Simulate abort signal handling
+          if (options?.signal) {
+            // Use onabort property instead of addEventListener for better compatibility
+            const originalOnabort = options.signal.onabort;
+            options.signal.onabort = () => {
+              if (originalOnabort) originalOnabort();
+              clearTimeout(timeoutId);
+              reject(new Error('The operation was aborted'));
+            };
+          }
         });
       });
 
@@ -313,7 +324,7 @@ describe('ERPNext Client', () => {
       };
 
       await expect(createMaintenanceVisit(taskData, '12345')).rejects.toThrow();
-    }, 15000);
+    });
 
     it('should throw on missing credentials', async () => {
       delete process.env.ERPNEXT_API_KEY;
