@@ -23,19 +23,19 @@ workflow interruption. FLRTS provides a natural language enhancement layer that
 converts conversational commands like "Hey Taylor, Colin needs the server logs
 by 1pm his time" into properly structured API calls to ERPNext.
 
-**Critical Architecture Rule:** FLRTS implements a "Reflex and Brain" hybrid
-architecture:
+**Critical Architecture Rule:** FLRTS implements a pure Lambda MVP architecture
+with direct ERPNext integration:
 
-- **Reflex Layer (AWS Lambda)**: Handles immediate responses (<100ms) for
-  Telegram acknowledgments and simple queries
-- **Brain Layer (n8n Workflows)**: Orchestrates complex business logic,
-  multi-step operations, and all ERPNext API interactions
-- **Data Flow**: User → Telegram → AWS Lambda (instant ACK) → n8n Workflow →
-  ERPNext REST API → Frappe Cloud MariaDB
-- **Performance Rule**: Operations requiring <500ms response use AWS Lambda; all
-  others use n8n workflows
+- **Single-Function Integration**: AWS Lambda handles webhook → context fetch →
+  OpenAI parse → ERPNext create → Telegram confirmation
+- **Data Flow**: User → Telegram → AWS Lambda → ERPNext REST API → Frappe Cloud
+  MariaDB
+- **Context Caching**: 5-minute in-memory cache reduces ERPNext API calls by
+  80%+
 - **Database Rule**: FLRTS never writes to the database directly - all writes go
   through ERPNext REST API
+- **Post-MVP n8n**: Optional orchestration layer preserved for multi-channel
+  reminders (see `docs/POST-MVP-REMINDERS.md`)
 
 ### Change Log
 
@@ -45,6 +45,7 @@ architecture:
 | 2025-01-13 | 2.0     | Major update: PostgreSQL 15.8, n8n-first hybrid architecture, Lists feature       | John (PM Agent) |
 | 2025-09-15 | 2.1     | Architecture revision: Single-instance n8n for 10-user scale, deferred queue mode | John (PM Agent) |
 | 2025-09-25 | 3.0     | MVP scope reduction: Focus on CREATE operations only for rapid demo               | John (PM Agent) |
+| 2025-10-20 | 4.0     | Architecture simplification: Pure Lambda MVP, remove n8n, direct ERPNext          | Implementation  |
 
 ## MVP Demo Scope (v3.0)
 

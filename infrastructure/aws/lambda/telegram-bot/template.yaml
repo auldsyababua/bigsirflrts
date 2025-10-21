@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Telegram Bot Lambda Functions with DynamoDB for confirmation workflows
+Description: Telegram Bot Lambda Functions with OpenAI NLP and ERPNext integration (Pure Lambda MVP)
 
 Parameters:
   Environment:
@@ -40,7 +40,7 @@ Parameters:
   ERPNextBaseUrl:
     Type: String
     Default: https://ops.10nz.tools
-    Description: ERPNext instance base URL
+    Description: ERPNext instance base URL (no trailing slash)
 
   ADOTLayerArn:
     Type: String
@@ -59,8 +59,10 @@ Globals:
         NODE_ENV: !Ref Environment
         TELEGRAM_BOT_TOKEN: !Ref TelegramBotToken
         OPENAI_API_KEY: !Ref OpenAIApiKey
-        DYNAMODB_TABLE_NAME: !Ref TelegramConfirmationsTable
         TELEGRAM_WEBHOOK_SECRET: !Ref TelegramWebhookSecret
+        ERPNEXT_API_KEY: !Ref ERPNextApiKey
+        ERPNEXT_API_SECRET: !Ref ERPNextApiSecret
+        ERPNEXT_BASE_URL: !Ref ERPNextBaseUrl
 
     Tags:
       Project: BigSirFLRTS
@@ -68,33 +70,7 @@ Globals:
       Environment: !Ref Environment
 
 Resources:
-  # DynamoDB Table for confirmation state management
-  TelegramConfirmationsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub telegram-confirmations-${Environment}
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: confirmationId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: confirmationId
-          KeyType: HASH
-      TimeToLiveSpecification:
-        AttributeName: expiresAt
-        Enabled: true
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
-      Tags:
-        - Key: Project
-          Value: BigSirFLRTS
-        - Key: Component
-          Value: TelegramBot
-        - Key: Environment
-          Value: !Ref Environment
+  # Pure Lambda MVP architecture: No DynamoDB table required (tasks created immediately in ERPNext)
 
   # Lambda Execution Role
   LambdaExecutionRole:
@@ -111,18 +87,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
-      Policies:
-        - PolicyName: DynamoDBAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                  - dynamodb:GetItem
-                  - dynamodb:Query
-                  - dynamodb:UpdateItem
-                Resource: !GetAtt TelegramConfirmationsTable.Arn
+      # No DynamoDB permissions needed - webhook handler only makes HTTPS calls to external APIs
       Tags:
         - Key: Project
           Value: BigSirFLRTS
@@ -131,15 +96,16 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  # Webhook Handler Lambda Function (Stage 1)
+  # Webhook Handler Lambda Function (Pure Lambda MVP)
   WebhookHandlerFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub telegram-webhook-handler-${Environment}
       Handler: index.handler
       CodeUri: webhook_handler/
-      Description: Handles incoming Telegram webhooks, parses with OpenAI, writes to DynamoDB
-      Timeout: 10
+      Description: Telegram webhook handler with OpenAI NLP and ERPNext integration (pure Lambda MVP)
+      MemorySize: 512
+      Timeout: 15
       Role: !GetAtt LambdaExecutionRole.Arn
       AutoPublishAlias: live
       ProvisionedConcurrencyConfig:
@@ -173,26 +139,7 @@ Resources:
       Principal: "*"
       FunctionUrlAuthType: NONE
 
-  # Approval Handler Lambda Function (Stage 2)
-  ApprovalHandlerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub telegram-approval-handler-${Environment}
-      Handler: index.handler
-      CodeUri: approval_handler/
-      Description: Handles approval callbacks, reads from DynamoDB, calls ERPNext API
-      Timeout: 90
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Environment:
-        Variables:
-          ERPNEXT_API_KEY: !Ref ERPNextApiKey
-          ERPNEXT_API_SECRET: !Ref ERPNextApiSecret
-          ERPNEXT_BASE_URL: !Ref ERPNextBaseUrl
-      FunctionUrlConfig:
-        AuthType: NONE
-        InvokeMode: BUFFERED
-      Tags:
-        Name: !Sub telegram-approval-handler-${Environment}
+  # Pure Lambda MVP: Single webhook handler creates tasks directly in ERPNext (no approval workflow)
 
   # CloudWatch Log Groups (explicit retention)
   WebhookHandlerLogGroup:
@@ -201,11 +148,7 @@ Resources:
       LogGroupName: !Sub /aws/lambda/telegram-webhook-handler-${Environment}
       RetentionInDays: 30
 
-  ApprovalHandlerLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/lambda/telegram-approval-handler-${Environment}
-      RetentionInDays: 30
+  # Pure Lambda MVP uses single handler - no separate approval function or log group
 
   # CloudWatch Alarms for Monitoring
   WebhookHandlerErrorAlarm:
@@ -249,23 +192,7 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-WebhookHandlerUrl
 
-  ApprovalHandlerFunctionUrl:
-    Description: Function URL for approval callback handling
-    Value: !GetAtt ApprovalHandlerFunctionUrl.FunctionUrl
-    Export:
-      Name: !Sub ${AWS::StackName}-ApprovalHandlerUrl
-
-  DynamoDBTableName:
-    Description: DynamoDB table name for confirmation state
-    Value: !Ref TelegramConfirmationsTable
-    Export:
-      Name: !Sub ${AWS::StackName}-DynamoDBTableName
-
-  DynamoDBTableArn:
-    Description: DynamoDB table ARN for IAM policy references
-    Value: !GetAtt TelegramConfirmationsTable.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-DynamoDBTableArn
+  # Pure Lambda MVP architecture: Outputs only include webhook handler resources
 
   LambdaExecutionRoleArn:
     Description: IAM role ARN for Lambda functions
@@ -278,9 +205,3 @@ Outputs:
     Value: !GetAtt WebhookHandlerFunction.Arn
     Export:
       Name: !Sub ${AWS::StackName}-WebhookHandlerArn
-
-  ApprovalHandlerFunctionArn:
-    Description: ARN of approval handler Lambda function
-    Value: !GetAtt ApprovalHandlerFunction.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-ApprovalHandlerArn

@@ -1,24 +1,29 @@
 {
   "name": "telegram-webhook-handler",
-  "version": "1.0.0",
-  "description": "Telegram webhook handler for BigSirFLRTS bot",
+  "version": "2.0.0",
+  "description": "Telegram webhook handler with OpenAI and ERPNext integration for BigSirFLRTS bot",
   "type": "module",
   "main": "index.mjs",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run --exclude tests/integration.test.js",
+    "test:erpnext": "vitest run tests/erpnext.test.js --reporter=verbose",
+    "test:integration": "vitest run tests/integration.test.js --reporter=verbose",
+    "test:all": "vitest run --reporter=verbose"
   },
   "keywords": [
     "telegram",
     "webhook",
-    "lambda"
+    "lambda",
+    "openai",
+    "erpnext",
+    "nlp"
   ],
   "author": "10netzero",
   "license": "UNLICENSED",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.709.0",
-    "@aws-sdk/util-dynamodb": "^3.709.0",
     "@opentelemetry/api": "^1.9.0",
     "openai": "^4.73.0"
   },
