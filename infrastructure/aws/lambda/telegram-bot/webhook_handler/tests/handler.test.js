@@ -1,12 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { handler } from '../index.mjs';
 import * as telegram from '../lib/telegram.mjs';
 import * as openai from '../lib/openai.mjs';
 import * as erpnext from '../lib/erpnext.mjs';
 
+// Mocks BEFORE handler import (critical for preventing dependency load)
 vi.mock('../lib/telegram.mjs');
 vi.mock('../lib/openai.mjs');
 vi.mock('../lib/erpnext.mjs');
+
+// Now import handler (mocks are applied)
+import { handler } from '../index.mjs';
 
 describe('webhook handler', () => {
   beforeEach(() => {
@@ -17,6 +20,7 @@ describe('webhook handler', () => {
     process.env.ERPNEXT_API_KEY = 'test-erpnext-key';
     process.env.ERPNEXT_API_SECRET = 'test-erpnext-secret';
     process.env.ERPNEXT_BASE_URL = 'https://test.erpnext.com';
+    process.env.OPENAI_TIMEOUT_MS = '5000';
   });
 
   it('should process valid webhook and send confirmation', async () => {
@@ -29,7 +33,7 @@ describe('webhook handler', () => {
           enabled: true,
         },
       ],
-      sites: [{ name: 'site-1', locationName: 'Test Site' }],
+      sites: [{ name: 'site-1', location_name: 'Test Site' }],
     };
 
     vi.spyOn(telegram, 'validateWebhook').mockReturnValue(true);
