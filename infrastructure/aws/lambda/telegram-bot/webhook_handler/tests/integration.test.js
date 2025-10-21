@@ -1,5 +1,23 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { handler } from '../index.mjs';
+import { resetContextCache } from '../lib/erpnext.mjs';
+
+// Create a shared mock for OpenAI create method
+const mockOpenAICreate = vi.fn();
+
+// Mock OpenAI SDK before any imports
+vi.mock('openai', () => {
+  return {
+    default: class MockOpenAI {
+      constructor() {
+        this.chat = {
+          completions: {
+            create: mockOpenAICreate,
+          },
+        };
+      }
+    },
+  };
+});
 
 // Mock OpenTelemetry
 vi.mock('@opentelemetry/api', () => ({
@@ -36,6 +54,9 @@ describe('Integration Tests', () => {
     process.env.ERPNEXT_BASE_URL = 'https://test.erpnext.com';
 
     vi.resetModules();
+
+    // Reset context cache between tests using exported function
+    resetContextCache();
   });
 
   afterEach(() => {
@@ -43,6 +64,8 @@ describe('Integration Tests', () => {
   });
 
   it('should handle complete happy path: Telegram → ERPNext context → OpenAI → ERPNext creation → Telegram confirmation', async () => {
+    const { handler } = await import('../index.mjs');
+
     // Mock ERPNext context fetch (users)
     const mockUsersResponse = {
       data: [
@@ -104,6 +127,9 @@ describe('Integration Tests', () => {
       },
     };
 
+    // Configure OpenAI SDK mock to return parsed response
+    mockOpenAICreate.mockResolvedValueOnce(mockOpenAIResponse);
+
     global.fetch
       // ERPNext: fetch users
       .mockResolvedValueOnce({
@@ -116,12 +142,6 @@ describe('Integration Tests', () => {
         ok: true,
         status: 200,
         json: async () => mockSitesResponse,
-      })
-      // OpenAI: parse message
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => mockOpenAIResponse,
       })
       // ERPNext: create Maintenance Visit
       .mockResolvedValueOnce({
@@ -194,6 +214,8 @@ describe('Integration Tests', () => {
   });
 
   it('should handle OpenAI parsing failure with audit logging and user notification', async () => {
+    const { handler } = await import('../index.mjs');
+
     // Mock ERPNext context fetch
     global.fetch
       .mockResolvedValueOnce({
@@ -260,6 +282,8 @@ describe('Integration Tests', () => {
   });
 
   it('should handle ERPNext 417 validation error with parsed error message', async () => {
+    const { handler } = await import('../index.mjs');
+
     // Mock ERPNext context fetch
     global.fetch
       .mockResolvedValueOnce({
@@ -363,6 +387,8 @@ describe('Integration Tests', () => {
   });
 
   it('should handle ERPNext 500 error with retry and eventual failure', async () => {
+    const { handler } = await import('../index.mjs');
+
     // Mock ERPNext context fetch
     global.fetch
       .mockResolvedValueOnce({
@@ -461,6 +487,8 @@ describe('Integration Tests', () => {
   }, 15000); // Increase timeout for retries
 
   it('should reject invalid webhook secret', async () => {
+    const { handler } = await import('../index.mjs');
+
     const event = {
       headers: {
         'x-telegram-bot-api-secret-token': 'wrong-secret',
@@ -483,6 +511,8 @@ describe('Integration Tests', () => {
   });
 
   it('should handle missing environment variables gracefully', async () => {
+    const { handler } = await import('../index.mjs');
+
     delete process.env.TELEGRAM_BOT_TOKEN;
 
     const event = {
