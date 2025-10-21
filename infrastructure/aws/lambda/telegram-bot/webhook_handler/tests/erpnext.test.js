@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getContext, createMaintenanceVisit, logParserAudit } from '../lib/erpnext.mjs';
 
 // Mock OpenTelemetry
 vi.mock('@opentelemetry/api', () => ({
@@ -93,6 +92,7 @@ describe('ERPNext Client', () => {
       expect(context.users[0].email).toBe('user1@10nz.tools');
       expect(context.sites).toHaveLength(2);
       expect(context.sites[0].name).toBe('site-1');
+      expect(context.sites[0].location_name).toBe('Site One');
       expect(global.fetch).toHaveBeenCalledTimes(2);
     });
 
@@ -147,7 +147,7 @@ describe('ERPNext Client', () => {
       expect(context.users).toHaveLength(4); // FALLBACK_USERS length
       expect(context.users[0].email).toBe('joel@10nz.tools');
       expect(context.sites).toHaveLength(4); // FALLBACK_SITES length
-      expect(context.sites).toContain('Big Sky');
+      expect(context.sites[0]).toBe('Big Sky');
     });
 
     it('should handle 401 auth error with fallback', async () => {
@@ -161,7 +161,7 @@ describe('ERPNext Client', () => {
       const context = await getContext();
 
       expect(context.users).toHaveLength(4); // FALLBACK_USERS
-      expect(context.sites).toContain('Big Sky');
+      expect(context.sites[0]).toBe('Big Sky');
     });
   });
 

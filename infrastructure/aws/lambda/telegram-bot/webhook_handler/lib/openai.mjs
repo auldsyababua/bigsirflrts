@@ -63,27 +63,39 @@ function sleep(ms) {
  * @returns {string} System prompt with context
  */
 export function buildSystemPromptWithContext(context) {
-  const teamList = context.users
-    .map(u => `- ${u.fullName} (${u.email}) - ${u.timezone}`)
+  const users = Array.isArray(context?.users) ? context.users : [];
+  const sites = Array.isArray(context?.sites) ? context.sites : [];
+
+  const teamList = users
+    .map(u => `- ${u.fullName || u.name || 'Unknown'} (${u.email || 'unknown'}) - ${u.timezone || 'UTC'}`)
     .join('\n');
 
-  const siteList = context.sites
-    .map(s => `- ${s}`)
-    .join('\n');
+  const siteList = sites.map(s => `- ${s}`).join('\n');
 
-  // Convert current time to sender's timezone for accurate relative date parsing ("tomorrow", "next week", etc.)
-  const sender = context.sender || { name: 'User', email: 'user@10nz.tools', timezone: 'America/New_York' };
+  // Convert current time to sender's timezone
+  const sender = {
+    name: 'User',
+    email: 'user@10nz.tools',
+    timezone: 'America/New_York',
+    ...(context?.sender || {})
+  };
+
   const currentTimeUTC = new Date().toISOString();
-  const currentTimeLocal = new Date().toLocaleString('en-US', {
-    timeZone: sender.timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  });
+  let currentTimeLocal;
+  try {
+    currentTimeLocal = new Date().toLocaleString('en-US', {
+      timeZone: sender.timezone || 'UTC',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  } catch {
+    currentTimeLocal = new Date().toLocaleString('en-US', { hour12: false });
+  }
 
   return `You are a task extraction assistant for a distributed bitcoin mining operations team.
 
@@ -209,7 +221,8 @@ export async function classifyIntent(text, options = {}) {
       });
 
       const duration = Date.now() - startTime;
-      const taskData = JSON.parse(response.choices[0].message.content);
+      // Structured Outputs API returns parsed object in message.parsed
+      const taskData = response.choices[0].message.parsed || JSON.parse(response.choices[0].message.content);
 
       logInfo('openai_request_complete', {
         attempt,
@@ -246,10 +259,17 @@ export async function classifyIntent(text, options = {}) {
         throw new Error('OpenAI authentication failed');
       }
 
-      // Rate limit - retry with delay
+      // Rate limit or quota - retry with delay
       if (error.status === 429) {
-        const retryAfter = error.response?.headers?.['retry-after'] || 2;
-        logInfo('openai_rate_limit', {
+        const ra = error.response?.headers?.['retry-after'];
+        let retryAfter = Number.isFinite(+ra) ? parseInt(ra, 10) : 2;
+        if (!Number.isFinite(retryAfter) && typeof ra === 'string') {
+          const deltaMs = Date.parse(ra) - Date.now();
+          retryAfter = deltaMs > 0 ? Math.ceil(deltaMs / 1000) : 2;
+        }
+
+        const isQuota = /insufficient[_\s-]?quota/i.test(error?.message || '') || error?.type === 'insufficient_quota';
+        logInfo(isQuota ? 'openai_quota_exceeded' : 'openai_rate_limit', {
           attempt,
           retryAfter,
           correlationId

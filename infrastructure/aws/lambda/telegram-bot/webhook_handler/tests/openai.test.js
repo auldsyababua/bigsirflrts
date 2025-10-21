@@ -47,7 +47,7 @@ describe('classifyIntent', () => {
           finish_reason: 'stop',
         },
       ],
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o-2024-08-06',
       usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
     });
 
@@ -72,7 +72,7 @@ describe('classifyIntent', () => {
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o-2024-08-06',
         temperature: 0.1,
         response_format: expect.objectContaining({
           type: 'json_schema',
@@ -100,7 +100,7 @@ describe('classifyIntent', () => {
             finish_reason: 'stop',
           },
         ],
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o-2024-08-06',
         usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
       });
 
