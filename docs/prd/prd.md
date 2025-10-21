@@ -34,8 +34,9 @@ with direct ERPNext integration:
   80%+
 - **Database Rule**: FLRTS never writes to the database directly - all writes go
   through ERPNext REST API
-- **Post-MVP n8n**: Optional orchestration layer preserved for multi-channel
-  reminders (see `docs/POST-MVP-REMINDERS.md`)
+- **Post-MVP n8n (optional)**: Optional orchestration layer preserved for
+  multi-channel reminders (see `docs/POST-MVP-REMINDERS.md`; may be replaced by
+  Frappe automation)
 
 ### Change Log
 

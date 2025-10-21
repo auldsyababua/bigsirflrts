@@ -6,7 +6,7 @@
   "main": "index.mjs",
   "scripts": {
     "test": "vitest run",
-    "test:unit": "vitest run tests/*.test.js --exclude tests/integration.test.js --exclude tests/e2e-complete-flow.test.js --reporter=verbose",
+    "test:unit": "vitest run 'tests/**/*.test.js' --exclude 'tests/integration.test.js' --exclude 'tests/e2e-complete-flow.test.js' --reporter=verbose",
     "test:integration": "vitest run tests/integration.test.js --reporter=verbose",
     "test:e2e": "vitest run tests/e2e-complete-flow.test.js --reporter=verbose",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",

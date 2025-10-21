@@ -96,7 +96,7 @@ This is a reminder that the following task is due today:
 
 Task: {{ doc.mntc_work_details }}
 Due Date: {{ doc.mntc_date }}
-Priority: {{ doc.custom_priority or 'Medium' }}
+Priority: {{ doc.custom_flrts_priority or 'Medium' }}
 
 Please complete this task or update the status in ERPNext.
 
@@ -144,7 +144,7 @@ def execute(method=None):
             'completion_status': 'Pending',
             'mntc_date': ['between', [today, today + timedelta(days=1)]]
         },
-        fields=['name', 'mntc_work_details', 'assign_to', 'custom_priority', 'mntc_date', 'custom_telegram_message_id']
+        fields=['name', 'mntc_work_details', 'assign_to', 'custom_flrts_priority', 'mntc_date', 'custom_telegram_message_id']
     )
 
     for task in tasks:
@@ -166,7 +166,7 @@ def send_reminder_webhook(task):
         'task_id': task.name,
         'description': task.mntc_work_details,
         'assignee_email': task.assign_to,
-        'priority': task.custom_priority or 'Medium',
+        'priority': task.custom_flrts_priority or 'Medium',
         'due_date': str(task.mntc_date),
         'telegram_chat_id': get_telegram_chat_id(task.assign_to),  # Lookup from User
         'original_message_id': task.custom_telegram_message_id
@@ -486,7 +486,7 @@ Condition: doc.completion_status == 'Pending'
 # Trigger: After Insert (Maintenance Visit)
 
 def execute(doc, method):
-    if doc.custom_priority == 'Urgent':
+    if doc.custom_flrts_priority == 'Urgent':
         send_immediate_notification(doc)
 ```
 

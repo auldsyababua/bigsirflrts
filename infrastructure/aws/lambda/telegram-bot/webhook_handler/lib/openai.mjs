@@ -271,8 +271,8 @@ export async function classifyIntent(text, options = {}) {
         continue;
       }
 
-      // Timeout - retry once
-      if ((error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') && attempt < 1) {
+      // Timeout - retry if attempts are left
+      if ((error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') && attempt < maxRetries) {
         logInfo('openai_timeout', {
           attempt,
           timeout_ms: timeoutMs,

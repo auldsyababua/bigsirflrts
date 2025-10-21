@@ -85,7 +85,7 @@ describe('webhook handler', () => {
         rationale: 'User requested bug fix',
         confidence: 0.9,
       }),
-      1
+      '1'
     );
     expect(telegram.sendMessage).toHaveBeenCalled();
   });

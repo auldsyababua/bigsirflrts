@@ -511,7 +511,7 @@ export async function logParserAudit(logData) {
         method: 'POST',
         body: JSON.stringify(doc)
       },
-      1  // Only 1 retry for audit logs (fire-and-forget)
+      2  // Allow one retry
     );
 
     logInfo('parser_audit_logged', {

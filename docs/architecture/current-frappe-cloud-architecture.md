@@ -104,6 +104,27 @@ logic
 - **Provisioned Concurrency:** 1 (eliminates cold starts)
 - **Trigger:** Lambda Function URL (direct HTTPS endpoint)
 
+### 3. n8n Workflows (Optional - Post-MVP)
+
+**Purpose:** Complex business logic orchestration (optional for future
+multi-channel reminders)
+
+**Current Status:** Not deployed in MVP. Configuration preserved in
+`infrastructure/docker-compose.yml` for future use.
+
+**Post-MVP Use Cases:**
+
+- Multi-channel reminders (Email + Telegram)
+- Complex approval workflows
+- Batch operations
+
+**Deployment (when needed):**
+
+- **Mode:** Single-instance (10-user scale)
+- **Host:** DigitalOcean Droplet (2GB RAM)
+- **Queue:** Redis (containerized)
+- **Version:** v1.105.2
+
 ### 4. Frappe Cloud MariaDB
 
 **Purpose:** Managed database backend for all ERPNext data
@@ -142,45 +163,50 @@ logic
 
 ## Data Flow
 
-### Task Creation via Telegram
+### Task Creation via Telegram (Pure Lambda MVP)
 
 ```
 1. User sends message to Telegram bot
    └─► "Hey Taylor, check pump #3 by 2pm today"
 
 2. Telegram → AWS Lambda (webhook)
-   └─► Lambda acknowledges immediately (<100ms)
-   └─► Enqueues message to n8n
+   └─► Lambda validates and acknowledges immediately (<100ms)
+   └─► Fetches ERPNext context (users, sites) with 5-minute cache
 
-3. n8n receives message
-   └─► Calls OpenAI GPT-4o with NLP prompt
+3. Lambda calls OpenAI GPT-4o with context
    └─► Receives structured JSON:
        {
-         "action": "create_task",
-         "title": "Check pump #3",
+         "description": "Check pump #3",
          "assignee": "taylor@10nz.tools",
-         "due_date": "2024-10-20 14:00",
-         "priority": "High"
-       }
-
-4. n8n transforms to ERPNext Task DocType
-   └─► POST https://ops.10nz.tools/api/resource/Task
-       {
-         "subject": "Check pump #3",
-         "description": "Assigned via Telegram",
-         "assigned_to": "taylor@10nz.tools",
-         "expected_end_date": "2024-10-20 14:00:00",
+         "dueDate": "2024-10-20T14:00:00Z",
          "priority": "High",
-         "custom_telegram_message_id": "12345"
+         "rationale": "User mentioned 'Taylor' and '2pm today'",
+         "confidence": 0.9
        }
 
-5. ERPNext creates Task record
+4. Lambda transforms to ERPNext Maintenance Visit
+   └─► POST https://ops.10nz.tools/api/resource/Maintenance Visit
+       {
+         "mntc_work_details": "Check pump #3",
+         "custom_assigned_to": "taylor@10nz.tools",
+         "mntc_date": "2024-10-20 14:00:00",
+         "custom_flrts_priority": "High",
+         "custom_parse_rationale": "User mentioned 'Taylor' and '2pm today'",
+         "custom_parse_confidence": 0.9,
+         "customer": "10netzero Tools",
+         "maintenance_type": "Preventive",
+         "completion_status": "Pending",
+         "custom_telegram_message_id": "12345",
+         "custom_flrts_source": "telegram_bot"
+       }
+
+5. ERPNext creates Maintenance Visit record
    └─► Stores in MariaDB
    └─► Triggers webhooks (if configured)
    └─► Sends email notification (optional)
 
-6. n8n confirms to user
-   └─► Telegram message: "✅ Task created: Check pump #3 (assigned to Taylor)"
+6. Lambda confirms to user
+   └─► Telegram message: "✅ Task created: MNTC-00001 - Check pump #3 (assigned to Taylor)"
 ```
 
 ## API Integration Patterns
