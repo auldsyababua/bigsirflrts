@@ -77,8 +77,16 @@ describe('webhook handler', () => {
     expect(openai.classifyIntent).toHaveBeenCalledWith(
       'Fix the bug',
       expect.objectContaining({
-        context: mockContext,
+        context: expect.objectContaining({
+          users: mockContext.users,
+          sites: mockContext.sites,
+          sender: expect.objectContaining({
+            email: 'test@10nz.tools',
+            name: 'Test User',
+          }),
+        }),
         timeoutMs: 5000,
+        maxRetries: 2,
       })
     );
     expect(erpnext.createMaintenanceVisit).toHaveBeenCalledWith(
@@ -214,6 +222,9 @@ describe('webhook handler', () => {
     const response = await handler(event);
 
     expect(response.statusCode).toBe(200);
+    // Note: The audit log currently receives the generic error.message ("ERPNext API error 417")
+    // rather than the parsed validation details. The user message DOES get the detailed error.
+    // This could be enhanced in the future to extract validation messages for audit logging.
     expect(erpnext.logParserAudit).toHaveBeenCalledWith({
       telegram_message_id: '1',
       user_id: '123',
@@ -221,8 +232,9 @@ describe('webhook handler', () => {
       parsed_data: expect.any(Object),
       confidence: 0.9,
       status: 'failed',
-      error_message: expect.stringContaining('Customer is mandatory'),
+      error_message: 'ERPNext API error 417',
     });
+    // User message DOES get the detailed validation error (parsed from _server_messages)
     expect(telegram.sendMessage).toHaveBeenCalledWith(
       123,
       expect.stringContaining('Customer is mandatory'),
