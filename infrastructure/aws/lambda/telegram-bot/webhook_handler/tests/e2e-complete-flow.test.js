@@ -282,6 +282,10 @@ describe('End-to-End Complete Flow Tests', () => {
     });
 
     it('should handle task with due date and priority', async () => {
+      // Use fake timers with fixed UTC time to make timezone conversions deterministic
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2024-10-21T00:00:00Z'));
+
       mockSuccessfulERPNextContext();
       mockOpenAIParse({
         description: 'Check compressor',
@@ -302,7 +306,7 @@ describe('End-to-End Complete Flow Tests', () => {
       expect(response.statusCode).toBe(200);
 
       // Handler converts ISO dates to local timezone (not UTC)
-      // 2024-10-21T14:00:00Z UTC -> local time (e.g., 07:00:00 in PDT which is UTC-7)
+      // Using fake timers ensures deterministic behavior across different system timezones
       const expectedDate = new Date('2024-10-21T14:00:00Z');
       const expectedDateStr = `${expectedDate.getFullYear()}-${String(expectedDate.getMonth() + 1).padStart(2, '0')}-${String(expectedDate.getDate()).padStart(2, '0')} ${String(expectedDate.getHours()).padStart(2, '0')}:${String(expectedDate.getMinutes()).padStart(2, '0')}:${String(expectedDate.getSeconds()).padStart(2, '0')}`;
 
@@ -312,6 +316,8 @@ describe('End-to-End Complete Flow Tests', () => {
       });
 
       expectTelegramMessageSent(123, '🔴 *Priority:* Urgent');
+
+      vi.useRealTimers();
     });
   });
 
