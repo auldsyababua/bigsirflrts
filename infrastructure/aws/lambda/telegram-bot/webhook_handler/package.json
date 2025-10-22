@@ -1,24 +1,34 @@
 {
   "name": "telegram-webhook-handler",
-  "version": "1.0.0",
-  "description": "Telegram webhook handler for BigSirFLRTS bot",
+  "version": "2.0.0",
+  "description": "Telegram webhook handler with OpenAI and ERPNext integration for BigSirFLRTS bot",
   "type": "module",
   "main": "index.mjs",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:local-safe": "vitest run --reporter=verbose",
+    "test:unit": "vitest run tests --exclude tests/integration.test.js --exclude tests/e2e-complete-flow.test.js --reporter=verbose",
+    "test:unit-safe": "vitest run tests --exclude tests/integration.test.js --exclude tests/e2e-complete-flow.test.js --reporter=verbose",
+    "test:integration": "vitest run tests/integration.test.js --reporter=verbose",
+    "test:integration-safe": "vitest run tests/integration.test.js --reporter=verbose",
+    "test:e2e": "vitest run tests/e2e-complete-flow.test.js --reporter=verbose",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:smoke": "./tests/smoke-test.sh",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest watch",
+    "test:e2e:watch": "vitest watch tests/e2e-complete-flow.test.js"
   },
   "keywords": [
     "telegram",
     "webhook",
-    "lambda"
+    "lambda",
+    "openai",
+    "erpnext",
+    "nlp"
   ],
   "author": "10netzero",
   "license": "UNLICENSED",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.709.0",
-    "@aws-sdk/util-dynamodb": "^3.709.0",
     "@opentelemetry/api": "^1.9.0",
     "openai": "^4.73.0"
   },

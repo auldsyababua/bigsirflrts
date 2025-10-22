@@ -6,12 +6,11 @@
 
 • Enable rapid, friction-free task creation through natural language processing
 for distributed team operations • Eliminate manual timezone conversion errors by
-automatically converting all times to assignee's local timezone  
-• Reduce average task creation time from 45 seconds to under 5 seconds •
-Maintain full OpenProject functionality while adding NLP enhancement layer via
-API integration • Provide dual-interface access (OpenProject UI + FLRTS NLP) for
-maximum flexibility • Achieve 95% parse accuracy and 100% timezone conversion
-accuracy
+automatically converting all times to assignee's local timezone • Reduce average
+task creation time from 45 seconds to under 5 seconds • Maintain full ERPNext
+functionality while adding NLP enhancement layer via API integration • Provide
+dual-interface access (ERPNext Web UI + FLRTS NLP) for maximum flexibility •
+Achieve 95% parse accuracy and 100% timezone conversion accuracy
 
 ### Background Context
 
@@ -23,19 +22,20 @@ workflow interruption. FLRTS provides a natural language enhancement layer that
 converts conversational commands like "Hey Taylor, Colin needs the server logs
 by 1pm his time" into properly structured API calls to ERPNext.
 
-**Critical Architecture Rule:** FLRTS implements a "Reflex and Brain" hybrid
-architecture:
+**Critical Architecture Rule:** FLRTS implements a pure Lambda MVP architecture
+with direct ERPNext integration:
 
-- **Reflex Layer (AWS Lambda)**: Handles immediate responses (<100ms) for
-  Telegram acknowledgments and simple queries
-- **Brain Layer (n8n Workflows)**: Orchestrates complex business logic,
-  multi-step operations, and all ERPNext API interactions
-- **Data Flow**: User → Telegram → AWS Lambda (instant ACK) → n8n Workflow →
-  ERPNext REST API → Frappe Cloud MariaDB
-- **Performance Rule**: Operations requiring <500ms response use AWS Lambda; all
-  others use n8n workflows
+- **Single-Function Integration**: AWS Lambda handles webhook → context fetch →
+  OpenAI parse → ERPNext create → Telegram confirmation
+- **Data Flow**: User → Telegram → AWS Lambda → ERPNext REST API → Frappe Cloud
+  MariaDB
+- **Context Caching**: 5-minute in-memory cache reduces ERPNext API calls by
+  80%+
 - **Database Rule**: FLRTS never writes to the database directly - all writes go
   through ERPNext REST API
+- **Post-MVP n8n (optional)**: Optional orchestration layer preserved for
+  multi-channel reminders (see `docs/POST-MVP-REMINDERS.md`; may be replaced by
+  Frappe automation)
 
 ### Change Log
 
@@ -45,6 +45,7 @@ architecture:
 | 2025-01-13 | 2.0     | Major update: PostgreSQL 15.8, n8n-first hybrid architecture, Lists feature       | John (PM Agent) |
 | 2025-09-15 | 2.1     | Architecture revision: Single-instance n8n for 10-user scale, deferred queue mode | John (PM Agent) |
 | 2025-09-25 | 3.0     | MVP scope reduction: Focus on CREATE operations only for rapid demo               | John (PM Agent) |
+| 2025-10-20 | 4.0     | Architecture simplification: Pure Lambda MVP, remove n8n, direct ERPNext          | Implementation  |
 
 ## MVP Demo Scope (v3.0)
 
@@ -74,9 +75,9 @@ architecture:
 - User context management
 
 **Rationale**: By focusing solely on CREATE operations, we can demonstrate the
-core NLP capability and OpenProject integration without the complexity of
+core NLP capability and ERPNext integration without the complexity of
 bidirectional sync, state management, or UI complications. Users can create
-tasks naturally via Telegram, then manage them in OpenProject's full UI.
+tasks naturally via Telegram, then manage them in ERPNext's Web UI.
 
 ## Requirements
 
@@ -101,7 +102,7 @@ entry when parsing fails • **FR9 (MVP):** The system shall support /create
 command for explicit task/list creation (other commands like /update, /archive,
 /list deferred to post-MVP) • **FR10 (Post-MVP):** The system shall send task
 reminder notifications to both Telegram and email channels • **FR11:** The
-system shall maintain user access to the full OpenProject UI alongside the NLP
+system shall maintain user access to the full ERPNext Web UI alongside the NLP
 interface • **FR12 (Post-MVP):** The system shall maintain a complete audit
 trail by implementing soft-delete/archive operations only - true deletions are
 restricted to admin users (Colin) via direct database access
@@ -141,15 +142,15 @@ is accurate, then confirm for execution.
 • **Conversational correction loop**: Send message → Review bot response → Reply
 with corrections → Repeat until correct → Confirm • **Text-only confirmation**:
 Bot shows parsed JSON in readable format, user types "yes" or "confirm" to
-execute • **OpenProject fallback**: Users can confirm faulty parsing and fix
-directly in OpenProject's mobile-responsive UI
+execute • **ERPNext fallback**: Users can confirm faulty parsing and fix
+directly in ERPNext's Web UI (mobile-responsive)
 
 ### Core Screens and Views
 
 • **Telegram Bot Chat** - Primary interface for all NLP interactions • **JSON
 Confirmation Message** - Bot's formatted response showing parsed intent •
-**OpenProject Mobile UI** - Fallback interface for manual corrections (existing
-responsive design)
+**ERPNext Web UI** - Fallback interface for manual corrections
+(mobile-responsive)
 
 ### Accessibility: None
 
@@ -169,15 +170,19 @@ No custom branding required - uses standard Telegram bot interface
 
 ### Service Architecture
 
-**Hybrid "Reflex and Brain" Model:**
+**Pure Lambda MVP:**
 
-- **Reflex Layer**: AWS Lambda for immediate responses (<100ms latency)
-- **Brain Layer**: n8n workflows in single-instance mode for 10-user scale
-  (queue mode available for 50+ users)
+- **Primary Integration**: AWS Lambda for complete webhook → context → parse →
+  ERPNext → confirmation flow
 - **Infrastructure**: Frappe Cloud managed ERPNext with custom flrts_extensions
   app
-- **Integration Pattern**: AWS Lambda acknowledges users instantly, then
-  triggers n8n workflows asynchronously to interact with ERPNext REST API
+- **Integration Pattern**: AWS Lambda directly calls ERPNext REST API with
+  context injection
+
+**Post-MVP Optional Orchestration:**
+
+- **n8n (Optional)**: Single-instance mode for multi-channel reminders (see
+  `POST-MVP-REMINDERS.md`; may be replaced by Frappe automation)
 
 #### n8n Deployment Architecture
 

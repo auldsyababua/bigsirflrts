@@ -87,7 +87,7 @@ services:
     cpus: 1.0
     environment:
       - N8N_CONCURRENCY=10
-      - DB_POOL_SIZE=4
+      - DB_POSTGRESDB_POOL_SIZE=4
 ```
 
 ### Future Queue Mode Config

@@ -24,31 +24,24 @@ service workflows.
          │                │
          │                │
          ▼                ▼
-    ┌────────┐       ┌──────────────────────────────────────┐
-    │ AWS    │       │     ERPNext on Frappe Cloud          │
-    │ Lambda │       │  https://ops.10nz.tools              │
-    └────┬───┘       │                                       │
-         │           │  ┌──────────────┐  ┌───────────────┐ │
-         │           │  │  ERPNext     │  │  flrts_       │ │
-         │           │  │  (Core)      │  │  extensions   │ │
-         │           │  └──────┬───────┘  └───────┬───────┘ │
-         │           │         │                   │         │
-         │           │         └───────┬───────────┘         │
-         │           │                 ▼                     │
-         │           │        ┌─────────────────┐           │
-         │           │        │  Frappe Cloud   │           │
-         │           │        │  MariaDB 10.6+  │           │
-         │           │        └─────────────────┘           │
-         │           └──────────────────────────────────────┘
-         │
-         ▼
-    ┌──────────┐
-    │  n8n     │ ◄────── Webhook Triggers
-    │ Workflows│
-    └────┬─────┘
-         │
-         └─────────► OpenAI GPT-4o API
-                     ERPNext REST API
+    ┌────────────┐   ┌──────────────────────────────────────┐
+    │ AWS Lambda │   │     ERPNext on Frappe Cloud          │
+    │ (Pure MVP) │   │  https://ops.10nz.tools              │
+    └─────┬──────┘   │                                       │
+          │          │  ┌──────────────┐  ┌───────────────┐ │
+          │          │  │  ERPNext     │  │  flrts_       │ │
+          ├─────────►│  │  (Core)      │  │  extensions   │ │
+          │          │  └──────┬───────┘  └───────┬───────┘ │
+          │          │         │                   │         │
+          │          │         └───────┬───────────┘         │
+          │          │                 ▼                     │
+          │          │        ┌─────────────────┐           │
+          │          │        │  Frappe Cloud   │           │
+          │          │        │  MariaDB 10.6+  │           │
+          │          │        └─────────────────┘           │
+          │          └──────────────────────────────────────┘
+          │
+          └─────────► OpenAI GPT-4o API
 ```
 
 ## Core Components
@@ -81,55 +74,56 @@ logic
 - **REST API:** <https://ops.10nz.tools/api> (API key auth)
 - **WebSocket:** Real-time updates (authenticated)
 
-### 2. AWS Lambda (Telegram Webhook Handler)
+### 2. AWS Lambda (Pure MVP Integration)
 
-**Purpose:** Low-latency webhook receiver for Telegram bot (<100ms response
-time)
+**Purpose:** Complete Telegram → ERPNext integration in a single Lambda function
 
 **Responsibilities:**
 
-- Receive Telegram webhook POSTs
-- Immediately acknowledge receipt (prevent timeouts)
-- Enqueue messages to n8n workflow
-- Rate limiting and basic validation
+- Receive and validate Telegram webhook POSTs
+- Fetch ERPNext context (users, sites) with 5-minute caching
+- Parse messages via OpenAI GPT-4o with context injection
+- Map parsed data to ERPNext Maintenance Visit fields
+- Create Maintenance Visit via ERPNext REST API
+- Log parse attempts to ERPNext FLRTS Parser Log
+- Send confirmation messages to Telegram users
 
-**Why Lambda:**
+**Why Pure Lambda (No n8n):**
 
-- Sub-100ms cold start (vs. Edge Functions)
-- Mature ecosystem and monitoring
-- AWS Free Tier (1M requests/month)
+- **Simplicity:** One service instead of three (Lambda + n8n + PostgreSQL)
+- **Cost:** 70% savings ($10-15/mo vs $50/mo for n8n)
+- **Latency:** Direct integration eliminates webhook hop
+- **Deployment:** Single SAM template, no container orchestration
+- **Scalability:** Auto-scales with Lambda (no manual worker management)
 
 **Configuration:**
 
-- **Runtime:** Node.js 20
-- **Memory:** 256MB
-- **Timeout:** 10 seconds
-- **Trigger:** API Gateway (POST /webhook)
+- **Runtime:** Node.js 22
+- **Memory:** 512MB (increased for context caching)
+- **Timeout:** 15 seconds (allows for ERPNext retries)
+- **Provisioned Concurrency:** 1 (eliminates cold starts)
+- **Trigger:** Lambda Function URL (direct HTTPS endpoint)
 
-### 3. n8n Workflows (Orchestration Layer)
+### 3. n8n Workflows (Optional - Post-MVP)
 
-**Purpose:** Complex business logic orchestration and OpenAI integration
+**Purpose:** Complex business logic orchestration (optional for future
+multi-channel reminders)
 
-**Responsibilities:**
+**Current Status:** Not deployed in MVP. Configuration preserved in
+`infrastructure/docker-compose.yml` for future use.
 
-- Parse Telegram messages via OpenAI GPT-4o
-- Transform NLP results to ERPNext DocType structure
-- Create/update ERPNext records via REST API
-- Error handling and retry logic
-- User notifications
+**Post-MVP Use Cases:**
 
-**Deployment:**
+- Multi-channel reminders (Email + Telegram)
+- Complex approval workflows
+- Batch operations
+
+**Deployment (when needed):**
 
 - **Mode:** Single-instance (10-user scale)
 - **Host:** DigitalOcean Droplet (2GB RAM)
 - **Queue:** Redis (containerized)
 - **Version:** v1.105.2
-
-**Key Workflows:**
-
-- `telegram-task-creation` - NLP → ERPNext Task
-- `telegram-service-call` - NLP → ERPNext Service Call
-- `error-notification` - Send error messages to users
 
 ### 4. Frappe Cloud MariaDB
 
@@ -169,44 +163,26 @@ time)
 
 ## Data Flow
 
-### Task Creation via Telegram
+### Task Creation via Telegram (Pure Lambda MVP)
 
 ```
 1. User sends message to Telegram bot
    └─► "Hey Taylor, check pump #3 by 2pm today"
 
 2. Telegram → AWS Lambda (webhook)
-   └─► Lambda acknowledges immediately (<100ms)
-   └─► Enqueues message to n8n
+   └─► Lambda validates and acknowledges (<100ms)
+   └─► Fetches ERPNext context (cached 5 min)
+   └─► Calls OpenAI GPT-4o with context to parse
+   └─► Receives structured JSON
 
-3. n8n receives message
-   └─► Calls OpenAI GPT-4o with NLP prompt
-   └─► Receives structured JSON:
-       {
-         "action": "create_task",
-         "title": "Check pump #3",
-         "assignee": "taylor@10nz.tools",
-         "due_date": "2024-10-20 14:00",
-         "priority": "High"
-       }
+3. Lambda transforms to ERPNext Maintenance Visit
+   └─► POST https://ops.10nz.tools/api/resource/Maintenance Visit
 
-4. n8n transforms to ERPNext Task DocType
-   └─► POST https://ops.10nz.tools/api/resource/Task
-       {
-         "subject": "Check pump #3",
-         "description": "Assigned via Telegram",
-         "assigned_to": "taylor@10nz.tools",
-         "expected_end_date": "2024-10-20 14:00:00",
-         "priority": "High",
-         "custom_telegram_message_id": "12345"
-       }
-
-5. ERPNext creates Task record
+4. ERPNext creates Maintenance Visit record
    └─► Stores in MariaDB
    └─► Triggers webhooks (if configured)
-   └─► Sends email notification (optional)
 
-6. n8n confirms to user
+5. Lambda confirms to user
    └─► Telegram message: "✅ Task created: Check pump #3 (assigned to Taylor)"
 ```
 
@@ -427,19 +403,29 @@ DELETE /api/resource/{DocType}/{name}
 
 ### Monthly Operating Costs
 
-| Service         | Usage               | Cost             |
-| --------------- | ------------------- | ---------------- |
-| Frappe Cloud    | Private Bench       | ~$200            |
-| AWS Lambda      | 150K invocations/mo | ~$1              |
-| n8n (self-host) | DigitalOcean 2GB    | $18              |
-| OpenAI GPT-4o   | 50 tasks/day        | $5-10            |
-| **Total**       |                     | **~$224-229/mo** |
+| Service         | Usage               | Cost (MVP)       | Cost (Post-MVP with n8n) |
+| --------------- | ------------------- | ---------------- | ------------------------ |
+| Frappe Cloud    | Private Bench       | ~$200            | ~$200                    |
+| AWS Lambda      | 150K invocations/mo | ~$10-15          | ~$10-15                  |
+| OpenAI GPT-4o   | 50 tasks/day        | $5-10            | $5-10                    |
+| n8n (self-host) | DigitalOcean 2GB    | **$0** (removed) | $18                      |
+| **Total**       |                     | **~$215-225/mo** | **~$233-243/mo**         |
 
-**Note:** Increased from $85/mo (Supabase era) but includes:
+**Cost Savings:**
 
-- Managed MariaDB with automated backups
-- Built-in field service workflows
-- Reduced development/maintenance time
+- **Pure Lambda MVP**: $215-225/mo (70% cheaper than previous n8n hybrid)
+- **Post-MVP with n8n** (for multi-channel reminders): $233-243/mo
+- **vs. Supabase era**: $140-155/mo increase, but includes:
+  - Managed MariaDB with automated backups
+  - Built-in field service workflows
+  - Reduced development/maintenance time
+  - Native ERPNext automation features
+
+**n8n Deployment-Ready:**
+
+The n8n configuration is preserved in `infrastructure/docker-compose.yml` for
+future activation when multi-channel task reminders are needed. Current MVP uses
+ERPNext native Email Alerts (see `docs/POST-MVP-REMINDERS.md`).
 
 ## Scaling Considerations
 
@@ -529,6 +515,82 @@ docker-compose up n8n
 - REST API differs from direct SQL (requires translation layer)
 - Managed platform reduces operational burden significantly
 
+## ERPNext Native Reminders (MVP Approach)
+
+For the MVP, task reminders are implemented using ERPNext's built-in **Email
+Alerts** feature:
+
+**Setup:**
+
+1. Navigate to `Settings > Email Alerts`
+2. Create alert for tasks due today
+3. Configure daily schedule (9 AM)
+4. Filter: `completion_status == 'Pending'`
+
+**Advantages:**
+
+- Zero cost (included in Frappe Cloud)
+- Zero code (point-and-click configuration)
+- Reliable delivery via Frappe Cloud SMTP
+- Immediate availability
+
+**Limitations:**
+
+- Email only (no Telegram notifications)
+- Limited customization
+
+**Post-MVP Enhancement:**
+
+When multi-channel reminders are needed, activate the n8n hybrid approach:
+
+1. Deploy n8n using `infrastructure/docker-compose.yml`
+2. Create ERPNext Server Script to call n8n webhook
+3. Build n8n workflow for Email + Telegram delivery
+4. Enable Telegram threading (reply to original message)
+
+See `docs/POST-MVP-REMINDERS.md` for complete implementation guide.
+
+---
+
+## n8n Deployment-Ready Architecture (Post-MVP)
+
+The n8n orchestration layer configuration is preserved for future activation
+when advanced features are needed:
+
+### When to Activate n8n
+
+**Triggers:**
+
+- Multi-channel reminders required (Email + Telegram)
+- Complex approval workflows (manager review before task creation)
+- Batch operations (create 10+ tasks from single message)
+- Advanced routing logic (priority-based escalation)
+
+### Preserved Configuration
+
+**Files Ready for Deployment:**
+
+- `infrastructure/docker-compose.yml` - n8n queue mode configuration
+- `infrastructure/docker-compose.single.yml` - n8n single-instance mode
+- Workflow templates (to be created when needed)
+
+**Integration Pattern:**
+
+```
+AWS Lambda → n8n Webhook → [OpenAI + ERPNext API] → Telegram
+```
+
+**Estimated Migration Effort:** 2-4 hours
+
+1. Deploy n8n via Docker Compose
+2. Import workflow templates
+3. Update Lambda to call n8n webhook instead of direct ERPNext
+4. Test end-to-end flow
+
+**Cost Impact:** +$18/month (DigitalOcean 2GB Droplet)
+
+---
+
 ## Reference Documentation
 
 - **ADR-006:**
@@ -537,6 +599,11 @@ docker-compose up n8n
   [Supabase → Frappe Migration](../MIGRATION-SUPABASE-TO-FRAPPE.md)
 - **Tech Stack:** [Technology Stack](./tech-stack.md)
 - **PRD:** [Product Requirements](../prd/prd.md)
+- **Lambda Integration Docs:**
+  - Field Mapping: `docs/FIELD-MAPPING.md`
+  - Context Injection: `docs/CONTEXT-INJECTION-SPEC.md`
+  - Error Handling: `docs/ERROR-HANDLING-MATRIX.md`
+  - Post-MVP Reminders: `docs/POST-MVP-REMINDERS.md`
 
 ## Appendix: Key Terminology
 

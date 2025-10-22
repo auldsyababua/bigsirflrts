@@ -64,13 +64,13 @@ Phase 1 execution.
 
 ### OpenProject Documentation (Archived Context)
 
-| Document                                                                                                                                | Purpose                        | Notes                                | Status        |
-| --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------ | ------------- |
-| [docs/architecture/adr/ADR-002-openproject-migration-pattern.md](architecture/adr/ADR-002-openproject-migration-pattern.md)             | OpenProject migration decision | Superseded by ADR-006                | 📦 Historical |
-| [docs/archive/supabase-era/adr/ADR-003-supabase-connection-pooling.md](archive/supabase-era/adr/ADR-003-supabase-connection-pooling.md) | Supabase connection patterns   | Superseded by ADR-006 (Frappe Cloud) | 📦 Archived   |
-| [docs/architecture/openproject-integration-strategy.md](architecture/openproject-integration-strategy.md)                               | OpenProject integration guide  | Superseded by ERPNext workflow       | 📦 Historical |
-| [docs/archive/openproject/OPENPROJECT_DEPLOYMENT.md](archive/openproject/OPENPROJECT_DEPLOYMENT.md)                                     | OpenProject deployment guide   | **ARCHIVED 2025-10-02** (10N-238)    | 📦 Archived   |
-| [docs/archive/openproject/openproject.md](archive/openproject/openproject.md)                                                           | OpenProject setup instructions | **ARCHIVED 2025-10-02** (10N-238)    | 📦 Archived   |
+| Document                                                                                                                                    | Purpose                        | Notes                                | Status        |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------ | ------------- |
+| [docs/archive/architecture/adr/ADR-002-openproject-migration-pattern.md](archive/architecture/adr/ADR-002-openproject-migration-pattern.md) | OpenProject migration decision | Superseded by ADR-006                | 📦 Historical |
+| [docs/archive/supabase-era/adr/ADR-003-supabase-connection-pooling.md](archive/supabase-era/adr/ADR-003-supabase-connection-pooling.md)     | Supabase connection patterns   | Superseded by ADR-006 (Frappe Cloud) | 📦 Archived   |
+| [docs/archive/architecture/openproject-integration-strategy.md](archive/architecture/openproject-integration-strategy.md)                   | OpenProject integration guide  | Superseded by ERPNext workflow       | 📦 Historical |
+| [docs/archive/openproject/OPENPROJECT_DEPLOYMENT.md](archive/openproject/OPENPROJECT_DEPLOYMENT.md)                                         | OpenProject deployment guide   | **ARCHIVED 2025-10-02** (10N-238)    | 📦 Archived   |
+| [docs/archive/openproject/openproject.md](archive/openproject/openproject.md)                                                               | OpenProject setup instructions | **ARCHIVED 2025-10-02** (10N-238)    | 📦 Archived   |
 
 ### OpenProject Stories (Historical)
 
