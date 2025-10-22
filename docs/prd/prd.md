@@ -102,7 +102,7 @@ entry when parsing fails • **FR9 (MVP):** The system shall support /create
 command for explicit task/list creation (other commands like /update, /archive,
 /list deferred to post-MVP) • **FR10 (Post-MVP):** The system shall send task
 reminder notifications to both Telegram and email channels • **FR11:** The
-system shall maintain user access to the full OpenProject UI alongside the NLP
+system shall maintain user access to the full ERPNext Web UI alongside the NLP
 interface • **FR12 (Post-MVP):** The system shall maintain a complete audit
 trail by implementing soft-delete/archive operations only - true deletions are
 restricted to admin users (Colin) via direct database access
@@ -170,15 +170,19 @@ No custom branding required - uses standard Telegram bot interface
 
 ### Service Architecture
 
-**Hybrid "Reflex and Brain" Model:**
+**Pure Lambda MVP:**
 
-- **Reflex Layer**: AWS Lambda for immediate responses (<100ms latency)
-- **Brain Layer**: n8n workflows in single-instance mode for 10-user scale
-  (queue mode available for 50+ users)
+- **Primary Integration**: AWS Lambda for complete webhook → context → parse →
+  ERPNext → confirmation flow
 - **Infrastructure**: Frappe Cloud managed ERPNext with custom flrts_extensions
   app
-- **Integration Pattern**: AWS Lambda acknowledges users instantly, then
-  triggers n8n workflows asynchronously to interact with ERPNext REST API
+- **Integration Pattern**: AWS Lambda directly calls ERPNext REST API with
+  context injection
+
+**Post-MVP Optional Orchestration:**
+
+- **n8n (Optional)**: Single-instance mode for multi-channel reminders (see
+  `POST-MVP-REMINDERS.md`; may be replaced by Frappe automation)
 
 #### n8n Deployment Architecture
 
