@@ -6,12 +6,11 @@
 
 • Enable rapid, friction-free task creation through natural language processing
 for distributed team operations • Eliminate manual timezone conversion errors by
-automatically converting all times to assignee's local timezone  
-• Reduce average task creation time from 45 seconds to under 5 seconds •
-Maintain full OpenProject functionality while adding NLP enhancement layer via
-API integration • Provide dual-interface access (OpenProject UI + FLRTS NLP) for
-maximum flexibility • Achieve 95% parse accuracy and 100% timezone conversion
-accuracy
+automatically converting all times to assignee's local timezone • Reduce average
+task creation time from 45 seconds to under 5 seconds • Maintain full ERPNext
+functionality while adding NLP enhancement layer via API integration • Provide
+dual-interface access (ERPNext Web UI + FLRTS NLP) for maximum flexibility •
+Achieve 95% parse accuracy and 100% timezone conversion accuracy
 
 ### Background Context
 
@@ -76,9 +75,9 @@ with direct ERPNext integration:
 - User context management
 
 **Rationale**: By focusing solely on CREATE operations, we can demonstrate the
-core NLP capability and OpenProject integration without the complexity of
+core NLP capability and ERPNext integration without the complexity of
 bidirectional sync, state management, or UI complications. Users can create
-tasks naturally via Telegram, then manage them in OpenProject's full UI.
+tasks naturally via Telegram, then manage them in ERPNext's Web UI.
 
 ## Requirements
 
@@ -143,15 +142,15 @@ is accurate, then confirm for execution.
 • **Conversational correction loop**: Send message → Review bot response → Reply
 with corrections → Repeat until correct → Confirm • **Text-only confirmation**:
 Bot shows parsed JSON in readable format, user types "yes" or "confirm" to
-execute • **OpenProject fallback**: Users can confirm faulty parsing and fix
-directly in OpenProject's mobile-responsive UI
+execute • **ERPNext fallback**: Users can confirm faulty parsing and fix
+directly in ERPNext's Web UI (mobile-responsive)
 
 ### Core Screens and Views
 
 • **Telegram Bot Chat** - Primary interface for all NLP interactions • **JSON
 Confirmation Message** - Bot's formatted response showing parsed intent •
-**OpenProject Mobile UI** - Fallback interface for manual corrections (existing
-responsive design)
+**ERPNext Web UI** - Fallback interface for manual corrections
+(mobile-responsive)
 
 ### Accessibility: None
 

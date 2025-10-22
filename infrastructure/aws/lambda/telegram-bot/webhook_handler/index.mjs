@@ -66,11 +66,18 @@ function determineSender(telegramUser, teamMembers) {
 }
 
 /**
+ * Escape Markdown special characters to prevent injection
+ */
+function escapeMd(text = '') {
+  return String(text).replace(/[\\_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+}
+
+/**
  * Format success message for user
  */
 function formatSuccessMessage(taskData, erpnextTask) {
   let message = `✅ *Task Created Successfully*\n\n`;
-  message += `📋 *Description:* ${taskData.description.substring(0, 100)}`;
+  message += `📋 *Description:* ${escapeMd(taskData.description).substring(0, 100)}`;
 
   if (taskData.description.length > 100) {
     message += '...';
@@ -78,11 +85,11 @@ function formatSuccessMessage(taskData, erpnextTask) {
 
   if (taskData.assignee) {
     const assigneeName = taskData.assignee.split('@')[0];
-    message += `\n👤 *Assigned to:* ${assigneeName}`;
+    message += `\n👤 *Assigned to:* ${escapeMd(assigneeName)}`;
   }
 
   if (taskData.dueDate) {
-    message += `\n📅 *Due:* ${taskData.dueDate}`;
+    message += `\n📅 *Due:* ${escapeMd(taskData.dueDate)}`;
   }
 
   if (taskData.priority) {
@@ -92,14 +99,14 @@ function formatSuccessMessage(taskData, erpnextTask) {
       Medium: '🟡',
       Low: '🟢',
     }[taskData.priority] || '';
-    message += `\n${priorityEmoji} *Priority:* ${taskData.priority}`;
+    message += `\n${priorityEmoji} *Priority:* ${escapeMd(taskData.priority)}`;
   }
 
   if (taskData.confidence < 0.7) {
     message += `\n\n⚠️ *Note:* Task flagged for review (confidence: ${(taskData.confidence * 100).toFixed(0)}%)`;
   }
 
-  message += `\n\n*Task ID:* ${erpnextTask.name}`;
+  message += `\n\n*Task ID:* ${escapeMd(erpnextTask.name)}`;
 
   return message;
 }
@@ -239,10 +246,10 @@ export const handler = async (event) => {
           });
         } else {
           // User not found - send friendly message
-          const validAssignees = context.users.map(u => u.fullName).join(', ');
+          const validAssignees = context.users.map(u => escapeMd(u.fullName)).join(', ');
           await sendMessage(
             parsed.chatId,
-            `❌ User '${taskData.assignee}' not found.\n\nValid assignees: ${validAssignees}`,
+            `❌ User '${escapeMd(taskData.assignee)}' not found.\n\nValid assignees: ${validAssignees}`,
             null,
             botToken
           );
@@ -279,7 +286,7 @@ export const handler = async (event) => {
       if (validationErrors.length > 0) {
         await sendMessage(
           parsed.chatId,
-          `❌ Validation failed:\n\n${validationErrors.join('\n')}\n\nPlease check your input and try again.`,
+          `❌ Validation failed:\n\n${validationErrors.map(e => escapeMd(e)).join('\n')}\n\nPlease check your input and try again.`,
           null,
           botToken
         );
@@ -367,8 +374,17 @@ export const handler = async (event) => {
       // Handle ERPNext validation errors (417) by parsing _server_messages for user-friendly details
       if (error.status === 417 && error._server_messages) {
         try {
-          const messages = JSON.parse(error._server_messages);
-          const userFriendlyErrors = messages.map(m => m.message).join('\n');
+          // Handle both arrays and JSON strings
+          let serverMsgData = error._server_messages;
+          if (typeof serverMsgData === 'string') {
+            try {
+              serverMsgData = JSON.parse(serverMsgData);
+            } catch {
+              serverMsgData = [];
+            }
+          }
+          const serverMessages = Array.isArray(serverMsgData) ? serverMsgData : [];
+          const userFriendlyErrors = serverMessages.map(m => escapeMd(m.message)).join('\n');
           await sendMessage(
             parsed.chatId,
             `❌ Task creation failed:\n\n${userFriendlyErrors}\n\nPlease check your input and try again.`,
@@ -388,7 +404,7 @@ export const handler = async (event) => {
         // 417 without _server_messages
         await sendMessage(
           parsed.chatId,
-          `❌ Task validation failed: ${error.message}\n\nPlease check your input and try again.`,
+          `❌ Task validation failed: ${escapeMd(error.message)}\n\nPlease check your input and try again.`,
           null,
           botToken
         );
