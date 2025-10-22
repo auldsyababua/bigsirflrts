@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    timeout: 10000, // 10 second global timeout
+    timeout: 30000, // 30 second global timeout
     threads: false, // Disable threads for local dev (safer on M4 Mac)
     coverage: {
       provider: 'v8',

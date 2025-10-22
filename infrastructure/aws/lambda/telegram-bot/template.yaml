@@ -44,7 +44,7 @@ Parameters:
 
   ADOTLayerArn:
     Type: String
-    Default: arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-nodejs-x86_64-ver-1-18-1:5
+    Default: arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-nodejs-amd64-ver-1-30-0:1
     Description: ARN for AWS Distro for OpenTelemetry (Node.js) Lambda layer
 
   AlertEmail:
@@ -161,6 +161,7 @@ Resources:
     Properties:
       TopicName: !Sub telegram-bot-alerts-${Environment}
       DisplayName: Telegram Bot Alerts
+      KmsMasterKeyId: alias/aws/sns
       Subscriptions:
         - Endpoint: !Ref AlertEmail
           Protocol: email

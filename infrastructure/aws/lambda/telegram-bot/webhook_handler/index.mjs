@@ -268,9 +268,10 @@ export const handler = async (event) => {
 
       const validPriorities = ['Low', 'Medium', 'High', 'Urgent'];
       if (taskData.priority && !validPriorities.includes(taskData.priority)) {
+        const originalPriority = taskData.priority;
         taskData.priority = 'Medium';  // Default to Medium if invalid
         logWarn('invalid_priority_defaulted', {
-          originalPriority: taskData.priority,
+          originalPriority,
           correlationId
         });
       }

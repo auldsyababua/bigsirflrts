@@ -626,7 +626,7 @@ section for that specific alarm type.
 
 **Resolution:**
 
-- See `docs/deployment/telegram-bot-troubleshooting.md` for detailed procedures
+- See `docs/ERROR-HANDLING-MATRIX.md` for detailed procedures
 - Common fixes:
   - Verify API credentials (ERPNext, OpenAI)
   - Check ERPNext custom DocTypes exist
@@ -728,7 +728,7 @@ section for that specific alarm type.
 **What is Estimated Cost?**
 
 - Calculated from token usage and model pricing
-- Formula: (prompt_tokens_ input_price) + (completion_tokens _output_price)
+- Formula: (prompt*tokens* input_price) + (completion_tokens \_output_price)
 - Pricing (as of Oct 2024):
   - gpt-4o: $2.50/1M input, $10.00/1M output
   - gpt-4o-mini: $0.15/1M input, $0.60/1M output
@@ -827,8 +827,8 @@ section for that specific alarm type.
 
 ### 11.3 Alert: Lambda Errors
 
-**See:** `docs/deployment/telegram-bot-troubleshooting.md` for comprehensive
-error troubleshooting.
+**See:** `docs/ERROR-HANDLING-MATRIX.md` for comprehensive error
+troubleshooting.
 
 **Quick Diagnostic:**
 
@@ -846,8 +846,8 @@ aws logs filter-log-events \
 
 ### 11.4 Alert: Lambda Timeout
 
-**See:** `docs/deployment/telegram-bot-troubleshooting.md` section 7.1 for
-timeout troubleshooting.
+**See:** `docs/ERROR-HANDLING-MATRIX.md` section 7.1 for timeout
+troubleshooting.
 
 **Quick Diagnostic:**
 

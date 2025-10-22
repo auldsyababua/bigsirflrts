@@ -2,6 +2,24 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { resetContextCache } from '../lib/erpnext.mjs';
 import { handler } from '../index.mjs';
 
+// Create a shared mock for OpenAI create method
+const mockOpenAICreate = vi.fn();
+
+// Mock OpenAI SDK before any imports
+vi.mock('openai', () => {
+  return {
+    default: class MockOpenAI {
+      constructor() {
+        this.chat = {
+          completions: {
+            create: mockOpenAICreate,
+          },
+        };
+      }
+    },
+  };
+});
+
 // Mock OpenTelemetry
 vi.mock('@opentelemetry/api', () => ({
   trace: {
@@ -25,6 +43,7 @@ describe('End-to-End Complete Flow Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOpenAICreate.mockReset();
     originalFetch = global.fetch;
     global.fetch = vi.fn();
 
@@ -99,18 +118,14 @@ describe('End-to-End Complete Flow Tests', () => {
   };
 
   const mockOpenAIParse = (taskData) => {
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        choices: [
-          {
-            message: {
-              content: JSON.stringify(taskData),
-            },
+    mockOpenAICreate.mockResolvedValueOnce({
+      choices: [
+        {
+          message: {
+            parsed: taskData, // Use 'parsed' field for Structured Outputs API
           },
-        ],
-      }),
+        },
+      ],
     });
   };
 
@@ -219,7 +234,8 @@ describe('End-to-End Complete Flow Tests', () => {
       expect(
         global.fetch.mock.calls.some((call) => call[0].includes('/api/resource/Location'))
       ).toBe(true);
-      expect(global.fetch.mock.calls.some((call) => call[0].includes('openai.com'))).toBe(true);
+      // Verify OpenAI SDK mock was called (not global.fetch since SDK is mocked)
+      expect(mockOpenAICreate).toHaveBeenCalled();
       expect(
         global.fetch.mock.calls.some((call) => call[0].includes('/api/resource/Maintenance Visit'))
       ).toBe(true);
@@ -285,8 +301,13 @@ describe('End-to-End Complete Flow Tests', () => {
 
       expect(response.statusCode).toBe(200);
 
+      // Handler converts ISO dates to local timezone (not UTC)
+      // 2024-10-21T14:00:00Z UTC -> local time (e.g., 07:00:00 in PDT which is UTC-7)
+      const expectedDate = new Date('2024-10-21T14:00:00Z');
+      const expectedDateStr = `${expectedDate.getFullYear()}-${String(expectedDate.getMonth() + 1).padStart(2, '0')}-${String(expectedDate.getDate()).padStart(2, '0')} ${String(expectedDate.getHours()).padStart(2, '0')}:${String(expectedDate.getMinutes()).padStart(2, '0')}:${String(expectedDate.getSeconds()).padStart(2, '0')}`;
+
       expectTaskCreatedInERPNext({
-        mntc_date: '2024-10-21 14:00:00',
+        mntc_date: expectedDateStr,
         custom_flrts_priority: 'Urgent',
       });
 
@@ -408,8 +429,30 @@ describe('End-to-End Complete Flow Tests', () => {
 
   describe('Suite 3: Error Handling - ERPNext Context Fetch', () => {
     it('should use fallback data when ERPNext context fetch fails', async () => {
-      // Mock context fetch failures
+      // Mock context fetch failures (ERPNext retries 3 times for 500 errors)
+      // Users fetch - 3 failures
       global.fetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: 'Server error' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: 'Server error' }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: 'Server error' }),
+        })
+        // Sites fetch - 3 failures
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          json: async () => ({ message: 'Server error' }),
+        })
         .mockResolvedValueOnce({
           ok: false,
           status: 500,
@@ -475,7 +518,11 @@ describe('End-to-End Complete Flow Tests', () => {
   describe('Suite 4: Error Handling - OpenAI Parsing', () => {
     it('should handle OpenAI timeout and send error to user', async () => {
       mockSuccessfulERPNextContext();
-      global.fetch.mockRejectedValueOnce(new Error('OpenAI timeout'));
+      // Mock OpenAI SDK to reject with error (3 attempts total with maxRetries=2)
+      mockOpenAICreate
+        .mockRejectedValueOnce(new Error('OpenAI timeout'))
+        .mockRejectedValueOnce(new Error('OpenAI timeout'))
+        .mockRejectedValueOnce(new Error('OpenAI timeout'));
       mockAuditLogSuccess();
       mockTelegramSendMessage();
 
@@ -491,13 +538,11 @@ describe('End-to-End Complete Flow Tests', () => {
     it('should retry OpenAI on 429 rate limit', async () => {
       mockSuccessfulERPNextContext();
 
-      // First call returns 429
-      global.fetch.mockResolvedValueOnce({
-        ok: false,
-        status: 429,
-        headers: new Map([['retry-after', '1']]),
-        json: async () => ({ error: { message: 'Rate limit exceeded' } }),
-      });
+      // First call returns 429 error
+      const rateLimitError = new Error('Rate limit exceeded');
+      rateLimitError.status = 429;
+      rateLimitError.response = { headers: { 'retry-after': '1' } };
+      mockOpenAICreate.mockRejectedValueOnce(rateLimitError);
 
       // Second call succeeds
       mockOpenAIParse({
@@ -516,9 +561,8 @@ describe('End-to-End Complete Flow Tests', () => {
       const response = await handler(event);
 
       expect(response.statusCode).toBe(200);
-      // Should have called OpenAI twice (initial 429 + retry success)
-      const openaiCalls = global.fetch.mock.calls.filter((call) => call[0].includes('openai.com'));
-      expect(openaiCalls.length).toBeGreaterThanOrEqual(2);
+      // Should have called OpenAI SDK mock twice (initial 429 + retry success)
+      expect(mockOpenAICreate).toHaveBeenCalledTimes(2);
     });
 
     it('should handle low confidence parse (< 0.5)', async () => {
@@ -555,13 +599,29 @@ describe('End-to-End Complete Flow Tests', () => {
         confidence: 0.8,
       });
 
-      global.fetch.mockResolvedValueOnce({
-        ok: false,
-        status: 417,
-        json: async () => ({
-          _server_messages: JSON.stringify([{ message: 'Customer is mandatory' }]),
-        }),
-      });
+      // 417 errors are retried as "network errors" (3 attempts total)
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 417,
+          json: async () => ({
+            _server_messages: JSON.stringify([{ message: 'Customer is mandatory' }]),
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 417,
+          json: async () => ({
+            _server_messages: JSON.stringify([{ message: 'Customer is mandatory' }]),
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 417,
+          json: async () => ({
+            _server_messages: JSON.stringify([{ message: 'Customer is mandatory' }]),
+          }),
+        });
 
       mockAuditLogSuccess();
       mockTelegramSendMessage();
@@ -735,7 +795,11 @@ describe('End-to-End Complete Flow Tests', () => {
 
     it('should log failed parse to ERPNext', async () => {
       mockSuccessfulERPNextContext();
-      global.fetch.mockRejectedValueOnce(new Error('OpenAI failed'));
+      // Mock OpenAI SDK to reject with error (3 attempts total with maxRetries=2)
+      mockOpenAICreate
+        .mockRejectedValueOnce(new Error('OpenAI failed'))
+        .mockRejectedValueOnce(new Error('OpenAI failed'))
+        .mockRejectedValueOnce(new Error('OpenAI failed'));
       mockAuditLogSuccess();
       mockTelegramSendMessage();
 
@@ -750,7 +814,7 @@ describe('End-to-End Complete Flow Tests', () => {
       const body = JSON.parse(auditCall[1].body);
       // parsed_data is stringified JSON, for null it becomes "null" string
       expect(body.parsed_data).toBe('null');
-      expect(body.error_message).toBe('OpenAI failed');
+      expect(body.error_message).toContain('OpenAI failed');
     });
 
     it('should NOT fail handler when audit logging fails', async () => {

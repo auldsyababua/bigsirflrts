@@ -187,8 +187,11 @@ describe('Integration Tests', () => {
     expect(body.taskId).toBe('MNTC-00001');
     expect(body.message).toBe('Task created successfully');
 
-    // Verify fetch calls in order
-    expect(global.fetch).toHaveBeenCalledTimes(6);
+    // Verify OpenAI SDK mock was called
+    expect(mockOpenAICreate).toHaveBeenCalledTimes(1);
+
+    // Verify global.fetch calls (5 total: ERPNext users, sites, create, Telegram, audit)
+    expect(global.fetch).toHaveBeenCalledTimes(5);
 
     // 1. ERPNext users fetch
     expect(global.fetch.mock.calls[0][0]).toContain('/api/resource/User');
@@ -196,25 +199,32 @@ describe('Integration Tests', () => {
     // 2. ERPNext sites fetch
     expect(global.fetch.mock.calls[1][0]).toContain('/api/resource/Location');
 
-    // 3. OpenAI parse
-    expect(global.fetch.mock.calls[2][0]).toContain('openai.com');
-
-    // 4. ERPNext create Maintenance Visit
-    expect(global.fetch.mock.calls[3][0]).toContain('/api/resource/Maintenance Visit');
-    const createBody = JSON.parse(global.fetch.mock.calls[3][1].body);
+    // 3. ERPNext create Maintenance Visit
+    expect(global.fetch.mock.calls[2][0]).toContain('/api/resource/Maintenance Visit');
+    const createBody = JSON.parse(global.fetch.mock.calls[2][1].body);
     expect(createBody.mntc_work_details).toBe('Fix the pump at Test Site');
     expect(createBody.custom_assigned_to).toBe('user@10nz.tools');
     expect(createBody.custom_telegram_message_id).toBe('1');
 
-    // 5. Telegram sendMessage
-    expect(global.fetch.mock.calls[4][0]).toContain('api.telegram.org');
+    // 4. ERPNext audit log (fire-and-forget, runs in background)
+    const auditCall = global.fetch.mock.calls.find((call) => call[0].includes('FLRTS Parser Log'));
+    expect(auditCall).toBeDefined();
 
-    // 6. ERPNext audit log
-    expect(global.fetch.mock.calls[5][0]).toContain('/api/resource/FLRTS Parser Log');
+    // 5. Telegram sendMessage
+    const telegramCall = global.fetch.mock.calls.find((call) =>
+      call[0].includes('api.telegram.org')
+    );
+    expect(telegramCall).toBeDefined();
   });
 
   it('should handle OpenAI parsing failure with audit logging and user notification', async () => {
     const { handler } = await import('../index.mjs');
+
+    // Configure OpenAI SDK mock to reject with error (3 attempts total with maxRetries=2)
+    mockOpenAICreate
+      .mockRejectedValueOnce(new Error('OpenAI timeout'))
+      .mockRejectedValueOnce(new Error('OpenAI timeout'))
+      .mockRejectedValueOnce(new Error('OpenAI timeout'));
 
     // Mock ERPNext context fetch
     global.fetch
@@ -228,8 +238,6 @@ describe('Integration Tests', () => {
         status: 200,
         json: async () => ({ data: [] }),
       })
-      // OpenAI fails
-      .mockRejectedValueOnce(new Error('OpenAI timeout'))
       // Telegram error message
       .mockResolvedValueOnce({
         ok: true,
@@ -284,6 +292,24 @@ describe('Integration Tests', () => {
   it('should handle ERPNext 417 validation error with parsed error message', async () => {
     const { handler } = await import('../index.mjs');
 
+    // Configure OpenAI SDK mock to return parsed response
+    mockOpenAICreate.mockResolvedValueOnce({
+      choices: [
+        {
+          message: {
+            parsed: {
+              description: 'Fix pump',
+              assignee: 'user@10nz.tools',
+              dueDate: null,
+              priority: 'High',
+              rationale: 'Test',
+              confidence: 0.9,
+            },
+          },
+        },
+      ],
+    });
+
     // Mock ERPNext context fetch
     global.fetch
       .mockResolvedValueOnce({
@@ -306,28 +332,23 @@ describe('Integration Tests', () => {
         status: 200,
         json: async () => ({ data: [] }),
       })
-      // OpenAI parse
+      // ERPNext create fails with 417 (will retry 2 more times due to network error catch)
       .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
+        ok: false,
+        status: 417,
         json: async () => ({
-          choices: [
-            {
-              message: {
-                parsed: {
-                  description: 'Fix pump',
-                  assignee: 'user@10nz.tools',
-                  dueDate: null,
-                  priority: 'High',
-                  rationale: 'Test',
-                  confidence: 0.9,
-                },
-              },
-            },
-          ],
+          _server_messages: JSON.stringify([{ message: 'Customer is mandatory' }]),
+          message: 'Validation failed',
         }),
       })
-      // ERPNext create fails with 417
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 417,
+        json: async () => ({
+          _server_messages: JSON.stringify([{ message: 'Customer is mandatory' }]),
+          message: 'Validation failed',
+        }),
+      })
       .mockResolvedValueOnce({
         ok: false,
         status: 417,
@@ -389,6 +410,24 @@ describe('Integration Tests', () => {
   it('should handle ERPNext 500 error with retry and eventual failure', async () => {
     const { handler } = await import('../index.mjs');
 
+    // Configure OpenAI SDK mock to return parsed response
+    mockOpenAICreate.mockResolvedValueOnce({
+      choices: [
+        {
+          message: {
+            parsed: {
+              description: 'Fix pump',
+              assignee: null,
+              dueDate: null,
+              priority: 'Medium',
+              rationale: 'Test',
+              confidence: 0.8,
+            },
+          },
+        },
+      ],
+    });
+
     // Mock ERPNext context fetch
     global.fetch
       .mockResolvedValueOnce({
@@ -400,27 +439,6 @@ describe('Integration Tests', () => {
         ok: true,
         status: 200,
         json: async () => ({ data: [] }),
-      })
-      // OpenAI parse
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          choices: [
-            {
-              message: {
-                parsed: {
-                  description: 'Fix pump',
-                  assignee: null,
-                  dueDate: null,
-                  priority: 'Medium',
-                  rationale: 'Test',
-                  confidence: 0.8,
-                },
-              },
-            },
-          ],
-        }),
       })
       // ERPNext create fails 3 times with 500
       .mockResolvedValueOnce({

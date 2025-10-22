@@ -54,7 +54,12 @@ const FALLBACK_USERS = [
   }
 ];
 
-const FALLBACK_SITES = ['Big Sky', 'Viper', 'Crystal Peak', 'Thunder Ridge'];
+const FALLBACK_SITES = [
+  'Big Sky',
+  'Viper',
+  'Crystal Peak',
+  'Thunder Ridge'
+];
 
 /**
  * Sleep utility for retry backoff
@@ -84,7 +89,11 @@ function isCacheValid() {
  * @returns {Promise<Object>} API response JSON
  */
 async function erpnextFetch(endpoint, options = {}, maxRetries = 3) {
-  const baseUrl = process.env.ERPNEXT_BASE_URL || 'https://ops.10nz.tools';
+  const baseUrl = process.env.ERPNEXT_BASE_URL;
+  if (!baseUrl) {
+    throw new Error('ERPNEXT_BASE_URL not configured');
+  }
+
   const apiKey = process.env.ERPNEXT_API_KEY;
   const apiSecret = process.env.ERPNEXT_API_SECRET;
 

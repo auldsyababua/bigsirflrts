@@ -170,43 +170,20 @@ multi-channel reminders)
    └─► "Hey Taylor, check pump #3 by 2pm today"
 
 2. Telegram → AWS Lambda (webhook)
-   └─► Lambda validates and acknowledges immediately (<100ms)
-   └─► Fetches ERPNext context (users, sites) with 5-minute cache
+   └─► Lambda validates and acknowledges (<100ms)
+   └─► Fetches ERPNext context (cached 5 min)
+   └─► Calls OpenAI GPT-4o with context to parse
+   └─► Receives structured JSON
 
-3. Lambda calls OpenAI GPT-4o with context
-   └─► Receives structured JSON:
-       {
-         "description": "Check pump #3",
-         "assignee": "taylor@10nz.tools",
-         "dueDate": "2024-10-20T14:00:00Z",
-         "priority": "High",
-         "rationale": "User mentioned 'Taylor' and '2pm today'",
-         "confidence": 0.9
-       }
-
-4. Lambda transforms to ERPNext Maintenance Visit
+3. Lambda transforms to ERPNext Maintenance Visit
    └─► POST https://ops.10nz.tools/api/resource/Maintenance Visit
-       {
-         "mntc_work_details": "Check pump #3",
-         "custom_assigned_to": "taylor@10nz.tools",
-         "mntc_date": "2024-10-20 14:00:00",
-         "custom_flrts_priority": "High",
-         "custom_parse_rationale": "User mentioned 'Taylor' and '2pm today'",
-         "custom_parse_confidence": 0.9,
-         "customer": "10netzero Tools",
-         "maintenance_type": "Preventive",
-         "completion_status": "Pending",
-         "custom_telegram_message_id": "12345",
-         "custom_flrts_source": "telegram_bot"
-       }
 
-5. ERPNext creates Maintenance Visit record
+4. ERPNext creates Maintenance Visit record
    └─► Stores in MariaDB
    └─► Triggers webhooks (if configured)
-   └─► Sends email notification (optional)
 
-6. Lambda confirms to user
-   └─► Telegram message: "✅ Task created: MNTC-00001 - Check pump #3 (assigned to Taylor)"
+5. Lambda confirms to user
+   └─► Telegram message: "✅ Task created: Check pump #3 (assigned to Taylor)"
 ```
 
 ## API Integration Patterns
