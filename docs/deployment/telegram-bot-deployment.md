@@ -148,7 +148,7 @@ Navigate to **Setup → Customize Form → Maintenance Visit** and add:
 | Field Name                   | Type   | Label               | Options                         |
 | ---------------------------- | ------ | ------------------- | ------------------------------- |
 | `custom_assigned_to`         | Link   | Assigned To         | User                            |
-| `custom_flrts_priority`      | Select | Priority            | Low<br>Medium<br>High<br>Urgent |
+| `custom_priority`            | Select | Priority            | Low<br>Medium<br>High<br>Urgent |
 | `custom_parse_rationale`     | Text   | Parse Rationale     | -                               |
 | `custom_parse_confidence`    | Float  | Parse Confidence    | -                               |
 | `custom_telegram_message_id` | Data   | Telegram Message ID | -                               |

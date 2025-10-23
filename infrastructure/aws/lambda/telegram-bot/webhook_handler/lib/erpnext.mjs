@@ -428,7 +428,7 @@ export async function createMaintenanceVisit(taskData, telegramMessageId) {
       mntc_work_details: taskData.description,
       custom_assigned_to: taskData.assignee || null,  // Custom field (must be created in ERPNext)
       mntc_date: mntcDate,
-      custom_flrts_priority: taskData.priority || 'Medium',  // Custom field for priority
+      custom_priority: taskData.priority || 'Medium',  // Custom field for priority
       custom_parse_rationale: taskData.rationale,
       custom_parse_confidence: taskData.confidence,
       customer: '10netzero Tools',
@@ -450,7 +450,7 @@ export async function createMaintenanceVisit(taskData, telegramMessageId) {
 
     logInfo('creating_maintenance_visit', {
       assignee: doc.custom_assigned_to,
-      priority: doc.custom_flrts_priority,
+      priority: doc.custom_priority,
       confidence: doc.custom_parse_confidence
     });
 
