@@ -616,8 +616,6 @@ Dashboard should include:
 - Lambda invocations (count)
 - Lambda errors (count)
 - Lambda duration (average, p99)
-- Provisioned Concurrency utilization (%)
-- Provisioned Concurrency spillover (count)
 
 ## 7. Rollback Procedures
 
@@ -676,11 +674,6 @@ troubleshooting guide.
 - Solution: Check CloudWatch Logs, verify ERPNext is accessible, increase
   timeout if needed
 
-**Issue: Provisioned Concurrency shows "Status: FAILED"**
-
-- Cause: Insufficient Lambda quotas
-- Solution: Check quotas, request increase if needed
-
 **Issue: Telegram webhook not responding**
 
 - Cause: Lambda Function URL not accessible or webhook secret mismatch
@@ -696,26 +689,19 @@ troubleshooting guide.
 
 **Current Configuration:**
 
-- Provisioned Concurrency: 1 instance (512 MB)
 - Memory: 512 MB
 - Timeout: 15 seconds
-- Estimated cost: $5-7/month
+- Estimated cost: $2-3/month (on-demand Lambda)
 
 **Optimization Options:**
 
-**Option 1: Reduce Provisioned Concurrency to 0**
-
-- Savings: $5/month
-- Trade-off: Cold starts (1-2 seconds delay on first request)
-- Recommended for: Low-traffic environments (<10 messages/day)
-
-**Option 2: Reduce Memory to 256 MB**
+**Option 1: Reduce Memory to 256 MB**
 
 - Savings: $2-3/month
 - Trade-off: Slower execution (may increase duration by 20-30%)
 - Recommended for: Cost-sensitive environments
 
-**Option 3: Increase Timeout to 30 seconds**
+**Option 2: Increase Timeout to 30 seconds**
 
 - Cost: No change (billed per 100ms)
 - Trade-off: Allows more retries for slow ERPNext API
@@ -775,7 +761,6 @@ troubleshooting guide.
 **AWS Documentation:**
 
 - [AWS SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
-- [Lambda Provisioned Concurrency](https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html)
 - [Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
 
 **External APIs:**
