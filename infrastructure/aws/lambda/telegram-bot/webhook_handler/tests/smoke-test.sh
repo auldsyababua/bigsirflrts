@@ -74,6 +74,11 @@ check_prerequisites() {
     exit 1
   fi
 
+  if ! command -v bc &> /dev/null; then
+    log_fail "bc not found (required for arithmetic operations)"
+    exit 1
+  fi
+
   # Check required environment variables
   local required_vars=("LAMBDA_FUNCTION_URL" "TELEGRAM_BOT_TOKEN" "TELEGRAM_TEST_CHAT_ID" "TELEGRAM_WEBHOOK_SECRET" "ERPNEXT_API_URL" "ERPNEXT_API_KEY" "ERPNEXT_API_SECRET")
   for var in "${required_vars[@]}"; do
@@ -127,10 +132,24 @@ test_lambda_health() {
   if [[ "$HTTP_CODE" == "200" ]]; then
     log_pass "Lambda health check successful (HTTP ${HTTP_CODE})"
     log_info "Response time: ${response_time}ms"
-    if [[ $response_time -lt 2000 ]]; then
-      log_pass "Response time < 2 seconds"
+
+    # Check Provisioned Concurrency status before enforcing latency SLO
+    if command -v aws &> /dev/null; then
+      PC_STATUS=$(aws lambda get-provisioned-concurrency-config \
+        --function-name "${LAMBDA_FUNCTION_NAME:-telegram-webhook-handler-production}" \
+        --qualifier live 2>/dev/null | jq -r '.Status // "UNKNOWN"')
     else
-      log_fail "Response time >= 2 seconds (${response_time}ms)"
+      PC_STATUS="UNKNOWN"
+    fi
+
+    if [[ "$PC_STATUS" == "READY" ]]; then
+      if [[ $response_time -lt 2000 ]]; then
+        log_pass "Response time < 2 seconds (Provisioned Concurrency READY)"
+      else
+        log_fail "Response time >= 2 seconds (${response_time}ms) with PC READY"
+      fi
+    else
+      log_info "Provisioned Concurrency status: ${PC_STATUS}. Skipping strict <2s check."
     fi
   else
     log_fail "Lambda health check failed (HTTP ${HTTP_CODE})"

@@ -14,11 +14,11 @@ Model) to create a pure Lambda MVP architecture with direct ERPNext integration.
   creation
 - **Direct integration**: Telegram → AWS Lambda → OpenAI GPT-4o → ERPNext REST
   API
+- **Provisioned Concurrency**: Eliminates cold starts for consistent <2 second
+  response times
 - **Context injection**: Real-time user/site data from ERPNext injected into
   OpenAI prompts
 - **Caching**: 5-minute TTL cache reduces ERPNext API calls by 80%+
-- **Provisioned Concurrency**: Eliminates cold starts for consistent <2 second
-  response times
 
 ### Prerequisites Summary
 
@@ -148,7 +148,7 @@ Navigate to **Setup → Customize Form → Maintenance Visit** and add:
 | Field Name                   | Type   | Label               | Options                         |
 | ---------------------------- | ------ | ------------------- | ------------------------------- |
 | `custom_assigned_to`         | Link   | Assigned To         | User                            |
-| `custom_flrts_priority`      | Select | Priority            | Low<br>Medium<br>High<br>Urgent |
+| `custom_priority`            | Select | Priority            | Low<br>Medium<br>High<br>Urgent |
 | `custom_parse_rationale`     | Text   | Parse Rationale     | -                               |
 | `custom_parse_confidence`    | Float  | Parse Confidence    | -                               |
 | `custom_telegram_message_id` | Data   | Telegram Message ID | -                               |
@@ -280,7 +280,12 @@ hidden)
 - Used by: SNS topic for alarm notifications
 - Can add more emails later via SNS console
 
-**Parameter ADOTLayerArn:** `<default-value>` (press Enter to use default)
+**Parameter ADOTLayerArn:** `<default-value>` (press Enter to use default for
+us-east-1)
+
+- **Note**: Default ARN is for us-east-1 region only
+- If deploying to other regions, find region-specific ADOT layer ARN at:
+  <https://aws-otel.github.io/docs/getting-started/lambda/lambda-js>
 
 **Confirm changes before deploy:** `Y`
 
@@ -330,8 +335,7 @@ Uses saved configuration from `samconfig.toml`. No prompts required.
 
 ### Step 3.7: Verify Provisioned Concurrency
 
-Provisioned Concurrency (PC) eliminates cold starts but takes ~1 minute to
-initialize.
+Check that PC is active and ready:
 
 ```bash
 aws lambda get-provisioned-concurrency-config \
@@ -345,18 +349,19 @@ Expected output:
 {
   "Status": "READY",
   "AllocatedProvisionedConcurrentExecutions": 1,
-  "AvailableProvisionedConcurrentExecutions": 1
+  "RequestedProvisionedConcurrentExecutions": 1
 }
 ```
 
-If `Status: IN_PROGRESS`, wait 30 seconds and check again.
+**Note**: PC initialization takes ~1 minute after deployment. If Status shows
+"IN_PROGRESS", wait 30 seconds and check again.
 
-If `Status: FAILED`:
+If Status shows "FAILED":
 
 - Check Lambda quotas:
   `aws service-quotas get-service-quota --service-code lambda --quota-code L-B99A9384`
 - Verify Node.js 22.x runtime is available in your region
-- Check CloudWatch Logs for error details
+- Check CloudWatch Logs for initialization errors
 
 ## 4. Post-Deployment Configuration
 
@@ -455,7 +460,7 @@ Verify all 5 CloudWatch alarms are created and configured:
 ```bash
 # List all alarms for the stack
 aws cloudwatch describe-alarms \
-  --alarm-name-prefix telegram-webhook-handler \
+  --alarm-name-prefix telegram-webhook \
   --query 'MetricAlarms[*].[AlarmName,StateValue,ActionsEnabled]' \
   --output table
 ```
@@ -557,11 +562,15 @@ cd webhook_handler/tests
 export LAMBDA_FUNCTION_URL="<WebhookHandlerFunctionUrl>"
 export TELEGRAM_BOT_TOKEN="<your-bot-token>"
 export TELEGRAM_TEST_CHAT_ID="<your-chat-id>"
+export TELEGRAM_WEBHOOK_SECRET="<your-webhook-secret>"
 export ERPNEXT_API_URL="https://ops.10nz.tools"
 export ERPNEXT_API_KEY="<your-key>"
 export ERPNEXT_API_SECRET="<your-secret>"
 ./smoke-test.sh
 ```
+
+**Note**: Ensure `TELEGRAM_WEBHOOK_SECRET` matches the TelegramWebhookSecret
+parameter from deployment.
 
 Expected: All tests pass (6/6)
 
@@ -599,10 +608,15 @@ Reference: AWS CloudWatch Alarms documentation for alarm testing procedures.
 
 ### 6.1: Configure CloudWatch Alarms
 
-The SAM template creates two alarms:
+The SAM template creates five alarms:
 
 1. **telegram-webhook-handler-errors**: Alerts when >3 errors occur in 5 minutes
-2. **telegram-webhook-pc-spillover**: Alerts when PC is exhausted
+2. **telegram-webhook-pc-spillover**: Alerts when Provisioned Concurrency is
+   exhausted (spillover to on-demand)
+3. **telegram-webhook-handler-timeout**: Alerts when handler duration exceeds 14
+   seconds
+4. **telegram-webhook-handler-throttles**: Alerts when handler is throttled
+5. **telegram-webhook-openai-quota**: Alerts when OpenAI quota is exceeded
 
 To receive notifications:
 
@@ -697,11 +711,6 @@ troubleshooting guide.
 - Solution: Check CloudWatch Logs, verify ERPNext is accessible, increase
   timeout if needed
 
-**Issue: Provisioned Concurrency shows "Status: FAILED"**
-
-- Cause: Insufficient Lambda quotas
-- Solution: Check quotas, request increase if needed
-
 **Issue: Telegram webhook not responding**
 
 - Cause: Lambda Function URL not accessible or webhook secret mismatch
@@ -717,22 +726,23 @@ troubleshooting guide.
 
 **Current Configuration:**
 
-- Provisioned Concurrency: 1 instance (512 MB)
 - Memory: 512 MB
 - Timeout: 15 seconds
-- Estimated cost: $5-7/month
+- Provisioned Concurrency: 1 unit
+- Estimated cost: ~$5-7/month (includes PC)
 
 **Optimization Options:**
 
 **Option 1: Reduce Provisioned Concurrency to 0**
 
-- Savings: $5/month
-- Trade-off: Cold starts (1-2 seconds delay on first request)
-- Recommended for: Low-traffic environments (<10 messages/day)
+- Savings: $5-6/month
+- Trade-off: Cold starts return (1-3 second latency impact)
+- Update template.yaml: Remove `ProvisionedConcurrencyConfig` section
+- Recommended for: Very low traffic environments (<10 messages/day)
 
 **Option 2: Reduce Memory to 256 MB**
 
-- Savings: $2-3/month
+- Savings: $1-2/month
 - Trade-off: Slower execution (may increase duration by 20-30%)
 - Recommended for: Cost-sensitive environments
 
@@ -796,8 +806,8 @@ troubleshooting guide.
 **AWS Documentation:**
 
 - [AWS SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
-- [Lambda Provisioned Concurrency](https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html)
 - [Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
+- [Lambda Provisioned Concurrency](https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html)
 
 **External APIs:**
 
