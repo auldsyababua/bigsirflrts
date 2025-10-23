@@ -132,11 +132,11 @@ test_lambda_health() {
   if [[ "$HTTP_CODE" == "200" ]]; then
     log_pass "Lambda health check successful (HTTP ${HTTP_CODE})"
     log_info "Response time: ${response_time}ms"
-    # Relaxed threshold to 5 seconds to account for cold starts without Provisioned Concurrency
-    if [[ $response_time -lt 5000 ]]; then
-      log_pass "Response time < 5 seconds (acceptable with cold starts)"
+    # With Provisioned Concurrency enabled (1 unit), cold starts eliminated
+    if [[ $response_time -lt 2000 ]]; then
+      log_pass "Response time < 2 seconds (Provisioned Concurrency active)"
     else
-      log_fail "Response time >= 5 seconds (${response_time}ms) - investigate performance issues"
+      log_fail "Response time >= 2 seconds (${response_time}ms) - check Provisioned Concurrency status"
     fi
   else
     log_fail "Lambda health check failed (HTTP ${HTTP_CODE})"

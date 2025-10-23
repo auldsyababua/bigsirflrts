@@ -113,6 +113,8 @@ Resources:
       Timeout: 15
       Role: !GetAtt LambdaExecutionRole.Arn
       AutoPublishAlias: live
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       Layers:
         - !Ref ADOTLayerArn
       Environment:
@@ -203,26 +205,24 @@ Resources:
       AlarmActions:
         - !Ref AlertNotificationTopic
 
-  # Provisioned Concurrency removed due to AWS account quota constraints
-  # ProvisionedConcurrencySpilloverAlarm disabled (no PC configured)
-  # ProvisionedConcurrencySpilloverAlarm:
-  #   Type: AWS::CloudWatch::Alarm
-  #   Properties:
-  #     AlarmName: !Sub telegram-webhook-pc-spillover-${Environment}
-  #     AlarmDescription: Alert when provisioned concurrency is exhausted (spillover to on-demand)
-  #     MetricName: ProvisionedConcurrencySpilloverInvocations
-  #     Namespace: AWS/Lambda
-  #     Statistic: Sum
-  #     Period: 300
-  #     EvaluationPeriods: 1
-  #     Threshold: 1
-  #     ComparisonOperator: GreaterThanOrEqualToThreshold
-  #     Dimensions:
-  #       - Name: FunctionName
-  #         Value: !Ref WebhookHandlerFunction
-  #     TreatMissingData: notBreaching
-  #     AlarmActions:
-  #       - !Ref AlertNotificationTopic
+  ProvisionedConcurrencySpilloverAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub telegram-webhook-pc-spillover-${Environment}
+      AlarmDescription: Alert when provisioned concurrency is exhausted (spillover to on-demand)
+      MetricName: ProvisionedConcurrencySpilloverInvocations
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref WebhookHandlerFunction
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertNotificationTopic
 
   WebhookHandlerTimeoutAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -281,7 +281,7 @@ Resources:
 
 Outputs:
   WebhookHandlerFunctionUrl:
-    Description: Function URL for Telegram webhook (routes through 'live' alias)
+    Description: Function URL for Telegram webhook handler with Provisioned Concurrency (PC=1)
     Value: !GetAtt WebhookHandlerFunctionUrl.FunctionUrl
     Export:
       Name: !Sub ${AWS::StackName}-WebhookHandlerUrl

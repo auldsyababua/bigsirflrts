@@ -14,6 +14,8 @@ Model) to create a pure Lambda MVP architecture with direct ERPNext integration.
   creation
 - **Direct integration**: Telegram → AWS Lambda → OpenAI GPT-4o → ERPNext REST
   API
+- **Provisioned Concurrency**: Eliminates cold starts for consistent <2 second
+  response times
 - **Context injection**: Real-time user/site data from ERPNext injected into
   OpenAI prompts
 - **Caching**: 5-minute TTL cache reduces ERPNext API calls by 80%+
@@ -331,6 +333,36 @@ sam deploy
 
 Uses saved configuration from `samconfig.toml`. No prompts required.
 
+### Step 3.7: Verify Provisioned Concurrency
+
+Check that PC is active and ready:
+
+```bash
+aws lambda get-provisioned-concurrency-config \
+  --function-name telegram-webhook-handler-production \
+  --qualifier live
+```
+
+Expected output:
+
+```json
+{
+  "Status": "READY",
+  "AllocatedProvisionedConcurrentExecutions": 1,
+  "RequestedProvisionedConcurrentExecutions": 1
+}
+```
+
+**Note**: PC initialization takes ~1 minute after deployment. If Status shows
+"IN_PROGRESS", wait 30 seconds and check again.
+
+If Status shows "FAILED":
+
+- Check Lambda quotas:
+  `aws service-quotas get-service-quota --service-code lambda --quota-code L-B99A9384`
+- Verify Node.js 22.x runtime is available in your region
+- Check CloudWatch Logs for initialization errors
+
 ## 4. Post-Deployment Configuration
 
 ### Step 4.1: Configure Telegram Webhook
@@ -423,12 +455,12 @@ If no response:
 
 ### Step 4.4: Verify CloudWatch Alarms
 
-Verify all 4 CloudWatch alarms are created and configured:
+Verify all 5 CloudWatch alarms are created and configured:
 
 ```bash
 # List all alarms for the stack
 aws cloudwatch describe-alarms \
-  --alarm-name-prefix telegram-webhook-handler \
+  --alarm-name-prefix telegram-webhook \
   --query 'MetricAlarms[*].[AlarmName,StateValue,ActionsEnabled]' \
   --output table
 ```
@@ -439,6 +471,7 @@ Expected output:
 |  AlarmName                                    | StateValue | ActionsEnabled |
 |-----------------------------------------------|------------|----------------|
 | telegram-webhook-handler-errors-production    | OK         | True           |
+| telegram-webhook-pc-spillover-production      | OK         | True           |
 | telegram-webhook-handler-timeout-production   | OK         | True           |
 | telegram-webhook-handler-throttles-production | OK         | True           |
 | telegram-webhook-openai-quota-production      | OK         | True           |
@@ -575,13 +608,15 @@ Reference: AWS CloudWatch Alarms documentation for alarm testing procedures.
 
 ### 6.1: Configure CloudWatch Alarms
 
-The SAM template creates four alarms:
+The SAM template creates five alarms:
 
 1. **telegram-webhook-handler-errors**: Alerts when >3 errors occur in 5 minutes
-2. **telegram-webhook-handler-timeout**: Alerts when handler duration exceeds 14
+2. **telegram-webhook-pc-spillover**: Alerts when Provisioned Concurrency is
+   exhausted (spillover to on-demand)
+3. **telegram-webhook-handler-timeout**: Alerts when handler duration exceeds 14
    seconds
-3. **telegram-webhook-handler-throttles**: Alerts when handler is throttled
-4. **telegram-webhook-openai-quota**: Alerts when OpenAI quota is exceeded
+4. **telegram-webhook-handler-throttles**: Alerts when handler is throttled
+5. **telegram-webhook-openai-quota**: Alerts when OpenAI quota is exceeded
 
 To receive notifications:
 
@@ -616,6 +651,8 @@ Dashboard should include:
 - Lambda invocations (count)
 - Lambda errors (count)
 - Lambda duration (average, p99)
+- Provisioned Concurrency utilization (%)
+- Provisioned Concurrency spillover (count)
 
 ## 7. Rollback Procedures
 
@@ -691,17 +728,25 @@ troubleshooting guide.
 
 - Memory: 512 MB
 - Timeout: 15 seconds
-- Estimated cost: $2-3/month (on-demand Lambda)
+- Provisioned Concurrency: 1 unit
+- Estimated cost: ~$5-7/month (includes PC)
 
 **Optimization Options:**
 
-**Option 1: Reduce Memory to 256 MB**
+**Option 1: Reduce Provisioned Concurrency to 0**
 
-- Savings: $2-3/month
+- Savings: $5-6/month
+- Trade-off: Cold starts return (1-3 second latency impact)
+- Update template.yaml: Remove `ProvisionedConcurrencyConfig` section
+- Recommended for: Very low traffic environments (<10 messages/day)
+
+**Option 2: Reduce Memory to 256 MB**
+
+- Savings: $1-2/month
 - Trade-off: Slower execution (may increase duration by 20-30%)
 - Recommended for: Cost-sensitive environments
 
-**Option 2: Increase Timeout to 30 seconds**
+**Option 3: Increase Timeout to 30 seconds**
 
 - Cost: No change (billed per 100ms)
 - Trade-off: Allows more retries for slow ERPNext API
@@ -762,6 +807,7 @@ troubleshooting guide.
 
 - [AWS SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
 - [Lambda Function URLs](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html)
+- [Lambda Provisioned Concurrency](https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html)
 
 **External APIs:**
 
