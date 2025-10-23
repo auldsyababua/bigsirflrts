@@ -17,8 +17,6 @@ Model) to create a pure Lambda MVP architecture with direct ERPNext integration.
 - **Context injection**: Real-time user/site data from ERPNext injected into
   OpenAI prompts
 - **Caching**: 5-minute TTL cache reduces ERPNext API calls by 80%+
-- **Provisioned Concurrency**: Eliminates cold starts for consistent <2 second
-  response times
 
 ### Prerequisites Summary
 
@@ -280,7 +278,12 @@ hidden)
 - Used by: SNS topic for alarm notifications
 - Can add more emails later via SNS console
 
-**Parameter ADOTLayerArn:** `<default-value>` (press Enter to use default)
+**Parameter ADOTLayerArn:** `<default-value>` (press Enter to use default for
+us-east-1)
+
+- **Note**: Default ARN is for us-east-1 region only
+- If deploying to other regions, find region-specific ADOT layer ARN at:
+  <https://aws-otel.github.io/docs/getting-started/lambda/lambda-js>
 
 **Confirm changes before deploy:** `Y`
 
@@ -327,36 +330,6 @@ sam deploy
 ```
 
 Uses saved configuration from `samconfig.toml`. No prompts required.
-
-### Step 3.7: Verify Provisioned Concurrency
-
-Provisioned Concurrency (PC) eliminates cold starts but takes ~1 minute to
-initialize.
-
-```bash
-aws lambda get-provisioned-concurrency-config \
-  --function-name telegram-webhook-handler-production \
-  --qualifier live
-```
-
-Expected output:
-
-```json
-{
-  "Status": "READY",
-  "AllocatedProvisionedConcurrentExecutions": 1,
-  "AvailableProvisionedConcurrentExecutions": 1
-}
-```
-
-If `Status: IN_PROGRESS`, wait 30 seconds and check again.
-
-If `Status: FAILED`:
-
-- Check Lambda quotas:
-  `aws service-quotas get-service-quota --service-code lambda --quota-code L-B99A9384`
-- Verify Node.js 22.x runtime is available in your region
-- Check CloudWatch Logs for error details
 
 ## 4. Post-Deployment Configuration
 
@@ -450,7 +423,7 @@ If no response:
 
 ### Step 4.4: Verify CloudWatch Alarms
 
-Verify all 5 CloudWatch alarms are created and configured:
+Verify all 4 CloudWatch alarms are created and configured:
 
 ```bash
 # List all alarms for the stack
@@ -466,7 +439,6 @@ Expected output:
 |  AlarmName                                    | StateValue | ActionsEnabled |
 |-----------------------------------------------|------------|----------------|
 | telegram-webhook-handler-errors-production    | OK         | True           |
-| telegram-webhook-pc-spillover-production      | OK         | True           |
 | telegram-webhook-handler-timeout-production   | OK         | True           |
 | telegram-webhook-handler-throttles-production | OK         | True           |
 | telegram-webhook-openai-quota-production      | OK         | True           |
@@ -557,11 +529,15 @@ cd webhook_handler/tests
 export LAMBDA_FUNCTION_URL="<WebhookHandlerFunctionUrl>"
 export TELEGRAM_BOT_TOKEN="<your-bot-token>"
 export TELEGRAM_TEST_CHAT_ID="<your-chat-id>"
+export TELEGRAM_WEBHOOK_SECRET="<your-webhook-secret>"
 export ERPNEXT_API_URL="https://ops.10nz.tools"
 export ERPNEXT_API_KEY="<your-key>"
 export ERPNEXT_API_SECRET="<your-secret>"
 ./smoke-test.sh
 ```
+
+**Note**: Ensure `TELEGRAM_WEBHOOK_SECRET` matches the TelegramWebhookSecret
+parameter from deployment.
 
 Expected: All tests pass (6/6)
 
@@ -599,10 +575,13 @@ Reference: AWS CloudWatch Alarms documentation for alarm testing procedures.
 
 ### 6.1: Configure CloudWatch Alarms
 
-The SAM template creates two alarms:
+The SAM template creates four alarms:
 
 1. **telegram-webhook-handler-errors**: Alerts when >3 errors occur in 5 minutes
-2. **telegram-webhook-pc-spillover**: Alerts when PC is exhausted
+2. **telegram-webhook-handler-timeout**: Alerts when handler duration exceeds 14
+   seconds
+3. **telegram-webhook-handler-throttles**: Alerts when handler is throttled
+4. **telegram-webhook-openai-quota**: Alerts when OpenAI quota is exceeded
 
 To receive notifications:
 

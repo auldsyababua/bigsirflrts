@@ -45,7 +45,7 @@ Parameters:
   ADOTLayerArn:
     Type: String
     Default: arn:aws:lambda:us-east-1:901920570463:layer:aws-otel-nodejs-amd64-ver-1-30-0:1
-    Description: ARN for AWS Distro for OpenTelemetry (Node.js) Lambda layer
+    Description: ARN of ADOT Lambda Layer (default is for us-east-1; update for other regions)
 
   AlertEmail:
     Type: String
@@ -113,8 +113,6 @@ Resources:
       Timeout: 15
       Role: !GetAtt LambdaExecutionRole.Arn
       AutoPublishAlias: live
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
       Layers:
         - !Ref ADOTLayerArn
       Environment:
@@ -130,16 +128,20 @@ Resources:
   # Webhook Handler Function URL (on alias to use PC)
   WebhookHandlerFunctionUrl:
     Type: AWS::Lambda::Url
+    DependsOn: WebhookHandlerFunctionAliaslive
     Properties:
       AuthType: NONE
-      TargetFunctionArn: !Sub ${WebhookHandlerFunction.Arn}:live
+      TargetFunctionArn: !Ref WebhookHandlerFunctionAliaslive
       InvokeMode: BUFFERED
 
   # Webhook Handler Function URL Permission
   WebhookHandlerUrlPermission:
     Type: AWS::Lambda::Permission
+    DependsOn:
+      - WebhookHandlerFunctionAliaslive
+      - WebhookHandlerFunctionUrl
     Properties:
-      FunctionName: !Sub telegram-webhook-handler-${Environment}:live
+      FunctionName: !Ref WebhookHandlerFunctionAliaslive
       Action: lambda:InvokeFunctionUrl
       Principal: "*"
       FunctionUrlAuthType: NONE
@@ -161,10 +163,14 @@ Resources:
     Properties:
       TopicName: !Sub telegram-bot-alerts-${Environment}
       DisplayName: Telegram Bot Alerts
-      KmsMasterKeyId: alias/aws/sns
-      Subscriptions:
-        - Endpoint: !Ref AlertEmail
-          Protocol: email
+
+  # SNS Email Subscription
+  AlertEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref AlertNotificationTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
 
   # CloudWatch Logs Metric Filter for OpenAI Quota Exceeded
   OpenAIQuotaExceededMetricFilter:
@@ -197,24 +203,26 @@ Resources:
       AlarmActions:
         - !Ref AlertNotificationTopic
 
-  ProvisionedConcurrencySpilloverAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      AlarmName: !Sub telegram-webhook-pc-spillover-${Environment}
-      AlarmDescription: Alert when provisioned concurrency is exhausted (spillover to on-demand)
-      MetricName: ProvisionedConcurrencySpilloverInvocations
-      Namespace: AWS/Lambda
-      Statistic: Sum
-      Period: 300
-      EvaluationPeriods: 1
-      Threshold: 1
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref WebhookHandlerFunction
-      TreatMissingData: notBreaching
-      AlarmActions:
-        - !Ref AlertNotificationTopic
+  # Provisioned Concurrency removed due to AWS account quota constraints
+  # ProvisionedConcurrencySpilloverAlarm disabled (no PC configured)
+  # ProvisionedConcurrencySpilloverAlarm:
+  #   Type: AWS::CloudWatch::Alarm
+  #   Properties:
+  #     AlarmName: !Sub telegram-webhook-pc-spillover-${Environment}
+  #     AlarmDescription: Alert when provisioned concurrency is exhausted (spillover to on-demand)
+  #     MetricName: ProvisionedConcurrencySpilloverInvocations
+  #     Namespace: AWS/Lambda
+  #     Statistic: Sum
+  #     Period: 300
+  #     EvaluationPeriods: 1
+  #     Threshold: 1
+  #     ComparisonOperator: GreaterThanOrEqualToThreshold
+  #     Dimensions:
+  #       - Name: FunctionName
+  #         Value: !Ref WebhookHandlerFunction
+  #     TreatMissingData: notBreaching
+  #     AlarmActions:
+  #       - !Ref AlertNotificationTopic
 
   WebhookHandlerTimeoutAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -273,7 +281,7 @@ Resources:
 
 Outputs:
   WebhookHandlerFunctionUrl:
-    Description: Function URL for Telegram webhook (routes through 'live' alias with PC)
+    Description: Function URL for Telegram webhook (routes through 'live' alias)
     Value: !GetAtt WebhookHandlerFunctionUrl.FunctionUrl
     Export:
       Name: !Sub ${AWS::StackName}-WebhookHandlerUrl
