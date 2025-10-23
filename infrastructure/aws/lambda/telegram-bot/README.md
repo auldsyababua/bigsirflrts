@@ -4,6 +4,48 @@ This directory contains the AWS SAM template and Lambda function code for the
 BigSirFLRTS Telegram bot, implementing a **pure Lambda MVP** with direct ERPNext
 integration via OpenAI NLP parsing.
 
+## Quick Deployment Reference
+
+**AWS Profile:** `lambda-deployer` (has Lambda/CloudFormation permissions)
+**Secrets Location:** `.env` file in repository root (NOT 1Password) **Stack
+Name:** `telegram-bot-production` (CloudFormation) **Function Name:**
+`telegram-webhook-handler-production` (Lambda) **Region:** `us-east-1`
+
+### Environment Variable Mapping
+
+.env file → SAM Parameters:
+
+- `ERPNEXT_ADMIN_API_KEY` → `ERPNextApiKey`
+- `ERPNEXT_ADMIN_API_SECRET` → `ERPNextApiSecret`
+- `OPENAI_API_KEY` → `OpenAIApiKey`
+- `TELEGRAM_BOT_TOKEN` → `TelegramBotToken`
+- `TELEGRAM_WEBHOOK_SECRET` → `TelegramWebhookSecret`
+
+### Deploy Commands
+
+```bash
+cd infrastructure/aws/lambda/telegram-bot
+AWS_PROFILE=lambda-deployer sam build
+AWS_PROFILE=lambda-deployer sam deploy
+```
+
+### Update Environment Variables Only
+
+```bash
+AWS_PROFILE=lambda-deployer aws lambda update-function-configuration \
+  --function-name telegram-webhook-handler-production \
+  --region us-east-1 \
+  --environment Variables={ERPNextBaseUrl=https://ops.10nz.tools,...}
+```
+
+### Configure Telegram Webhook
+
+```bash
+curl -X POST 'https://api.telegram.org/bot<TOKEN>/setWebhook' \
+  -H 'Content-Type: application/json' \
+  -d '{"url":"<LAMBDA_URL>","secret_token":"<SECRET>"}'
+```
+
 ## Architecture Overview
 
 ### Pure Lambda MVP (Simplified)

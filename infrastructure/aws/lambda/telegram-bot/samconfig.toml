@@ -1,0 +1,56 @@
+# SAM CLI configuration file for telegram-webhook-handler deployment
+# Generated: 2025-10-23
+#
+# DEPLOYMENT REQUIREMENTS:
+# - AWS Profile: lambda-deployer (NOT textract-runner or default)
+# - Secrets Source: .env file in repository root (NOT 1Password Service Account)
+# - Region: us-east-1
+# - Stack Name: telegram-bot-production (CloudFormation stack)
+# - Function Name: telegram-webhook-handler-production (Lambda function)
+#
+# ENVIRONMENT VARIABLES (from .env):
+# - ERPNEXT_ADMIN_API_KEY / ERPNEXT_ADMIN_API_SECRET (maps to ERPNextApiKey/Secret)
+# - OPENAI_API_KEY
+# - TELEGRAM_BOT_TOKEN
+# - TELEGRAM_WEBHOOK_SECRET
+# - ALERT_EMAIL (optional, defaults to dev-team@10nz.tools)
+#
+# To deploy:
+#   cd infrastructure/aws/lambda/telegram-bot
+#   AWS_PROFILE=lambda-deployer sam build
+#   AWS_PROFILE=lambda-deployer sam deploy
+#
+# To update environment variables only:
+#   AWS_PROFILE=lambda-deployer aws lambda update-function-configuration \
+#     --function-name telegram-webhook-handler-production \
+#     --region us-east-1 \
+#     --environment Variables={...}
+
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "telegram-bot-production"
+region = "us-east-1"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+disable_rollback = false
+resolve_s3 = true
+s3_prefix = "telegram-webhook-handler-production"
+fail_on_empty_changeset = false
+# IMPORTANT: This file contains deployment configuration but NOT secrets.
+# Secrets must be provided via environment variables when running 'sam deploy'
+# They are NOT stored in this file to prevent accidental exposure.
+#
+# On first deployment, SAM will prompt for these values from your environment.
+# After first deployment, you can run 'sam deploy' without --guided.
+#
+# If you need to update secrets:
+#   1. Update .env file in repository root
+#   2. Run: AWS_PROFILE=lambda-deployer sam deploy --parameter-overrides \
+#     "ERPNextBaseUrl=https://ops.10nz.tools \
+#      ERPNextApiKey=$ERPNEXT_ADMIN_API_KEY \
+#      ERPNextApiSecret=$ERPNEXT_ADMIN_API_SECRET \
+#      OpenAIApiKey=$OPENAI_API_KEY \
+#      TelegramBotToken=$TELEGRAM_BOT_TOKEN \
+#      TelegramWebhookSecret=$TELEGRAM_WEBHOOK_SECRET \
+#      AlertEmail=dev-team@10nz.tools"
