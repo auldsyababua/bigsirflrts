@@ -308,16 +308,28 @@ test_maintenance_visit_custom_fields() {
   # Try to query with all 7 custom fields
   CUSTOM_FIELDS="custom_assigned_to,custom_priority,custom_parse_rationale,custom_parse_confidence,custom_telegram_message_id,custom_flrts_source,custom_flagged_for_review"
 
+  # Build JSON array from CUSTOM_FIELDS
+  FIELDS_JSON=$(echo "$CUSTOM_FIELDS" | awk -F',' '{
+    printf "[\"name\""
+    for (i=1; i<=NF; i++) {
+      printf ",\"%s\"", $i
+    }
+    printf "]"
+  }')
+
+  # URL-encode the fields JSON for curl
+  FIELDS_PARAM=$(printf '%s' "$FIELDS_JSON" | jq -sRr @uri)
+
   RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 10 \
     -H "Authorization: token ${ERPNEXT_API_KEY}:${ERPNEXT_API_SECRET}" \
     -H "Accept: application/json" \
-    "${ERPNEXT_API_URL}/api/resource/Maintenance%20Visit?fields=%5B%22name%22%2C%22custom_assigned_to%22%5D&limit=1" || echo -e "\n000")
+    "${ERPNEXT_API_URL}/api/resource/Maintenance%20Visit?fields=${FIELDS_PARAM}&limit=1" || echo -e "\n000")
 
   parse_http_response "$RESPONSE"
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     log_pass "Maintenance Visit custom fields are accessible"
-    log_info "Custom fields are accessible via API (tested: custom_assigned_to)"
+    log_info "Custom fields are accessible via API (tested all 7 fields)"
   else
     log_fail "Maintenance Visit custom fields not accessible (HTTP ${HTTP_CODE})"
     ERROR_TYPE=$(echo "$BODY" | jq -r '.exc_type // "Unknown error"' 2>/dev/null || echo "Unknown error")
