@@ -130,7 +130,6 @@ Resources:
   # Webhook Handler Function URL (on alias to use PC)
   WebhookHandlerFunctionUrl:
     Type: AWS::Lambda::Url
-    DependsOn: WebhookHandlerFunctionAliaslive
     Properties:
       AuthType: NONE
       TargetFunctionArn: !Ref WebhookHandlerFunctionAliaslive
