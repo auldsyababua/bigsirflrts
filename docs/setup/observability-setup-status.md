@@ -99,9 +99,6 @@ cd ~/Desktop/claude-code-hooks-multi-agent-observability
 echo "ANTHROPIC_API_KEY=sk-ant-..." >> .env
 ```
 
-Get API key from 1Password:
-`op item get "Anthropic API Key" --fields label=credential`
-
 ### 2. Start Observability Server
 
 ```bash
@@ -170,4 +167,5 @@ Run agents and watch events stream in dashboard at <http://localhost:5173>
   <https://github.com/disler/claude-code-hooks-multi-agent-observability>
 - **Linear Issue**:
   [10N-293](https://linear.app/10netzero/issue/10N-293/add-multi-agent-observability-layer-to-workflow-system)
-- **Claude Code Hooks Docs**: <https://docs.claude.com/en/docs/claude-code/hooks>
+- **Claude Code Hooks Docs**:
+  <https://docs.claude.com/en/docs/claude-code/hooks>
